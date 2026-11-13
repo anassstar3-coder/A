@@ -17,6 +17,7 @@
             .print-only { display: block !important; }
             body { background: white !important; color: black !important; }
             .grayscale-inactive { filter: none !important; opacity: 1 !important; color: black !important; background: white !important; }
+            table, th, td { border: 1px solid #cbd5e1 !important; color: black !important; }
         }
     </style>
 </head>
@@ -44,9 +45,8 @@
                 <div id="login-error" class="text-rose-400 text-xs hidden text-center bg-rose-950/40 p-2.5 rounded-lg border border-rose-900/50"></div>
                 <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-lg text-xs transition border border-slate-700">دخول للنظام</button>
             </form>
-            <div class="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center text-[11px] text-slate-400">
-                <span id="login-cloud-status">حالة السحابة: جاري الفحص...</span>
-                <button onclick="openCloudConfigModal()" class="text-slate-300 hover:text-white underline">إعدادات الربط السحابي</button>
+            <div class="mt-4 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-400">
+                <span id="login-cloud-status">حالة السحابة: جاري الاتصال...</span>
             </div>
         </div>
     </div>
@@ -57,10 +57,10 @@
         <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex flex-wrap justify-between items-center gap-4 no-print">
             <div class="flex items-center gap-3">
                 <span class="text-sm font-bold text-white">نظام محاسبة الورشات</span>
-                <button onclick="openCloudConfigModal()" id="cloud-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 hover:opacity-90 transition cursor-pointer" title="انقر لإدارة الربط السحابي">
+                <div onclick="openCloudConfigModal()" id="cloud-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 transition">
                     <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-                    <span id="cloud-status-text">تخزين محلي فقط (اضغط للربط السحابي)</span>
-                </button>
+                    <span id="cloud-status-text">جاري الاتصال بالسحابة...</span>
+                </div>
             </div>
 
             <!-- الصناديق الكبرى الرئيسية -->
@@ -98,7 +98,7 @@
                     <h2 class="text-sm font-bold text-white">قائمة الورشات والمشاريع</h2>
                     <div class="flex items-center gap-2">
                         <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-1.5 rounded text-xs font-semibold transition border border-slate-700">+ ورشة جديدة</button>
-                        <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
+                        <label id="btn-import-ws" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
                             استيراد ورشة
                             <input type="file" accept=".json" onchange="importSingleWorkshop(event)" class="hidden">
                         </label>
@@ -149,10 +149,10 @@
                         <button onclick="exportCurrentWorkshopJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">تصدير الورشة</button>
                         <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none cursor-pointer">
                             <option value="">إجراءات الورشة</option>
-                            <option value="toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
+                            <option value="toggle-status" id="opt-toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
                             <option value="export-excel">تصدير Excel (.csv)</option>
                             <option value="print-sheet">طباعة كشف الحساب</option>
-                            <option value="delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
+                            <option value="delete-workshop" id="opt-delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
                         </select>
                     </div>
                 </div>
@@ -187,31 +187,28 @@
         </main>
     </div>
 
-    <!-- نافذة إعدادات الربط السحابي (Firebase) -->
+    <!-- نافذة إعدادات الربط السحابي (محمية للمالك فقط وبكلمة مرور) -->
     <div id="cloud-config-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="text-sm font-bold text-white">إعدادات المزامنة السحابية (Firebase)</h3>
-                <span id="modal-cloud-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">غير متصل</span>
+                <h3 class="text-sm font-bold text-white">إعدادات المزامنة السحابية (للمالك فقط)</h3>
+                <span id="modal-cloud-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">متصل تلقائياً</span>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-                لفتح بياناتك ومزامنتها تلقائياً من أي جهاز (موبايل أو كمبيوتر)، الصق كود <code class="text-slate-200 bg-slate-800 px-1 rounded">firebaseConfig</code> الخاص بمشروعك هنا:
+                المشروع السحابي (<code class="text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded">anas-alasfar</code>) مثبت ومؤمّن. لتعديل أو تحديث مفاتيح السحابة، أدخل الكود أدناه مع تأكيد كلمة مرور المالك:
             </p>
             <div>
-                <textarea id="firebase-config-input" rows="7" dir="ltr" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-slate-500" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-app",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:123456789:web:abcdef"
-}'></textarea>
+                <textarea id="firebase-config-input" rows="6" dir="ltr" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-slate-500"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-amber-300 mb-1">كلمة مرور المالك للتأكيد:</label>
+                <input type="password" id="cloud-admin-pass-confirm" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500" placeholder="أدخل كلمة مرور حساب المالك">
             </div>
             <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
-                <button onclick="disconnectCloud()" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-3 py-1.5 rounded text-xs">فصل السحابة</button>
+                <button onclick="resetToDefaultCloud()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded text-xs">استعادة الإعداد التلقائي</button>
                 <div class="flex gap-2">
                     <button onclick="closeCloudConfigModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
-                    <button onclick="saveCloudConfig()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ والاتصال بالسحابة</button>
+                    <button onclick="saveCloudConfig()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ وتحديث الاتصال</button>
                 </div>
             </div>
         </div>
@@ -245,24 +242,75 @@
         </div>
     </div>
 
-    <!-- نافذة المستخدمين والصلاحيات -->
+    <!-- نافذة المستخدمين والصلاحيات الشاملة -->
     <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-xl w-full shadow-2xl space-y-3">
-            <h3 class="text-sm font-bold text-white">إدارة المستخدمين والصلاحيات</h3>
-            <div class="bg-slate-800/40 p-3 rounded border border-slate-700 space-y-2.5">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="new-user-name" placeholder="اسم المستخدم الجديد" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
-                    <input type="password" id="new-user-pass" placeholder="كلمة المرور" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-[11px] text-slate-400 mb-1">الورشات المسموح لهذا المستخدم رؤيتها والعمل عليها:</label>
-                    <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-3 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded border border-slate-700"></div>
-                </div>
-                <button onclick="addNewUser()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-1.5 rounded text-xs font-semibold border border-slate-700">إضافة المستخدم</button>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-white">إدارة المستخدمين وتخصيص الصلاحيات</h3>
+                <span id="user-form-mode-badge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">إضافة مستخدم جديد</span>
             </div>
-            <div id="users-list-container" class="space-y-2 max-h-40 overflow-y-auto"></div>
-            <div class="flex justify-end pt-2">
-                <button onclick="closeUsersModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
+
+            <!-- نموذج إضافة أو تعديل مستخدم -->
+            <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700 space-y-3">
+                <input type="hidden" id="edit-user-index" value="-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">اسم المستخدم</label>
+                        <input type="text" id="user-form-name" placeholder="اسم المستخدم" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">كلمة المرور</label>
+                        <input type="text" id="user-form-pass" placeholder="كلمة المرور" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                    </div>
+                </div>
+
+                <!-- صلاحيات العمليات -->
+                <div>
+                    <label class="block text-[11px] text-slate-300 font-semibold mb-1.5">صلاحيات العمليات المسموحة لهذا المستخدم:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-900 p-3 rounded border border-slate-700 text-xs">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-create-ws" class="rounded bg-slate-800 border-slate-600">
+                            <span>إنشاء واستيراد ورشات جديدة</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-rose-300">
+                            <input type="checkbox" id="perm-delete-ws" class="rounded bg-slate-800 border-slate-600">
+                            <span>السماح بحذف الورشات</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="perm-add-tx" checked class="rounded bg-slate-800 border-slate-600">
+                            <span>إضافة حركات مالية (إيراد / مصروف / صرافة)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-rose-300">
+                            <input type="checkbox" id="perm-delete-tx" class="rounded bg-slate-800 border-slate-600">
+                            <span>السماح بحذف الحركات المالية</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer sm:col-span-2">
+                            <input type="checkbox" id="perm-toggle-ws" class="rounded bg-slate-800 border-slate-600">
+                            <span>تبديل حالة الورشة (نشطة / غير نشطة)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- الورشات المسموح رؤيتها -->
+                <div>
+                    <label class="block text-[11px] text-slate-300 font-semibold mb-1.5">الورشات المسموح له برؤيتها والعمل عليها:</label>
+                    <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-3 max-h-28 overflow-y-auto p-2.5 bg-slate-900 rounded border border-slate-700"></div>
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button onclick="saveUserForm()" id="btn-save-user-form" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded text-xs font-semibold transition">حفظ وإضافة المستخدم</button>
+                    <button onclick="resetUserForm()" id="btn-cancel-edit-user" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded text-xs font-semibold transition">إلغاء التعديل</button>
+                </div>
+            </div>
+
+            <!-- قائمة المستخدمين الحاليين -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-semibold text-slate-400">المستخدمون المسجلون حالياً:</h4>
+                <div id="users-list-container" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeUsersModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded text-xs">إغلاق النافذة</button>
             </div>
         </div>
     </div>
@@ -314,11 +362,10 @@
     </div>
 
     <script>
-        // مفاتيح التخزين المحلي والسحابي
         const STORAGE_KEY = "workshops_accounting_secure_data_v5";
         const CLOUD_CONFIG_KEY = "workshops_firebase_custom_config";
+        const OWNER_PASS = "789456123147";
         
-        // تم تثبيت إعدادات السحابة الخاصة بك للاتصال التلقائي من أي جهاز
         const HARDCODED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
             authDomain: "anas-alasfar.firebaseapp.com",
@@ -329,7 +376,13 @@
         };
 
         let dbData = {
-            users: [{ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] }],
+            users: [{
+                username: "anas",
+                pass: OWNER_PASS,
+                role: "admin",
+                allowedWorkshops: ["all"],
+                permissions: { createWs: true, deleteWs: true, addTx: true, deleteTx: true, toggleWs: true }
+            }],
             workshops: [],
             lastUpdated: 0
         };
@@ -341,9 +394,21 @@
         let isCloudConnected = false;
         let unsubscribeSnapshot = null;
 
-        // تهيئة التطبيق واستعادة البيانات بأمان
+        function hasPermission(permName) {
+            if (!currentUser) return false;
+            if (currentUser.role === "admin" || currentUser.username === "anas") return true;
+            if (currentUser.permissions && typeof currentUser.permissions[permName] === "boolean") {
+                return currentUser.permissions[permName];
+            }
+            if (permName === "addTx") return true;
+            return false;
+        }
+
+        function isOwner() {
+            return currentUser && (currentUser.role === "admin" || currentUser.username === "anas");
+        }
+
         async function initApp() {
-            // 1. استعادة البيانات المحلية من أي نسخة سابقة لضمان عدم ضياع أي بيانات
             const possibleKeys = [
                 STORAGE_KEY,
                 "workshops_accounting_secure_data_v4",
@@ -366,49 +431,52 @@
 
             if (!dbData.users || !dbData.users.some(u => u.username === "anas")) {
                 if (!dbData.users) dbData.users = [];
-                dbData.users.push({ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] });
+                dbData.users.push({
+                    username: "anas",
+                    pass: OWNER_PASS,
+                    role: "admin",
+                    allowedWorkshops: ["all"],
+                    permissions: { createWs: true, deleteWs: true, addTx: true, deleteTx: true, toggleWs: true }
+                });
             }
 
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
-
-            // 2. التحقق من وجود إعدادات السحابة والاتصال بها
             await initCloudConnection();
 
-            // 3. التحقق من جلسة الدخول الحالية
             const loggedUserJson = sessionStorage.getItem("current_session_user");
             if (loggedUserJson) {
                 try {
-                    currentUser = JSON.parse(loggedUserJson);
-                    showMainApp();
+                    const sessionU = JSON.parse(loggedUserJson);
+                    const freshU = dbData.users.find(u => u.username === sessionU.username);
+                    if (freshU) {
+                        currentUser = freshU;
+                        showMainApp();
+                    }
                 } catch(e) {}
             }
         }
 
-        // دالة الاتصال بالسحابة (Firebase)
         async function initCloudConnection() {
             let config = HARDCODED_FIREBASE_CONFIG;
-            if (!config) {
-                const savedConfigStr = localStorage.getItem(CLOUD_CONFIG_KEY);
-                if (savedConfigStr) {
-                    try { config = JSON.parse(savedConfigStr); } catch(e) {}
-                }
+            const savedConfigStr = localStorage.getItem(CLOUD_CONFIG_KEY);
+            if (savedConfigStr) {
+                try {
+                    const customParsed = JSON.parse(savedConfigStr);
+                    if (customParsed && customParsed.apiKey && customParsed.projectId) config = customParsed;
+                } catch(e) {}
             }
 
             if (!config || !config.apiKey || !config.projectId) {
-                updateCloudUI(false, "تخزين محلي فقط (اضغط للربط السحابي)");
+                updateCloudUI(false, "تخزين محلي فقط");
                 return;
             }
 
             try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(config);
-                }
+                if (!firebase.apps.length) firebase.initializeApp(config);
                 await firebase.auth().signInAnonymously();
                 firestoreDb = firebase.firestore();
-                
                 const docRef = firestoreDb.collection("workshops_system").doc("main_database");
                 
-                // الاستماع الفوري للتحديثات من السحابة (مزامنة حية بين جميع الأجهزة)
                 if (unsubscribeSnapshot) unsubscribeSnapshot();
                 unsubscribeSnapshot = docRef.onSnapshot((docSnap) => {
                     isCloudConnected = true;
@@ -417,16 +485,28 @@
                     if (docSnap.exists) {
                         const cloudData = docSnap.data();
                         if (cloudData && Array.isArray(cloudData.workshops)) {
-                            // إذا كانت السحابة فارغة والمحلي فيه بيانات، نرفع المحلي للسحابة فوراً
                             if (cloudData.workshops.length === 0 && dbData.workshops.length > 0) {
                                 saveDb(true);
                             } else {
                                 dbData = cloudData;
-                                if (!dbData.users.some(u => u.username === "anas")) {
-                                    dbData.users.push({ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] });
+                                if (!dbData.users || !dbData.users.some(u => u.username === "anas")) {
+                                    if (!dbData.users) dbData.users = [];
+                                    dbData.users.push({
+                                        username: "anas",
+                                        pass: OWNER_PASS,
+                                        role: "admin",
+                                        allowedWorkshops: ["all"],
+                                        permissions: { createWs: true, deleteWs: true, addTx: true, deleteTx: true, toggleWs: true }
+                                    });
                                 }
                                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
                                 if (currentUser) {
+                                    const updatedMe = dbData.users.find(u => u.username === currentUser.username);
+                                    if (updatedMe) {
+                                        currentUser = updatedMe;
+                                        sessionStorage.setItem("current_session_user", JSON.stringify(updatedMe));
+                                        applyRolePermissionsUI();
+                                    }
                                     updateGlobalBoxes();
                                     renderWorkshopsList();
                                     if (currentWorkshopId) selectWorkshop(currentWorkshopId);
@@ -434,7 +514,6 @@
                             }
                         }
                     } else {
-                        // أول مرة: رفع البيانات المحلية إلى السحابة
                         saveDb(true);
                     }
                 }, (error) => {
@@ -442,11 +521,9 @@
                     isCloudConnected = false;
                     updateCloudUI(false, "تعذر الاتصال بالسحابة (يعمل محلياً)");
                 });
-
             } catch (err) {
-                console.error("Firebase Init Error:", err);
                 isCloudConnected = false;
-                updateCloudUI(false, "خطأ في إعدادات السحابة");
+                updateCloudUI(false, "خطأ في الاتصال بالسحابة");
             }
         }
 
@@ -467,17 +544,17 @@
             }
 
             if (badge && dot) {
+                const cursorClass = isOwner() ? "cursor-pointer hover:opacity-90" : "cursor-default";
                 if (connected) {
-                    badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:opacity-90 transition cursor-pointer";
+                    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 transition ${cursorClass}`;
                     dot.className = "w-2 h-2 rounded-full bg-emerald-400";
                 } else {
-                    badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 hover:opacity-90 transition cursor-pointer";
+                    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 transition ${cursorClass}`;
                     dot.className = "w-2 h-2 rounded-full bg-amber-400";
                 }
             }
         }
 
-        // حفظ البيانات محلياً وسحابياً في نفس الوقت
         function saveDb(forceCloudUpload = false) {
             dbData.lastUpdated = Date.now();
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
@@ -489,10 +566,12 @@
             }
         }
 
-        // إدارة نافذة إعدادات السحابة
+        // حماية نافذة الربط السحابي للمالك فقط وبكلمة مرور
         function openCloudConfigModal() {
-            const saved = localStorage.getItem(CLOUD_CONFIG_KEY) || "";
+            if (!isOwner()) return; // لا يستجيب للمستخدمين العاديين إطلاقاً
+            const saved = localStorage.getItem(CLOUD_CONFIG_KEY) || JSON.stringify(HARDCODED_FIREBASE_CONFIG, null, 2);
             document.getElementById("firebase-config-input").value = saved;
+            document.getElementById("cloud-admin-pass-confirm").value = "";
             document.getElementById("cloud-config-modal").classList.remove("hidden");
             document.getElementById("cloud-config-modal").classList.add("flex");
         }
@@ -501,36 +580,47 @@
             document.getElementById("cloud-config-modal").classList.remove("flex");
         }
         function saveCloudConfig() {
+            if (!isOwner()) return;
+            const passInput = document.getElementById("cloud-admin-pass-confirm").value.trim();
+            const ownerObj = dbData.users.find(u => u.username === "anas");
+            const validPass = ownerObj ? ownerObj.pass : OWNER_PASS;
+            
+            if (passInput !== validPass) {
+                alert("كلمة مرور المالك غير صحيحة! لا يمكن تعديل إعدادات السحابة.");
+                return;
+            }
+
             let raw = document.getElementById("firebase-config-input").value.trim();
             if (!raw) return;
             try {
-                // تنظيف النص في حال قام المستخدم بلصق "const firebaseConfig = {...};"
                 const startIdx = raw.indexOf("{");
                 const endIdx = raw.lastIndexOf("}");
-                if (startIdx !== -1 && endIdx !== -1) {
-                    raw = raw.substring(startIdx, endIdx + 1);
-                }
-                // تحويل المفاتيح غير المحاطة بعلامات تنصيص إلى JSON صالح
+                if (startIdx !== -1 && endIdx !== -1) raw = raw.substring(startIdx, endIdx + 1);
                 const jsonCompatible = raw.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
                 const parsed = JSON.parse(jsonCompatible);
                 if (!parsed.apiKey || !parsed.projectId) throw new Error("بيانات ناقصة");
-                
                 localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(parsed, null, 2));
                 closeCloudConfigModal();
-                alert("تم حفظ إعدادات السحابة بنجاح! سيتم إعادة تحميل الصفحة لتفعيل المزامنة.");
+                alert("تم التحقق وحفظ إعدادات السحابة بنجاح!");
                 location.reload();
             } catch (e) {
-                alert("صيغة كود Firebase غير صحيحة، يرجى التأكد من نسخ الكود كاملاً بين القوسين { ... }");
+                alert("صيغة كود Firebase غير صحيحة.");
             }
         }
-        function disconnectCloud() {
-            if (confirm("هل تريد فصل الربط السحابي والعودة للتخزين المحلي فقط؟ (لن تُحذف بياناتك المحلية)")) {
-                localStorage.removeItem(CLOUD_CONFIG_KEY);
-                location.reload();
+        function resetToDefaultCloud() {
+            if (!isOwner()) return;
+            const passInput = document.getElementById("cloud-admin-pass-confirm").value.trim();
+            const ownerObj = dbData.users.find(u => u.username === "anas");
+            const validPass = ownerObj ? ownerObj.pass : OWNER_PASS;
+
+            if (passInput !== validPass) {
+                alert("يرجى إدخال كلمة مرور المالك أولاً لاستعادة الإعداد الافتراضي.");
+                return;
             }
+            localStorage.removeItem(CLOUD_CONFIG_KEY);
+            location.reload();
         }
 
-        // تسجيل الدخول والخروج
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById("login-user").value.trim();
@@ -556,25 +646,47 @@
             document.getElementById("login-screen").classList.remove("hidden");
         }
 
-        function isOwner() {
-            return currentUser && (currentUser.role === "admin" || currentUser.username === "anas");
+        function applyRolePermissionsUI() {
+            const badge = document.getElementById("cloud-status-badge");
+            if (badge) {
+                badge.title = isOwner() ? "انقر لإدارة إعدادات السحابة (للمالك)" : "حالة المزامنة السحابية";
+                if (isOwner()) {
+                    badge.classList.add("cursor-pointer");
+                    badge.classList.remove("cursor-default");
+                } else {
+                    badge.classList.remove("cursor-pointer");
+                    badge.classList.add("cursor-default");
+                }
+            }
+
+            if (isOwner()) {
+                document.getElementById("users-btn").classList.remove("hidden");
+            } else {
+                document.getElementById("users-btn").classList.add("hidden");
+            }
+
+            if (hasPermission("createWs")) {
+                document.getElementById("btn-new-ws").classList.remove("hidden");
+                document.getElementById("btn-import-ws").classList.remove("hidden");
+            } else {
+                document.getElementById("btn-new-ws").classList.add("hidden");
+                document.getElementById("btn-import-ws").classList.add("hidden");
+            }
+
+            const optToggle = document.getElementById("opt-toggle-status");
+            const optDelete = document.getElementById("opt-delete-workshop");
+            if (optToggle) optToggle.style.display = hasPermission("toggleWs") ? "block" : "none";
+            if (optDelete) optDelete.style.display = hasPermission("deleteWs") ? "block" : "none";
         }
 
         function showMainApp() {
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("app-content").classList.remove("hidden");
-            if (isOwner()) {
-                document.getElementById("users-btn").classList.remove("hidden");
-                document.getElementById("btn-new-ws").classList.remove("hidden");
-            } else {
-                document.getElementById("users-btn").classList.add("hidden");
-                document.getElementById("btn-new-ws").classList.add("hidden");
-            }
+            applyRolePermissionsUI();
             updateGlobalBoxes();
             renderWorkshopsList();
         }
 
-        // تحديث الصناديق الكبرى العامة
         function updateGlobalBoxes() {
             let totalSYP = 0, totalUSD = 0;
             (dbData.workshops || []).forEach(w => {
@@ -600,16 +712,16 @@
             usdEl.className = totalUSD < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-cyan-400 mr-1";
         }
 
-        // عرض قائمة الورشات
         function renderWorkshopsList() {
             const container = document.getElementById("workshops-list");
             container.innerHTML = "";
             let list = dbData.workshops || [];
             if (!isOwner()) {
-                list = list.filter(w => currentUser.allowedWorkshops.includes("all") || currentUser.allowedWorkshops.includes(w.id));
+                const allowed = currentUser.allowedWorkshops || [];
+                list = list.filter(w => allowed.includes("all") || allowed.includes(w.id));
             }
             if (list.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-6 text-slate-500 text-xs">لا توجد ورشات مضافة حالياً</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-6 text-slate-500 text-xs">لا توجد ورشات مخصصة لحسابك حالياً</div>`;
                 return;
             }
             list.forEach(w => {
@@ -635,8 +747,16 @@
             });
         }
 
-        // فتح ورشة محددة
         function selectWorkshop(id) {
+            if (!isOwner()) {
+                const allowed = currentUser.allowedWorkshops || [];
+                if (!allowed.includes("all") && !allowed.includes(id)) {
+                    document.getElementById("active-workshop-container").classList.add("hidden");
+                    currentWorkshopId = null;
+                    return;
+                }
+            }
+
             currentWorkshopId = id;
             const w = dbData.workshops.find(x => x.id === id);
             if (!w) return;
@@ -655,7 +775,12 @@
             badge.textContent = isActive ? "نشطة" : "غير نشطة (مؤرشفة)";
             badge.className = `px-2.5 py-0.5 rounded text-[11px] font-bold ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300 border border-slate-600'}`;
 
-            // تدرج الرمادي للورشة غير النشطة في الشاشة، وتعود لألوانها في الطباعة
+            if (!hasPermission("addTx")) {
+                actionsBar.classList.add("hidden");
+            } else {
+                actionsBar.classList.remove("hidden");
+            }
+
             if (!isActive) {
                 banner.classList.add("grayscale", "grayscale-inactive");
                 txCard.classList.add("grayscale", "grayscale-inactive");
@@ -691,9 +816,8 @@
             renderTransactions();
         }
 
-        // إضافة ورشة جديدة
         function openNewWorkshopModal() {
-            if (!isOwner()) { alert("إنشاء الورشات مخصص للمدير الأساسي فقط."); return; }
+            if (!hasPermission("createWs")) { alert("ليس لديك صلاحية إنشاء ورشات جديدة."); return; }
             document.getElementById("new-ws-name").value = "";
             document.getElementById("new-workshop-modal").classList.remove("hidden");
             document.getElementById("new-workshop-modal").classList.add("flex");
@@ -707,13 +831,19 @@
             if (!name) return;
             const newW = { id: 'ws_' + Date.now(), name: name, active: true, transactions: [] };
             dbData.workshops.push(newW);
+            
+            if (!isOwner() && !currentUser.allowedWorkshops.includes("all")) {
+                currentUser.allowedWorkshops.push(newW.id);
+                const idx = dbData.users.findIndex(u => u.username === currentUser.username);
+                if (idx !== -1) dbData.users[idx] = currentUser;
+            }
+
             saveDb();
             closeNewWorkshopModal();
             renderWorkshopsList();
             selectWorkshop(newW.id);
         }
 
-        // إجراءات الورشة
         function handleWorkshopSettingAction(selectEl) {
             const val = selectEl.value;
             selectEl.value = "";
@@ -722,7 +852,7 @@
             if (!w) return;
 
             if (val === "toggle-status") {
-                if (!isOwner()) { alert("تغيير حالة الورشة مخصص للمدير الأساسي."); return; }
+                if (!hasPermission("toggleWs")) { alert("ليس لديك صلاحية تبديل حالة الورشة."); return; }
                 w.active = (w.active === false) ? true : false;
                 saveDb();
                 renderWorkshopsList();
@@ -732,7 +862,7 @@
             } else if (val === "print-sheet") {
                 window.print();
             } else if (val === "delete-workshop") {
-                if (!isOwner()) { alert("حذف الورشات مخصص للمدير الأساسي فقط."); return; }
+                if (!hasPermission("deleteWs")) { alert("ليس لديك صلاحية حذف الورشات."); return; }
                 if (confirm(`هل أنت متأكد من حذف ورشة "${w.name}" نهائياً؟`)) {
                     dbData.workshops = dbData.workshops.filter(x => x.id !== w.id);
                     saveDb();
@@ -759,8 +889,8 @@
             URL.revokeObjectURL(url);
         }
 
-        // استيراد ورشة مفردة ومعاينتها بالرمادي
         function importSingleWorkshop(event) {
+            if (!hasPermission("createWs")) { alert("ليس لديك صلاحية استيراد ورشات."); return; }
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -783,6 +913,11 @@
             if (!importedWorkshopTemp) return;
             importedWorkshopTemp.id = 'ws_' + Date.now();
             dbData.workshops.push(importedWorkshopTemp);
+            if (!isOwner() && !currentUser.allowedWorkshops.includes("all")) {
+                currentUser.allowedWorkshops.push(importedWorkshopTemp.id);
+                const idx = dbData.users.findIndex(u => u.username === currentUser.username);
+                if (idx !== -1) dbData.users[idx] = currentUser;
+            }
             saveDb();
             document.getElementById("imported-preview-box").classList.add("hidden");
             const addedId = importedWorkshopTemp.id;
@@ -796,7 +931,6 @@
             document.getElementById("imported-preview-box").classList.add("hidden");
         }
 
-        // عرض الحركات المالية في الجدول
         function renderTransactions() {
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
@@ -808,6 +942,8 @@
                 tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد حركات مالية مسجلة في هذه الورشة بعد</td></tr>`;
                 return;
             }
+
+            const canDeleteTx = hasPermission("deleteTx");
 
             w.transactions.forEach((tx, idx) => {
                 let amt = parseFloat(tx.amount) || 0, curDescText = "";
@@ -846,15 +982,15 @@
                     <td class="p-3 font-bold whitespace-nowrap ${runningSYP < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-emerald-400'}">${runningSYP.toLocaleString()} ل.س</td>
                     <td class="p-3 font-bold whitespace-nowrap ${runningUSD < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-cyan-400'}">${runningUSD.toLocaleString()} $</td>
                     <td class="p-3 text-center no-print">
-                        ${isOwner() ? `<button onclick="deleteTransaction(${idx})" class="text-rose-400 hover:bg-rose-900/60 text-[11px] bg-rose-950/60 border border-rose-900 px-2.5 py-1 rounded transition">حذف</button>` : '<span class="text-slate-600 text-[10px]">محمي</span>'}
+                        ${canDeleteTx ? `<button onclick="deleteTransaction(${idx})" class="text-rose-400 hover:bg-rose-900/60 text-[11px] bg-rose-950/60 border border-rose-900 px-2.5 py-1 rounded transition">حذف</button>` : '<span class="text-slate-600 text-[10px]">محمي</span>'}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // إضافة حركة مالية
         function openTransactionModal(type) {
+            if (!hasPermission("addTx")) { alert("ليس لديك صلاحية إضافة حركات مالية."); return; }
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w || w.active === false) { alert("هذه الورشة غير نشطة ومقفلة حالياً."); return; }
 
@@ -891,6 +1027,7 @@
 
         function saveTransaction(e) {
             e.preventDefault();
+            if (!hasPermission("addTx")) return;
             const type = document.getElementById("tx-type").value;
             const desc = document.getElementById("tx-desc").value.trim();
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
@@ -921,7 +1058,7 @@
         }
 
         function deleteTransaction(idx) {
-            if (!isOwner()) { alert("حذف الحركات مخصص للمدير الأساسي فقط."); return; }
+            if (!hasPermission("deleteTx")) { alert("ليس لديك صلاحية حذف الحركات المالية."); return; }
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w || w.active === false) return;
             if (confirm("هل أنت متأكد من حذف هذه الحركة المالية؟")) {
@@ -931,12 +1068,12 @@
             }
         }
 
-        // النسخ الاحتياطي الكامل والاستعادة
         function exportFullBackup() {
             downloadJsonFile(dbData, `full_workshops_backup_${new Date().toISOString().split('T')[0]}.json`);
         }
 
         function importFullBackup(event) {
+            if (!isOwner()) { alert("استعادة النسخة الكاملة مخصصة للمدير الأساسي فقط."); return; }
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -958,7 +1095,6 @@
             event.target.value = "";
         }
 
-        // الأرشيف والتنبيهات
         function openArchiveModal() {
             const modal = document.getElementById("archive-modal");
             const quotaDiv = document.getElementById("storage-quota-info");
@@ -987,7 +1123,7 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="exportSingleInactive('${w.id}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded">نسخ كملف</button>
-                            ${isOwner() ? `<button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2.5 py-1 rounded">حذف لتفريغ المساحة</button>` : ''}
+                            ${hasPermission("deleteWs") ? `<button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2.5 py-1 rounded">حذف لتفريغ المساحة</button>` : ''}
                         </div>
                     `;
                     listDiv.appendChild(item);
@@ -1014,7 +1150,7 @@
         }
 
         function deleteInactiveWorkshop(id) {
-            if (!isOwner()) return;
+            if (!hasPermission("deleteWs")) return;
             if (confirm("هل قمت بنسخ الورشة وتريد حذفها الآن لتفريغ المساحة؟")) {
                 dbData.workshops = dbData.workshops.filter(x => x.id !== id);
                 if (currentWorkshopId === id) {
@@ -1027,66 +1163,167 @@
             }
         }
 
-        // إدارة المستخدمين والصلاحيات
+        // نظام إدارة المستخدمين وتعديل الصلاحيات الشامل
         function openUsersModal() {
             if (!isOwner()) return;
+            resetUserForm();
             renderUsersModalContent();
             document.getElementById("users-modal").classList.remove("hidden");
             document.getElementById("users-modal").classList.add("flex");
         }
+
         function closeUsersModal() {
             document.getElementById("users-modal").classList.add("hidden");
             document.getElementById("users-modal").classList.remove("flex");
         }
-        function renderUsersModalContent() {
-            const cbContainer = document.getElementById("permissions-workshops-checkboxes");
-            cbContainer.innerHTML = `<label class="flex items-center gap-1.5 text-xs text-emerald-300 font-semibold"><input type="checkbox" value="all" class="new-user-ws-cb"> كافة الورشات</label>`;
-            dbData.workshops.forEach(w => {
-                cbContainer.innerHTML += `<label class="flex items-center gap-1.5 text-xs text-slate-200"><input type="checkbox" value="${w.id}" class="new-user-ws-cb"> ${w.name}</label>`;
-            });
 
+        function renderWorkshopsCheckboxes(selectedList = []) {
+            const cbContainer = document.getElementById("permissions-workshops-checkboxes");
+            const isAll = selectedList.includes("all");
+            let html = `<label class="flex items-center gap-1.5 text-xs text-emerald-300 font-semibold cursor-pointer">
+                <input type="checkbox" value="all" ${isAll ? "checked" : ""} class="user-ws-cb"> كافة الورشات
+            </label>`;
+            dbData.workshops.forEach(w => {
+                const isChecked = selectedList.includes(w.id);
+                html += `<label class="flex items-center gap-1.5 text-xs text-slate-200 cursor-pointer">
+                    <input type="checkbox" value="${w.id}" ${isChecked ? "checked" : ""} class="user-ws-cb"> ${w.name}
+                </label>`;
+            });
+            cbContainer.innerHTML = html;
+        }
+
+        function resetUserForm() {
+            document.getElementById("edit-user-index").value = "-1";
+            document.getElementById("user-form-name").value = "";
+            document.getElementById("user-form-name").disabled = false;
+            document.getElementById("user-form-pass").value = "";
+            
+            document.getElementById("perm-create-ws").checked = false;
+            document.getElementById("perm-delete-ws").checked = false;
+            document.getElementById("perm-add-tx").checked = true;
+            document.getElementById("perm-delete-tx").checked = false;
+            document.getElementById("perm-toggle-ws").checked = false;
+
+            document.getElementById("user-form-mode-badge").textContent = "إضافة مستخدم جديد";
+            document.getElementById("user-form-mode-badge").className = "text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+            document.getElementById("btn-save-user-form").textContent = "حفظ وإضافة المستخدم";
+            document.getElementById("btn-cancel-edit-user").classList.add("hidden");
+            renderWorkshopsCheckboxes([]);
+        }
+
+        function editUser(idx) {
+            const u = dbData.users[idx];
+            if (!u || u.username === "anas") return;
+
+            document.getElementById("edit-user-index").value = idx;
+            document.getElementById("user-form-name").value = u.username;
+            document.getElementById("user-form-pass").value = u.pass;
+
+            const perms = u.permissions || { createWs: false, deleteWs: false, addTx: true, deleteTx: false, toggleWs: false };
+            document.getElementById("perm-create-ws").checked = !!perms.createWs;
+            document.getElementById("perm-delete-ws").checked = !!perms.deleteWs;
+            document.getElementById("perm-add-tx").checked = perms.addTx !== false;
+            document.getElementById("perm-delete-tx").checked = !!perms.deleteTx;
+            document.getElementById("perm-toggle-ws").checked = !!perms.toggleWs;
+
+            renderWorkshopsCheckboxes(u.allowedWorkshops || []);
+
+            document.getElementById("user-form-mode-badge").textContent = `تعديل صلاحيات: ${u.username}`;
+            document.getElementById("user-form-mode-badge").className = "text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800";
+            document.getElementById("btn-save-user-form").textContent = "حفظ التعديلات والصلاحيات";
+            document.getElementById("btn-cancel-edit-user").classList.remove("hidden");
+        }
+
+        function saveUserForm() {
+            const editIdx = parseInt(document.getElementById("edit-user-index").value);
+            const uName = document.getElementById("user-form-name").value.trim();
+            const uPass = document.getElementById("user-form-pass").value.trim();
+
+            if (!uName || !uPass) { alert("يرجى إدخال اسم المستخدم وكلمة المرور."); return; }
+
+            let allowed = [];
+            document.querySelectorAll(".user-ws-cb:checked").forEach(cb => allowed.push(cb.value));
+            if (allowed.length === 0) { alert("يرجى تحديد ورشة واحدة على الأقل (أو كافة الورشات) لهذا المستخدم."); return; }
+
+            const permsObj = {
+                createWs: document.getElementById("perm-create-ws").checked,
+                deleteWs: document.getElementById("perm-delete-ws").checked,
+                addTx: document.getElementById("perm-add-tx").checked,
+                deleteTx: document.getElementById("perm-delete-tx").checked,
+                toggleWs: document.getElementById("perm-toggle-ws").checked
+            };
+
+            if (editIdx === -1) {
+                if (dbData.users.some(u => u.username === uName)) { alert("اسم المستخدم موجود مسبقاً."); return; }
+                dbData.users.push({
+                    username: uName,
+                    pass: uPass,
+                    role: "user",
+                    allowedWorkshops: allowed,
+                    permissions: permsObj
+                });
+            } else {
+                if (dbData.users.some((u, i) => u.username === uName && i !== editIdx)) {
+                    alert("اسم المستخدم مستخدم لحساب آخر.");
+                    return;
+                }
+                dbData.users[editIdx].username = uName;
+                dbData.users[editIdx].pass = uPass;
+                dbData.users[editIdx].allowedWorkshops = allowed;
+                dbData.users[editIdx].permissions = permsObj;
+            }
+
+            saveDb();
+            resetUserForm();
+            renderUsersModalContent();
+        }
+
+        function renderUsersModalContent() {
             const listContainer = document.getElementById("users-list-container");
             listContainer.innerHTML = "";
             dbData.users.forEach((u, idx) => {
                 const isMainOwner = u.username === "anas";
-                let permsText = isMainOwner ? "صلاحيات المالك الكاملة" : (u.allowedWorkshops.includes("all") ? "كافة الورشات (بدون حذف)" : `${u.allowedWorkshops.length} ورشات محددة`);
+                let wsSummary = isMainOwner ? "كافة الورشات" : (u.allowedWorkshops.includes("all") ? "كافة الورشات" : `${u.allowedWorkshops.length} ورشات محددة`);
+                
+                let permsBadges = "";
+                if (!isMainOwner) {
+                    const p = u.permissions || {};
+                    if (p.createWs) permsBadges += `<span class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-200">إنشاء ورش</span>`;
+                    if (p.deleteWs) permsBadges += `<span class="px-1.5 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300">حذف ورش</span>`;
+                    if (p.addTx !== false) permsBadges += `<span class="px-1.5 py-0.5 bg-emerald-950 border border-emerald-800 rounded text-[10px] text-emerald-300">إضافة حركات</span>`;
+                    if (p.deleteTx) permsBadges += `<span class="px-1.5 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300">حذف حركات</span>`;
+                    if (p.toggleWs) permsBadges += `<span class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-200">تبديل حالة الورشة</span>`;
+                    if (!permsBadges) permsBadges = `<span class="px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-400">مشاهدة فقط</span>`;
+                }
+
                 listContainer.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-800 p-2.5 rounded border border-slate-700 text-xs">
-                        <div>
-                            <span class="font-bold text-white">${u.username}</span>
-                            <span class="text-[10px] text-slate-400 mr-2">(${permsText})</span>
+                    <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-800 p-3 rounded-lg border border-slate-700 text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-white">${u.username}</span>
+                                <span class="text-[10px] text-slate-400">(${wsSummary})</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">${permsBadges}</div>
                         </div>
-                        ${!isMainOwner ? `<button onclick="deleteUser(${idx})" class="text-rose-400 hover:underline">حذف</button>` : '<span class="text-[10px] text-emerald-400 font-bold">المالك الأساسي</span>'}
+                        <div class="flex items-center gap-2">
+                            ${!isMainOwner ? `
+                                <button onclick="editUser(${idx})" class="bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-800/60 px-2.5 py-1 rounded text-[11px] font-semibold">تعديل الصلاحيات</button>
+                                <button onclick="deleteUser(${idx})" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-2.5 py-1 rounded text-[11px]">حذف</button>
+                            ` : '<span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800 px-2 py-1 rounded">المالك الأساسي (صلاحيات مطلقة)</span>'}
+                        </div>
                     </div>`;
             });
         }
 
-        function addNewUser() {
-            const uName = document.getElementById("new-user-name").value.trim();
-            const uPass = document.getElementById("new-user-pass").value.trim();
-            if (!uName || !uPass) { alert("يرجى إدخال اسم المستخدم وكلمة المرور."); return; }
-            if (dbData.users.some(u => u.username === uName)) { alert("اسم المستخدم موجود مسبقاً."); return; }
-
-            let allowed = [];
-            document.querySelectorAll(".new-user-ws-cb:checked").forEach(cb => allowed.push(cb.value));
-            if (allowed.length === 0) { alert("يرجى تحديد ورشة واحدة على الأقل لهذا المستخدم."); return; }
-
-            dbData.users.push({ username: uName, pass: uPass, role: "user", allowedWorkshops: allowed });
-            saveDb();
-            document.getElementById("new-user-name").value = "";
-            document.getElementById("new-user-pass").value = "";
-            renderUsersModalContent();
-        }
-
         function deleteUser(idx) {
-            if (confirm("هل تريد حذف هذا المستخدم؟")) {
+            if (confirm("هل تريد حذف هذا المستخدم نهائياً؟")) {
                 dbData.users.splice(idx, 1);
                 saveDb();
+                resetUserForm();
                 renderUsersModalContent();
             }
         }
 
-        // تصدير Excel (.csv)
         function exportWorkshopExcel(w) {
             let csv = "\uFEFFالتاريخ,نوع الحركة,البيان,التفاصيل,الرصيد التراكمي (سوري),الرصيد التراكمي (دولار)\n";
             let syp = 0, usd = 0;
