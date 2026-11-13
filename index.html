@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام إدارة حسابات الورشات والصرافة</title>
+    <title>نظام إدارة حسابات الورشات والصرافة - متصل مركزياً</title>
     <!-- تحميل مكتبة Tailwind CSS للتصميم العصري المتجاوب -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- مكتبة توليد ملفات PDF مباشرة على الجهاز والهاتف -->
@@ -815,7 +815,7 @@
             <div class="mt-4 space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
                 <div class="bg-sky-50 border border-sky-200 rounded-xl p-3.5 text-sky-900">
                     <p class="font-extrabold mb-1">أين تُحفظ بياناتك الآن؟</p>
-                    <p class="text-xs">جميع الورشات والفواتير والصور والمستخدمين محفوظة تلقائياً في <strong>السحابة</strong> المرتبطة بحسابك هنا. ولضمان عدم ضياع أي شيء أبداً ولتملك نسخة خاصة على جهازك أو هاتفك، يمكنك تنزيل ملف نسخة احتياطية في أي وقت.</p>
+                    <p class="text-xs">جميع الورشات والفواتير والصور والمستخدمين محفوظة تلقائياً في <strong>السحابة</strong> المركزية المرتبطة بحسابك. ولضمان عدم ضياع أي شيء أبداً ولتملك نسخة خاصة على جهازك أو هاتفك، يمكنك تنزيل ملف نسخة احتياطية في أي وقت.</p>
                 </div>
 
                 <div class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -879,7 +879,7 @@
         let db = null;
         let auth = null;
         let currentUser = null;
-        let appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let appId = 'central-workshops-master-key'; // مفتاح مركزي موحد لكل متصفحاتك
         let cloudReady = false;
         let currentAttachedImages = [];
 
@@ -2233,11 +2233,11 @@
         let cloudFns = {};
 
         async function saveWorkshopToCloud(ws) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 updateCloudBadge('saving', 'جاري الحفظ...');
                 const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'workshops', ws.id);
+                const ref = doc(db, 'artifacts', appId, 'workshops', ws.id);
                 await setDoc(ref, {
                     id: ws.id,
                     name: ws.name,
@@ -2252,11 +2252,11 @@
         }
 
         async function saveTransactionToCloud(tx) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 updateCloudBadge('saving', 'جاري الحفظ...');
                 const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', tx.id);
+                const ref = doc(db, 'artifacts', appId, 'transactions', tx.id);
                 const payload = { ...tx };
                 if (Array.isArray(payload.images)) {
                     payload.imagesJson = JSON.stringify(payload.images);
@@ -2271,11 +2271,11 @@
         }
 
         async function deleteTransactionFromCloud(txId) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 updateCloudBadge('saving', 'جاري الحذف...');
                 const { doc, deleteDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', txId);
+                const ref = doc(db, 'artifacts', appId, 'transactions', txId);
                 await deleteDoc(ref);
                 updateCloudBadge('connected', 'محفوظ سحابياً');
             } catch (err) {
@@ -2285,13 +2285,13 @@
         }
 
         async function deleteWorkshopFromCloud(wsId, txsToDelete) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 updateCloudBadge('saving', 'جاري الحذف...');
                 const { doc, deleteDoc } = cloudFns;
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'workshops', wsId));
+                await deleteDoc(doc(db, 'artifacts', appId, 'workshops', wsId));
                 for (const tx of txsToDelete) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'transactions', tx.id));
+                    await deleteDoc(doc(db, 'artifacts', appId, 'transactions', tx.id));
                 }
                 updateCloudBadge('connected', 'محفوظ سحابياً');
             } catch (err) {
@@ -2678,11 +2678,11 @@
         }
 
         async function saveUserToCloud(userObj) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 updateCloudBadge('saving', 'جاري الحفظ...');
                 const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'app_users', userObj.id);
+                const ref = doc(db, 'artifacts', appId, 'app_users', userObj.id);
                 await setDoc(ref, userObj);
                 updateCloudBadge('connected', 'محفوظ سحابياً');
             } catch (err) {
@@ -2692,10 +2692,10 @@
         }
 
         async function deleteUserFromCloud(userId) {
-            if (!cloudReady || !currentUser || !db) return;
+            if (!cloudReady || !db) return;
             try {
                 const { doc, deleteDoc } = cloudFns;
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'app_users', userId));
+                await deleteDoc(doc(db, 'artifacts', appId, 'app_users', userId));
             } catch (err) {
                 console.error('Error deleting user:', err);
             }
@@ -2711,15 +2711,14 @@
         };
     </script>
 
-    <!-- تهيئة الاتصال بالتخزين السحابي الدائم -->
+    <!-- تهيئة الاتصال السحابي المركزي الموحد -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         cloudFns = { doc, setDoc, deleteDoc, collection, onSnapshot };
 
-        // المفاتيح المدمجة الخاصة بسحابتك (anas-alasfar)
         const MY_CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
             authDomain: "anas-alasfar.firebaseapp.com",
@@ -2731,105 +2730,100 @@
 
         async function initCloudStorage() {
             try {
-                let firebaseConfig = MY_CUSTOM_FIREBASE_CONFIG;
-                appId = 'standalone-workshops-app';
-
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(MY_CUSTOM_FIREBASE_CONFIG);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
                 await signInAnonymously(auth);
+                cloudReady = true;
+                updateCloudBadge('connected', 'متصل مركزياً');
 
-                onAuthStateChanged(auth, (user) => {
-                    if (!user) return;
-                    currentUser = user;
-                    cloudReady = true;
-                    updateCloudBadge('connected', 'متصل ومحفوظ');
+                let initialWsLoaded = false;
 
-                    let initialWsLoaded = false;
-
-                    const usersCol = collection(db, 'artifacts', appId, 'users', user.uid, 'app_users');
-                    onSnapshot(usersCol, (snapshot) => {
-                        const loadedUsers = [];
-                        snapshot.forEach(docSnap => {
-                            loadedUsers.push(docSnap.data());
-                        });
-                        if (loadedUsers.length > 0) {
-                            state.users = loadedUsers;
-                            syncUsersCache();
-                        } else if (state.users.length > 0) {
-                            state.users.forEach(u => saveUserToCloud(u));
-                        }
-
-                        const savedSessionId = sessionStorage.getItem('ws_logged_user_id');
-                        if (savedSessionId) {
-                            const activeUser = state.users.find(u => u.id === savedSessionId);
-                            state.loggedInUser = activeUser || null;
-                        }
-
-                        refreshAuthScreenState();
-                        if (state.loggedInUser) {
-                            updateAllUI();
-                        }
-                    }, (error) => {
-                        console.error('Users sync error:', error);
-                        refreshAuthScreenState();
+                // مزامنة المستخدمين مركزياً
+                const usersCol = collection(db, 'artifacts', appId, 'app_users');
+                onSnapshot(usersCol, (snapshot) => {
+                    const loadedUsers = [];
+                    snapshot.forEach(docSnap => {
+                        loadedUsers.push(docSnap.data());
                     });
+                    if (loadedUsers.length > 0) {
+                        state.users = loadedUsers;
+                        syncUsersCache();
+                    } else if (state.users.length > 0) {
+                        state.users.forEach(u => saveUserToCloud(u));
+                    }
 
-                    const wsCol = collection(db, 'artifacts', appId, 'users', user.uid, 'workshops');
-                    onSnapshot(wsCol, (snapshot) => {
-                        const loadedWorkshops = [];
-                        snapshot.forEach(docSnap => {
-                            loadedWorkshops.push(docSnap.data());
-                        });
+                    const savedSessionId = sessionStorage.getItem('ws_logged_user_id');
+                    if (savedSessionId) {
+                        const activeUser = state.users.find(u => u.id === savedSessionId);
+                        state.loggedInUser = activeUser || null;
+                    }
 
-                        if (!initialWsLoaded && loadedWorkshops.length === 0) {
-                            initialWsLoaded = true;
-                            const starterWs = {
-                                id: 'ws-' + Date.now(),
-                                name: 'ورشة العمل الرئيسية',
-                                description: 'ورشة افتراضية جاهزة للعمل',
-                                categories: [...DEFAULT_WORKSHOP_CATEGORIES]
-                            };
-                            saveWorkshopToCloud(starterWs);
-                            return;
-                        }
-
-                        initialWsLoaded = true;
-                        state.workshops = loadedWorkshops;
-                        if (!state.activeWorkshopId && state.workshops.length > 0) {
-                            state.activeWorkshopId = state.workshops[0].id;
-                        }
+                    refreshAuthScreenState();
+                    if (state.loggedInUser) {
                         updateAllUI();
-                    }, (error) => {
-                        console.error('Workshops sync error:', error);
-                        updateCloudBadge('error', 'تعذر المزامنة');
+                    }
+                }, (error) => {
+                    console.error('Users sync error:', error);
+                });
+
+                // مزامنة الورشات مركزياً
+                const wsCol = collection(db, 'artifacts', appId, 'workshops');
+                onSnapshot(wsCol, (snapshot) => {
+                    const loadedWorkshops = [];
+                    snapshot.forEach(docSnap => {
+                        loadedWorkshops.push(docSnap.data());
                     });
 
-                    const txCol = collection(db, 'artifacts', appId, 'users', user.uid, 'transactions');
-                    onSnapshot(txCol, (snapshot) => {
-                        const loadedTxs = [];
-                        snapshot.forEach(docSnap => {
-                            const data = docSnap.data();
-                            if (data.imagesJson) {
-                                try {
-                                    data.images = JSON.parse(data.imagesJson);
-                                } catch (e) {
-                                    data.images = [];
-                                }
-                                delete data.imagesJson;
-                            } else if (!Array.isArray(data.images)) {
+                    if (!initialWsLoaded && loadedWorkshops.length === 0) {
+                        initialWsLoaded = true;
+                        const starterWs = {
+                            id: 'ws-' + Date.now(),
+                            name: 'ورشة العمل الرئيسية',
+                            description: 'ورشة افتراضية جاهزة للعمل',
+                            categories: [...DEFAULT_WORKSHOP_CATEGORIES]
+                        };
+                        saveWorkshopToCloud(starterWs);
+                        return;
+                    }
+
+                    initialWsLoaded = true;
+                    state.workshops = loadedWorkshops;
+                    if (!state.activeWorkshopId && state.workshops.length > 0) {
+                        state.activeWorkshopId = state.workshops[0].id;
+                    }
+                    updateAllUI();
+                }, (error) => {
+                    console.error('Workshops sync error:', error);
+                    updateCloudBadge('error', 'تعذر المزامنة');
+                });
+
+                // مزامنة الحركات والفواتير مركزياً
+                const txCol = collection(db, 'artifacts', appId, 'transactions');
+                onSnapshot(txCol, (snapshot) => {
+                    const loadedTxs = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data.imagesJson) {
+                            try {
+                                data.images = JSON.parse(data.imagesJson);
+                            } catch (e) {
                                 data.images = [];
                             }
-                            loadedTxs.push(data);
-                        });
-                        state.transactions = loadedTxs;
-                        updateAllUI();
-                    }, (error) => {
-                        console.error('Transactions sync error:', error);
-                        updateCloudBadge('error', 'تعذر المزامنة');
+                            delete data.imagesJson;
+                        } else if (!Array.isArray(data.images)) {
+                            data.images = [];
+                        }
+                        loadedTxs.push(data);
                     });
+                    state.transactions = loadedTxs;
+                    updateAllUI();
+                }, (error) => {
+                    console.error('Transactions sync error:', error);
+                    updateCloudBadge('error', 'تعذر المزامنة');
                 });
+
             } catch (err) {
                 console.error('Cloud init error:', err);
                 updateCloudBadge('error', 'وضع غير متصل');
