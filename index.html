@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- مكتبة توليد ملفات PDF مباشرة على الجهاز والهاتف -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- مكتبة توليد ملفات Excel (.xlsx) حقيقية مع معادلات ودوال -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- تحميل خط Tajawal العربي الأنيق -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -150,7 +152,41 @@
                     <div id="cloudStatusBadge" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold text-amber-400">
                         <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                         <span id="cloudStatusText" class="hidden sm:inline">جاري الاتصال...</span>
-        <!-- شريط تنبيه امتلاء السيرفر (يظهر تلقائياً عند الامتلاء أو الاقتراب من الحد الأقصى) -->
+                    </div>
+
+                    <button type="button" onclick="logoutUser()" class="bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1" title="تسجيل الخروج">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <span class="hidden sm:inline">خروج</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط التنقل السريع المثبت لمعرفة الورشة الحالية والتبديل بين الورشات في أي مكان بالصفحة -->
+        <div id="stickyCurrentWorkshopBar" class="hidden bg-slate-800/95 border-t border-slate-700/80 px-3 sm:px-6 lg:px-8 py-2">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <span class="inline-flex items-center gap-1 bg-blue-600/25 border border-blue-500/40 text-blue-300 text-[11px] font-extrabold px-2 py-0.5 rounded-md shrink-0">
+                        📍 الورشة الحالية:
+                    </span>
+                    <select id="quickWorkshopSwitcher" onchange="switchWorkshop(this.value)" aria-label="التبديل السريع بين الورشات"
+                        class="bg-slate-900 text-white border border-slate-600 hover:border-blue-400 rounded-lg px-2.5 py-1 text-xs sm:text-sm font-extrabold focus:outline-none focus:border-blue-500 max-w-xs sm:max-w-md truncate cursor-pointer">
+                    </select>
+                    <span id="stickyWsStatusPill" class="hidden sm:inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0"></span>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+                        ⬆ للأعلى
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-5">
+
+        <!-- شريط تنبيه امتلاء السيرفر -->
         <div id="serverFullBanner" class="hidden bg-rose-600 text-white rounded-2xl p-4 mb-5 shadow-lg border-2 border-rose-800 flex flex-col sm:flex-row justify-between items-center gap-3 no-print">
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-white/20 rounded-xl shrink-0 text-xl">⚠️</div>
@@ -200,12 +236,20 @@
                     <span class="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0"></span>
                     الورشات المسجلة:
                 </h3>
-                <button type="button" id="addWorkshopBtn" onclick="openNewWorkshopModal()" class="bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    إضافة ورشة جديدة
-                </button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="importWorkshopBtn" onclick="openImportWorkshopModal()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 active:scale-[0.99] text-white text-xs sm:text-sm font-bold py-2.5 px-3.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        <span>استيراد ورشة من ملف</span>
+                    </button>
+                    <button type="button" id="addWorkshopBtn" onclick="openNewWorkshopModal()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>إضافة ورشة جديدة</span>
+                    </button>
+                </div>
             </div>
 
             <!-- أزرار التبديل بين الورشات -->
@@ -220,388 +264,14 @@
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             </div>
             <h3 class="text-lg sm:text-xl font-extrabold text-slate-800 mb-2">لا توجد ورشات عمل مسجلة حالياً</h3>
-            <p class="text-slate-500 text-xs sm:text-sm mb-6">قم بإنشاء ورشتك الأولى للبدء في تسجيل الإيرادات والمصروفات وعمليات الصرافة.</p>
-            <button type="button" onclick="openNewWorkshopModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition inline-flex items-center gap-2 text-sm">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                إضافة ورشة جديدة الآن
-            </button>
-        </div>
-
-        <!-- مساحة العمل للورشة المختارة حالياً -->
-        <div id="workspaceContainer">
-            <!-- بطاقة تفاصيل الورشة النشطة وصناديقها -->
-            <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 mb-5">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 sm:pb-5 border-b border-slate-100">
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span id="currentWorkshopStatusBadge" class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ورشة نشطة
-                            </span>
-                            <button type="button" id="toggleWsStatusBtn" onclick="toggleCurrentWorkshopActiveStatus()" class="bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print">
-                                <span>🔄 تحويل إلى غير نشطة</span>
-                            </button>
-                        </div>
-                        <h2 id="currentWorkshopName" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1.5">اسم الورشة</h2>
-                        <p id="currentWorkshopDesc" class="text-xs sm:text-sm text-slate-500 mt-0.5">وصف الورشة</p>
-                    </div>
-
-                    <!-- أزرار العمليات السريعة -->
-                    <div class="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 w-full lg:w-auto no-print">
-                        <button type="button" id="btnAddIncome" onclick="openTransactionModal('income')" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-sm">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            <span>إيراد</span>
-                        </button>
-                        <button type="button" id="btnAddExpense" onclick="openTransactionModal('expense')" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-sm">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-                            <span>مصروف</span>
-                        </button>
-                        <button type="button" id="btnAddExchange" onclick="openExchangeModal()" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-extrabold py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-sm">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                            <span>صرافة</span>
-                        </button>
-                        
-                        <button type="button" onclick="toggleCategorySummary()" id="toggleCatSummaryBtn" class="col-span-2 sm:col-span-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold py-2.5 px-3.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                            <span>جرد التصنيفات</span>
-                        </button>
-
-                        <button type="button" id="btnManageCategories" onclick="openCategoriesModal()" class="col-span-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                            <span>التصنيفات</span>
-                        </button>
-
-                        <div class="col-span-3 sm:col-span-1 flex gap-1.5 justify-end sm:justify-start">
-                            <button type="button" id="btnPrintReport" onclick="printWorkshopReport()" title="طباعة كشف حساب الورشة" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-3.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                                <span>طباعة</span>
-                            </button>
-                            <button type="button" id="btnDeleteWorkshop" onclick="openDeleteWorkshopModal()" title="حذف هذه الورشة" class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- صندوقي العملة للورشة الحالية -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mt-4 sm:mt-5">
-                    <!-- صندوق الدولار للورشة -->
-                    <div id="wsUsdCard" class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span id="wsUsdBadge" class="inline-block bg-emerald-200/80 text-emerald-900 text-xs font-bold px-2.5 py-1 rounded-md">صندوق الدولار الأمريكي</span>
-                                    <span id="wsUsdNegativeAlert" class="hidden bg-rose-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-md animate-pulse">⚠️ رصيد مكشوف (سالب)</span>
-                                </div>
-                                <h3 id="wsUsdBalance" class="text-2xl sm:text-3xl font-extrabold text-emerald-700" dir="ltr">$ 0</h3>
-                            </div>
-                            <div id="wsUsdIcon" class="p-2.5 sm:p-3 bg-emerald-100 rounded-xl text-emerald-700 no-print shrink-0">
-                                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                        </div>
-                        <div id="wsUsdFooter" class="mt-3.5 pt-3 border-t border-emerald-200/60 flex justify-between text-xs font-medium text-emerald-800">
-                            <span>الإيرادات: <strong id="wsUsdIn" dir="ltr">$ 0</strong></span>
-                            <span>المصروفات: <strong id="wsUsdOut" dir="ltr">$ 0</strong></span>
-                        </div>
-                    </div>
-
-                    <!-- صندوق الليرة السورية للورشة -->
-                    <div id="wsSypCard" class="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span id="wsSypBadge" class="inline-block bg-blue-200/80 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-md">صندوق الليرة السورية</span>
-                                    <span id="wsSypNegativeAlert" class="hidden bg-rose-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-md animate-pulse">⚠️ رصيد مكشوف (سالب)</span>
-                                </div>
-                                <h3 id="wsSypBalance" class="text-2xl sm:text-3xl font-extrabold text-blue-700">0 <span class="text-base">ل.س</span></h3>
-                            </div>
-                            <div id="wsSypIcon" class="p-2.5 sm:p-3 bg-blue-100 rounded-xl text-blue-700 font-extrabold text-base sm:text-lg no-print shrink-0">
-                                ل.س
-                            </div>
-                        </div>
-                        <div id="wsSypFooter" class="mt-3.5 pt-3 border-t border-blue-200/60 flex justify-between text-xs font-medium text-blue-800">
-                            <span>الإيرادات: <strong id="wsSypIn">0 ل.س</strong></span>
-                            <span>المصروفات: <strong id="wsSypOut">0 ل.س</strong></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- قسم جرد التصنيفات القابل للطي -->
-                <div id="categorySummaryPanel" class="hidden mt-5 pt-5 border-t border-slate-200 bg-indigo-50/30 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 no-print">
-                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-                        <h4 class="text-sm font-extrabold text-indigo-950 flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-                            جرد التصنيفات (اضغط على أي تصنيف لعرض فواتيره بالأسفل)
-                        </h4>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="filterBySpecificCategory('all')" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg transition">عرض كل السجل</button>
-                            <button type="button" onclick="toggleCategorySummary()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold px-2.5 py-1 rounded-lg transition">إخفاء ✕</button>
-                        </div>
-                    </div>
-                    <div id="categorySummaryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <!-- يتم توليد بطاقات التصنيفات هنا -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- سجل العمليات المالية للورشة -->
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-800">سجل الحركات والفواتير</h3>
-                        <p class="text-xs text-slate-500 no-print">توثيق الحركات مصنفة حسب المهنة أو البند</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 sm:flex items-center gap-2 w-full md:w-auto no-print">
-                        <select id="filterCategory" onchange="renderTransactions()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
-                            <option value="all">كل التصنيفات</option>
-                        </select>
-                        <select id="filterType" onchange="renderTransactions()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500">
-                            <option value="all">كل الحركات</option>
-                            <option value="income">الإيرادات فقط</option>
-                            <option value="expense">المصروفات فقط</option>
-                            <option value="exchange">الصرافة فقط</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- جدول السجل (للكمبيوتر) -->
-                <div class="hidden md:block overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
-                                <th class="py-3.5 px-4 font-bold">التاريخ والوقت</th>
-                                <th class="py-3.5 px-4 font-bold">النوع</th>
-                                <th class="py-3.5 px-4 font-bold">التصنيف</th>
-                                <th class="py-3.5 px-4 font-bold">البيان / التفاصيل</th>
-                                <th class="py-3.5 px-4 font-bold">المرفقات</th>
-                                <th class="py-3.5 px-4 font-bold">المبلغ</th>
-                                <th class="py-3.5 px-4 font-bold text-center no-print">إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsTableBody" class="divide-y divide-slate-100 text-sm">
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- قائمة البطاقات للهواتف الذكية -->
-                <div id="transactionsMobileList" class="md:hidden divide-y divide-slate-100">
-                </div>
-
-                <!-- رسالة في حال عدم وجود حركات -->
-                <div id="emptyTransactionsState" class="hidden py-12 text-center px-4">
-                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-100 text-slate-400 mb-3">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
-                    <h4 class="text-slate-700 font-bold text-sm sm:text-base">لا توجد حركات مطابقة للبحث</h4>
-                    <p class="text-slate-400 text-xs mt-1">ابدأ بإضافة إيراد أو مصروف أو غيّر خيارات التصفية أعلاه.</p>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- ================= النوافذ المنبثقة (Modals) ================= -->
-
-    <!-- 1. نافذة إضافة / تعديل إيراد أو مصروف -->
-    <div id="transactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                <h3 id="txModalTitle" class="text-lg sm:text-xl font-extrabold text-slate-800">إضافة حركة مالية</h3>
-                <button type="button" onclick="closeModal('transactionModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <p class="text-slate-500 text-xs sm:text-sm mb-6">قم بإنشاء ورشتك الأولى أو استيراد ورشة محفوظة مسبقاً من ملف.</p>
+            <div class="flex flex-wrap justify-center gap-2.5">
+                <button type="button" onclick="openNewWorkshopModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition inline-flex items-center gap-2 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    إضافة ورشة جديدة الآن
                 </button>
-            </div>
-
-            <form id="transactionForm" onsubmit="submitTransaction(event)" class="mt-4 space-y-3.5">
-                <input type="hidden" id="txId" value="">
-                <input type="hidden" id="txType" value="income">
-                
-                <!-- اختيار الصندوق (العملة) -->
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">اختر الصندوق (العملة):</label>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="txCurrency" value="USD" class="peer sr-only" checked>
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 text-center font-bold text-xs sm:text-sm text-slate-700 peer-checked:text-emerald-800 transition">
-                                صندوق الدولار ($)
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="txCurrency" value="SYP" class="peer sr-only">
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 text-center font-bold text-xs sm:text-sm text-slate-700 peer-checked:text-blue-800 transition">
-                                صندوق السوري (ل.س)
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- اختيار التصنيف -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="txCategory" class="block text-xs sm:text-sm font-bold text-slate-700">التصنيف / الجهة:</label>
-                        <button type="button" onclick="quickAddCategoryFromTx()" class="text-[11px] font-bold text-blue-600 hover:underline">+ إضافة تصنيف جديد</button>
-                    </div>
-                    <select id="txCategory" required class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-slate-800 bg-white focus:outline-none focus:border-blue-500">
-                    </select>
-                </div>
-
-                <!-- المبلغ -->
-                <div>
-                    <label for="txAmount" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">المبلغ:</label>
-                    <input type="number" id="txAmount" required min="0.01" step="any" placeholder="أدخل المبلغ هنا..."
-                        class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-lg font-bold focus:outline-none focus:border-blue-500">
-                </div>
-
-                <!-- البيان -->
-                <div>
-                    <label for="txNote" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">البيان / التفاصيل:</label>
-                    <input type="text" id="txNote" required placeholder="مثال: دفعة للكهربجي / شراء كابلات..."
-                        class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-blue-500">
-                </div>
-
-                <!-- تاريخ ووقت البند -->
-                <div>
-                    <label for="txDate" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">تاريخ ووقت البند:</label>
-                    <input type="datetime-local" id="txDate" required
-                        class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-500" dir="ltr">
-                </div>
-
-                <!-- إرفاق صور الفاتورة (حتى صورتين) -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs sm:text-sm font-bold text-slate-700">مرفقات الفاتورة / الوصل (اختياري):</label>
-                        <span id="imagesCountBadge" class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">0 / 2</span>
-                    </div>
-                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 hover:bg-slate-100/70 transition">
-                        <div id="imagePreviewContainer" class="hidden grid grid-cols-2 gap-2.5 mb-2.5"></div>
-                        <label id="imageUploadPrompt" class="cursor-pointer flex flex-col items-center justify-center py-2 text-slate-500 hover:text-blue-600 transition">
-                            <svg class="w-6 h-6 mb-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span id="imageUploadPromptText" class="text-xs font-bold text-center">اضغط لإرفاق صورة (يمكنك اختيار صورتين)</span>
-                            <input type="file" id="txImageInput" accept="image/*" multiple class="hidden" onchange="handleImageUpload(event)">
-                        </label>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex gap-2.5">
-                    <button type="submit" id="txSubmitBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm">
-                        حفظ الحركة
-                    </button>
-                    <button type="button" onclick="closeModal('transactionModal')" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm">
-                        إلغاء
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 2. نافذة الصرافة -->
-    <div id="exchangeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <span class="p-1.5 bg-amber-100 text-amber-700 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    </span>
-                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-800">صرافة وتحويل عملة</h3>
-                </div>
-                <button type="button" onclick="closeModal('exchangeModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <form id="exchangeForm" onsubmit="submitExchange(event)" class="mt-4 space-y-3.5">
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">اتجاه التحويل:</label>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="exDirection" value="USD_TO_SYP" class="peer sr-only" checked onchange="calculateExchangePreview()">
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 text-center transition">
-                                <div class="font-bold text-xs sm:text-sm text-slate-800">من دولار إلى سوري</div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">تصريف دولار ($)</div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="exDirection" value="SYP_TO_USD" class="peer sr-only" onchange="calculateExchangePreview()">
-                            <div class="p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 text-center transition">
-                                <div class="font-bold text-xs sm:text-sm text-slate-800">من سوري إلى دولار</div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">شراء دولار ($)</div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <label for="exRateInput" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">سعر صرف الدولار لهذه العملية (1$ = ؟ ل.س):</label>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="exRateInput" required min="1" step="any" placeholder="مثال: 15000" oninput="calculateExchangePreview()"
-                            class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-center text-lg font-extrabold text-slate-800 focus:outline-none focus:border-amber-500">
-                        <span class="text-sm font-bold text-slate-600">ل.س</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label id="exAmountLabel" for="exSourceAmount" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">المبلغ بالدولار المراد تصريفه ($):</label>
-                    <input type="number" id="exSourceAmount" required min="0.01" step="any" placeholder="0" oninput="calculateExchangePreview()"
-                        class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-lg font-bold focus:outline-none focus:border-amber-500">
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-center">
-                    <p class="text-xs font-bold text-amber-800 mb-1">المبلغ الناتج الذي سيدخل الصندوق الآخر:</p>
-                    <div id="exResultPreview" class="text-xl sm:text-2xl font-extrabold text-slate-900">0 ل.س</div>
-                </div>
-
-                <div>
-                    <label for="exNote" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">ملاحظة الصرافة (اختياري):</label>
-                    <input type="text" id="exNote" placeholder="مثال: تصريف لتغطية مصاريف الورشة"
-                        class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-amber-500">
-                </div>
-
-                <div>
-                    <label for="exDate" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">تاريخ ووقت الصرافة:</label>
-                    <input type="datetime-local" id="exDate" required
-                        class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:border-amber-500" dir="ltr">
-                </div>
-
-                <div class="pt-2 flex gap-2.5">
-                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold py-3 rounded-xl transition shadow-sm text-sm">
-                        تنفيذ الصرافة وتسجيلها
-                    </button>
-                    <button type="button" onclick="closeModal('exchangeModal')" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm">
-                        إلغاء
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 3. نافذة إدارة التصنيفات -->
-    <div id="categoriesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                <div>
-                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-800">تصنيفات الورشة</h3>
-                    <p id="catModalWorkshopName" class="text-xs font-bold text-purple-600 mt-0.5"></p>
-                </div>
-                <button type="button" onclick="closeModal('categoriesModal')" class="text-slate-400 hover:text-slate-600 p-1">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <p class="text-xs text-slate-500 mt-2 mb-3">هذه التصنيفات خاصة بهذه الورشة فقط (مثل: كهربجي، صحية، نجارة) لفرز حساباتها بدقة.</p>
-
-            <form onsubmit="addNewCategory(event)" class="flex gap-2 mb-4">
-                <input type="text" id="newCategoryName" required placeholder="اسم التصنيف الجديد (مثلاً: دهان)..."
-                    class="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold focus:outline-none focus:border-blue-500">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shrink-0">
-                    + إضافة
-                </button>
-            </form>
-
-            <div id="categoriesListContainer" class="max-h-60 overflow-y-auto space-y-2 border-t border-slate-100 pt-3">
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-slate-100 text-left">
-                <button type="button" onclick="closeModal('categoriesModal')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-sm transition">
-                    تم
+                <button type="button" onclick="openImportWorkshopModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-5 rounded-xl transition inline-flex items-center gap-2 text-sm">
+                    <span>⬆ استيراد ورشة من ملف</span>
                 </button>
             </div>
         </div>
@@ -627,19 +297,23 @@
                 <div>
                     <label for="wsDesc" class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">وصف الورشة أو الموقع (اختياري):</label>
                     <input type="text" id="wsDesc" placeholder="مثال: أعمال كهرباء وتمديدات صحية"
-                        class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 pt-1">
-                    <div>
-                        <label for="wsInitUsd" class="block text-xs font-bold text-emerald-700 mb-1">رصيد افتتاحي دولار ($):</label>
-                        <input type="number" id="wsInitUsd" min="0" step="any" value="0"
-                            class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label for="wsInitSyp" class="block text-xs font-bold text-blue-700 mb-1">رصيد افتتاحي سوري (ل.س):</label>
-                        <input type="number" id="wsInitSyp" min="0" step="any" value="0"
-                            class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-blue-500">
+                        <div class="col-span-3 sm:col-span-1 flex flex-wrap gap-1.5 justify-end sm:justify-start">
+                            <button type="button" id="btnPrintReport" onclick="printWorkshopReport()" title="طباعة كشف حساب الورشة" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                <span>طباعة</span>
+                            </button>
+                            <button type="button" id="btnExportExcel" onclick="exportWorkshopToExcel()" title="تصدير كملف إكسل (.xlsx) قابل للتعديل مع معادلات الجمع والرصيد" class="flex-1 sm:flex-none bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span>إكسل</span>
+                            </button>
+                            <button type="button" id="btnExportSingleWorkshop" onclick="exportSingleWorkshopFile()" title="تنزيل هذه الورشة كملف مستقل على جهازك" class="flex-1 sm:flex-none bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                <span>تنزيل كملف</span>
+                            </button>
+                            <button type="button" id="btnDeleteWorkshop" onclick="openDeleteWorkshopModal()" title="حذف هذه الورشة" class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -819,52 +493,52 @@
                     <p class="text-[11px] text-slate-400">عند امتلاء المساحة، سيتم تنبيهك تلقائياً لأرشفة وتنزيل الورشات غير النشطة.</p>
                 </div>
 
-                <!-- القسم الذكي: أرشفة وتفريغ الورشات غير النشطة -->
+                <!-- القسم الذكي: أرشفة وتفريغ الورشات غير النشطة فقط -->
                 <div id="smartArchiveSection" class="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 space-y-3">
                     <div class="flex items-start gap-2.5">
                         <div class="p-2 bg-amber-100 text-amber-800 rounded-xl shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                         </div>
                         <div>
-                            <h4 class="font-extrabold text-amber-950 text-sm">نسخ احتياطي وتفريغ للورشات غير النشطة</h4>
-                            <p class="text-xs text-amber-800 mt-0.5">الورشات التي حولت حالتها إلى <strong>"غير نشطة"</strong> تظهر محددة تلقائياً للأرشفة والتنزيل. يمكنك أيضاً تعديل الاختيار يدوياً أدناه:</p>
+                            <h4 class="font-extrabold text-amber-950 text-sm">نسخ احتياطي وحذف الورشات غير النشطة</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">تظهر هنا <strong>الورشات غير النشطة فقط</strong>. حدد بعلامة (✔) الورشات التي تريد أرشفتها وتنزيلها على جهازك ثم حذفها من السيرفر لتفريغ المساحة:</p>
                         </div>
                     </div>
-
-                    <!-- قائمة تحديد الورشات النشطة -->
-                    <div id="activeWorkshopsChecklist" class="space-y-2 max-h-48 overflow-y-auto bg-white p-3 rounded-xl border border-amber-200">
-                        <!-- يتم توليد قائمة الورشات هنا -->
-                    </div>
-
-                    <div id="archiveSummaryBar" class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-1">
-                        <span id="archiveStatsText" class="text-xs font-bold text-slate-700">سيتم أرشفة وحذف: 0 ورشة</span>
-                        <button type="button" id="runSmartArchiveBtn" onclick="archiveAndCleanInactiveWorkshops()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5">
-                            <span>📦 نسخ احتياطي للورشات غير النشطة وحذفها</span>
-                        </button>
-                    </div>
+    <!-- 10. نافذة استيراد ورشة من ملف -->
+    <div id="importWorkshopModal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-800">استيراد ورشة من ملف</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">اختر ملف الورشة المحفوظ على جهازك لمعاينة محتوياته وإضافته للموقع</p>
                 </div>
+                <button type="button" onclick="closeModal('importWorkshopModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
 
-                <!-- النسخ الاحتياطي الكامل -->
-                <div class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h4 class="font-extrabold text-slate-800">1. تنزيل نسخة احتياطية كاملة لكل شيء</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">يحفظ كل الورشات الحالية والحسابات والصور في ملف واحد على جهازك</p>
+            <div class="mt-4 space-y-4">
+                <label class="cursor-pointer block border-2 border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/50 hover:bg-sky-50 rounded-2xl p-5 text-center transition">
+                    <svg class="w-9 h-9 text-sky-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <span class="block text-sm font-extrabold text-slate-800">اضغط هنا لاختيار ملف الورشة من الجهاز (.json)</span>
+                    <span class="block text-xs text-slate-500 mt-1">يدعم ملفات الورشات الفردية وملفات الأرشيف والنسخ الاحتياطي</span>
+                    <input type="file" id="importWorkshopFileInput" accept=".json" class="hidden" onchange="previewImportedWorkshopFile(event)">
+                </label>
+
+                <div id="importPreviewContainer" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span class="text-xs font-extrabold text-emerald-700 flex items-center gap-1">✔ تم قراءة الملف بنجاح</span>
+                        <span id="importFileDateLabel" class="text-[11px] text-slate-500 font-bold"></span>
                     </div>
-                    <button type="button" onclick="exportFullBackup()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0">
-                        ⬇ تنزيل النسخة الكاملة
+
+                    <div id="importWorkshopsListPreview" class="space-y-2 max-h-56 overflow-y-auto">
+                    </div>
+
+                    <button type="button" id="confirmImportWorkshopBtn" onclick="confirmImportWorkshopsToCloud()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
+                        <span>➕ إضافة للموقع الآن</span>
                     </button>
-                </div>
-
-                <!-- استعادة بيانات أو أرشيف سابق -->
-                <div id="restoreBackupSection" class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h4 class="font-extrabold text-slate-800">2. استعادة بيانات أو دمج أرشيف سابق</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">ارفع ملف نسخة احتياطية أو ملف أرشيف سابق لإرجاع ورشاته للموقع فوراً</p>
-                    </div>
-                    <label class="w-full sm:w-auto text-center cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0">
-                        ⬆ اختيار ملف الاستعادة
-                        <input type="file" accept=".json" class="hidden" onchange="importFullBackup(event)">
-                    </label>
                 </div>
             </div>
         </div>
@@ -1368,1690 +1042,196 @@
             populateCategoryDropdowns();
             renderWorkshopTabs();
             renderGlobalSummary();
-// ... existing code ... -->
-        function renderWorkshopTabs() {
-            const container = document.getElementById('workshopsTabs');
-            container.innerHTML = '';
 
-            state.workshops.forEach(ws => {
-                const isActive = ws.id === state.activeWorkshopId;
-                const isInactiveWs = ws.isActive === false;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 flex items-center gap-2 ${
-                    isActive 
-                    ? 'bg-slate-900 text-white shadow-sm' 
-                    : (isInactiveWs ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                }`;
-                btn.onclick = () => {
-                    state.activeWorkshopId = ws.id;
-                    document.getElementById('filterCategory').value = 'all';
-                    document.getElementById('filterType').value = 'all';
-                    updateAllUI();
-                };
-                const statusDot = isInactiveWs
-                    ? `<span class="w-2 h-2 rounded-full bg-amber-500" title="غير نشطة"></span>`
-                    : `<span class="w-2 h-2 rounded-full bg-emerald-500" title="نشطة"></span>`;
-                btn.innerHTML = `${statusDot}<span>${ws.name}</span>${isInactiveWs ? '<span class="text-[10px] opacity-75">(غير نشطة)</span>' : ''}`;
-                container.appendChild(btn);
-            });
+            const noWsEl = document.getElementById('noWorkshopsState');
+            const wsContainer = document.getElementById('workspaceContainer');
+            const stickyBar = document.getElementById('stickyCurrentWorkshopBar');
+
+            if (state.workshops.length === 0) {
+                noWsEl.classList.remove('hidden');
+                wsContainer.classList.add('hidden');
+                if (stickyBar) stickyBar.classList.add('hidden');
+            } else {
+                noWsEl.classList.add('hidden');
+                wsContainer.classList.remove('hidden');
+                if (!state.activeWorkshopId || !state.workshops.some(w => w.id === state.activeWorkshopId)) {
+                    state.activeWorkshopId = state.workshops[0].id;
+                }
+                if (stickyBar) stickyBar.classList.remove('hidden');
+                updateQuickWorkshopSwitcher();
+                renderActiveWorkshopDetails();
+                renderCategorySummaryGrid();
+                renderTransactions();
+            }
         }
 
-        function toggleCurrentWorkshopActiveStatus() {
+        function updateQuickWorkshopSwitcher() {
+            const switcher = document.getElementById('quickWorkshopSwitcher');
+            const statusPill = document.getElementById('stickyWsStatusPill');
+            if (!switcher) return;
+
+            switcher.innerHTML = '';
+            state.workshops.forEach(ws => {
+                const opt = document.createElement('option');
+                opt.value = ws.id;
+                const isWsActive = ws.isActive !== false;
+                opt.textContent = `${ws.name} ${isWsActive ? '(نشطة 🟢)' : '(غير نشطة 🟠)'}`;
+                if (ws.id === state.activeWorkshopId) opt.selected = true;
+                switcher.appendChild(opt);
+            });
+
+            const currentWs = getActiveWorkshop();
+            if (statusPill && currentWs) {
+                const isWsActive = currentWs.isActive !== false;
+                if (isWsActive) {
+                    statusPill.className = 'hidden sm:inline-block bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0';
+                    statusPill.textContent = 'نشطة';
+                } else {
+                    statusPill.className = 'hidden sm:inline-block bg-amber-900/60 text-amber-300 border border-amber-700/60 text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0';
+                    statusPill.textContent = 'غير نشطة (مقفلة)';
+                }
+            }
+        }
+// ... existing code ... -->
+        // ================= تصدير الورشة كملف Excel (.xlsx) حقيقي بمعادلات شغالة =================
+        function exportWorkshopToExcel() {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
-            const currentlyActive = ws.isActive !== false;
-            ws.isActive = !currentlyActive;
-            saveWorkshopToCloud(ws);
-            updateAllUI();
-
-            if (ws.isActive) {
-                showToast(`تم تفعيل ورشة "${ws.name}" كـ (ورشة نشطة) 🟢`);
-            } else {
-                showToast(`تم تحويل ورشة "${ws.name}" إلى (غير نشطة / منتهية) 🟠`);
-            }
-        }
-
-        function renderActiveWorkshopDetails() {
-            const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-            if (!ws) return;
-
-            const isWsActive = ws.isActive !== false;
-            const statusBadge = document.getElementById('currentWorkshopStatusBadge');
-            const toggleBtn = document.getElementById('toggleWsStatusBtn');
-
-            if (statusBadge && toggleBtn) {
-                if (isWsActive) {
-                    statusBadge.className = 'bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1.5';
-                    statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> ورشة نشطة';
-                    toggleBtn.className = 'bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print';
-                    toggleBtn.innerHTML = '<span>🔄 تحويل إلى غير نشطة</span>';
-                } else {
-                    statusBadge.className = 'bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1.5';
-                    statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> ورشة غير نشطة (منتهية)';
-                    toggleBtn.className = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print';
-                    toggleBtn.innerHTML = '<span>🟢 إعادة تفعيل كنشطة</span>';
-                }
-            }
-
-            document.getElementById('currentWorkshopName').textContent = ws.name;
-            document.getElementById('currentWorkshopDesc').textContent = ws.description || 'لا يوجد وصف إضافي';
-
-            const stats = calculateWorkshopStats(ws.id);
-
-            const usdCard = document.getElementById('wsUsdCard');
-            const usdBadge = document.getElementById('wsUsdBadge');
-            const usdNegAlert = document.getElementById('wsUsdNegativeAlert');
-            const usdBalEl = document.getElementById('wsUsdBalance');
-            const usdIcon = document.getElementById('wsUsdIcon');
-            const usdFooter = document.getElementById('wsUsdFooter');
-
-            usdBalEl.textContent = formatUSD(stats.usdBalance);
-            document.getElementById('wsUsdIn').textContent = formatUSD(stats.usdIn);
-            document.getElementById('wsUsdOut').textContent = formatUSD(stats.usdOut);
-
-            if (stats.usdBalance < 0) {
-                usdCard.className = 'bg-rose-50 border-2 border-rose-500 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300 shadow-sm';
-                usdBadge.className = 'inline-block bg-rose-200 text-rose-900 text-xs font-bold px-2.5 py-1 rounded-md';
-                usdNegAlert.classList.remove('hidden');
-                usdBalEl.className = 'text-2xl sm:text-3xl font-extrabold text-rose-700';
-                usdIcon.className = 'p-2.5 sm:p-3 bg-rose-200/80 rounded-xl text-rose-700 no-print shrink-0';
-                usdFooter.className = 'mt-3.5 pt-3 border-t border-rose-200 flex justify-between text-xs font-medium text-rose-900';
-            } else {
-                usdCard.className = 'bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300';
-                usdBadge.className = 'inline-block bg-emerald-200/80 text-emerald-900 text-xs font-bold px-2.5 py-1 rounded-md';
-                usdNegAlert.classList.add('hidden');
-                usdBalEl.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-700';
-                usdIcon.className = 'p-2.5 sm:p-3 bg-emerald-100 rounded-xl text-emerald-700 no-print shrink-0';
-                usdFooter.className = 'mt-3.5 pt-3 border-t border-emerald-200/60 flex justify-between text-xs font-medium text-emerald-800';
-            }
-
-            const sypCard = document.getElementById('wsSypCard');
-            const sypBadge = document.getElementById('wsSypBadge');
-            const sypNegAlert = document.getElementById('wsSypNegativeAlert');
-            const sypBalEl = document.getElementById('wsSypBalance');
-            const sypIcon = document.getElementById('wsSypIcon');
-            const sypFooter = document.getElementById('wsSypFooter');
-
-            sypBalEl.textContent = formatSYP(stats.sypBalance);
-            document.getElementById('wsSypIn').textContent = formatSYP(stats.sypIn);
-            document.getElementById('wsSypOut').textContent = formatSYP(stats.sypOut);
-
-            if (stats.sypBalance < 0) {
-                sypCard.className = 'bg-rose-50 border-2 border-rose-500 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300 shadow-sm';
-                sypBadge.className = 'inline-block bg-rose-200 text-rose-900 text-xs font-bold px-2.5 py-1 rounded-md';
-                sypNegAlert.classList.remove('hidden');
-                sypBalEl.className = 'text-2xl sm:text-3xl font-extrabold text-rose-700';
-                sypIcon.className = 'p-2.5 sm:p-3 bg-rose-200/80 rounded-xl text-rose-700 font-extrabold text-base sm:text-lg no-print shrink-0';
-                sypFooter.className = 'mt-3.5 pt-3 border-t border-rose-200 flex justify-between text-xs font-medium text-rose-900';
-            } else {
-                sypCard.className = 'bg-blue-50/70 border border-blue-200 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-colors duration-300';
-                sypBadge.className = 'inline-block bg-blue-200/80 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-md';
-                sypNegAlert.classList.add('hidden');
-                sypBalEl.className = 'text-2xl sm:text-3xl font-extrabold text-blue-700';
-                sypIcon.className = 'p-2.5 sm:p-3 bg-blue-100 rounded-xl text-blue-700 font-extrabold text-base sm:text-lg no-print shrink-0';
-                sypFooter.className = 'mt-3.5 pt-3 border-t border-blue-200/60 flex justify-between text-xs font-medium text-blue-800';
-            }
-        }
-
-        function renderGlobalSummary() {
-            let totalUsd = 0;
-            let totalSyp = 0;
-
-            state.workshops.forEach(ws => {
-                const stats = calculateWorkshopStats(ws.id);
-                totalUsd += stats.usdBalance;
-                totalSyp += stats.sypBalance;
-            });
-
-            const gUsdCard = document.getElementById('globalUsdCard');
-            const gUsdLabel = document.getElementById('globalUsdLabel');
-            const gUsdAlert = document.getElementById('globalUsdNegativeAlert');
-            const gUsdVal = document.getElementById('totalAllUsd');
-            const gUsdIcon = document.getElementById('globalUsdIcon');
-
-            gUsdVal.textContent = formatUSD(totalUsd);
-            if (totalUsd < 0) {
-                gUsdCard.className = 'bg-rose-50 rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-rose-500 flex items-center justify-between transition-colors duration-300';
-                gUsdLabel.className = 'text-xs sm:text-sm font-bold text-rose-800';
-                gUsdAlert.classList.remove('hidden');
-                gUsdVal.className = 'text-2xl sm:text-3xl font-extrabold text-rose-700 mt-1';
-                gUsdIcon.className = 'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-rose-200/80 text-rose-700 flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0';
-            } else {
-                gUsdCard.className = 'bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 flex items-center justify-between transition-colors duration-300';
-                gUsdLabel.className = 'text-xs sm:text-sm font-medium text-slate-500';
-                gUsdAlert.classList.add('hidden');
-                gUsdVal.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1';
-                gUsdIcon.className = 'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0';
-            }
-
-            const gSypCard = document.getElementById('globalSypCard');
-            const gSypLabel = document.getElementById('globalSypLabel');
-            const gSypAlert = document.getElementById('globalSypNegativeAlert');
-            const gSypVal = document.getElementById('totalAllSyp');
-            const gSypIcon = document.getElementById('globalSypIcon');
-
-            gSypVal.textContent = formatSYP(totalSyp);
-            if (totalSyp < 0) {
-                gSypCard.className = 'bg-rose-50 rounded-2xl p-4 sm:p-5 shadow-sm border-2 border-rose-500 flex items-center justify-between transition-colors duration-300';
-                gSypLabel.className = 'text-xs sm:text-sm font-bold text-rose-800';
-                gSypAlert.classList.remove('hidden');
-                gSypVal.className = 'text-2xl sm:text-3xl font-extrabold text-rose-700 mt-1';
-                gSypIcon.className = 'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-rose-200/80 text-rose-700 flex items-center justify-center font-bold text-base sm:text-lg shrink-0';
-            } else {
-                gSypCard.className = 'bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 flex items-center justify-between transition-colors duration-300';
-                gSypLabel.className = 'text-xs sm:text-sm font-medium text-slate-500';
-                gSypAlert.classList.add('hidden');
-                gSypVal.className = 'text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1';
-                gSypIcon.className = 'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base sm:text-lg shrink-0';
-            }
-        }
-
-        function renderTransactions() {
-            const tbody = document.getElementById('transactionsTableBody');
-            const mobileList = document.getElementById('transactionsMobileList');
-            const emptyState = document.getElementById('emptyTransactionsState');
-            const filterType = document.getElementById('filterType').value;
-            const filterCategory = document.getElementById('filterCategory').value;
-
-            let wsTxs = state.transactions
-                .filter(t => t.workshopId === state.activeWorkshopId)
-                .slice()
-                .sort((a, b) => b.date.localeCompare(a.date));
-
-            if (filterType !== 'all') {
-                wsTxs = wsTxs.filter(t => t.type === filterType);
-            }
-            if (filterCategory !== 'all') {
-                wsTxs = wsTxs.filter(t => (t.category || 'عام / دفعات زبون') === filterCategory && t.type !== 'exchange');
-            }
-
-            tbody.innerHTML = '';
-            mobileList.innerHTML = '';
-
-            if (wsTxs.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            wsTxs.forEach(tx => {
-                let badgeHtml = '';
-                let categoryBadgeHtml = '';
-                let amountHtml = '';
-                let noteHtml = tx.note || '-';
-                let attachmentHtml = '<span class="text-slate-300 text-xs">—</span>';
-                let actionsHtml = '';
-
-                if (tx.type === 'income' || tx.type === 'expense') {
-                    const catLabel = tx.category || 'عام / دفعات زبون';
-                    categoryBadgeHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold px-2.5 py-0.5 rounded-md">${catLabel}</span>`;
-
-                    if (tx.type === 'income') {
-                        badgeHtml = `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">↓ إيراد</span>`;
-                        const formatted = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                        amountHtml = `<span class="font-extrabold text-emerald-600" dir="ltr">+ ${formatted}</span>`;
-                    } else {
-                        badgeHtml = `<span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg">↑ مصروف</span>`;
-                        const formatted = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                        amountHtml = `<span class="font-extrabold text-rose-600" dir="ltr">- ${formatted}</span>`;
-                    }
-
-                    const imgs = getTxImages(tx);
-                    if (imgs.length > 0) {
-                        const btnLabel = imgs.length === 2 ? 'صورتان (2)' : 'صورة (1)';
-                        attachmentHtml = `
-                            <button type="button" onclick="viewFullImage('${tx.id}')" class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold px-2.5 py-1 rounded-lg transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                ${btnLabel}
-                            </button>
-                        `;
-                    }
-
-                    actionsHtml = `
-                        <div class="flex items-center justify-center gap-1">
-                            ${hasPermission('editDeleteTx') ? `
-                            <button type="button" onclick="openEditTransactionModal('${tx.id}')" title="تعديل البند والتاريخ" class="text-slate-400 hover:text-blue-600 p-1.5 rounded-lg hover:bg-blue-50 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </button>
-                            <button type="button" onclick="deleteTransaction('${tx.id}')" title="حذف الحركة" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                            ` : '<span class="text-[11px] text-slate-300">للقراءة</span>'}
-                        </div>
-                    `;
-                } else if (tx.type === 'exchange') {
-                    badgeHtml = `<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-900 text-xs font-bold px-2.5 py-1 rounded-lg">⇄ صرافة</span>`;
-                    categoryBadgeHtml = `<span class="inline-block bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold px-2.5 py-0.5 rounded-md">تحويل داخلي</span>`;
-
-                    if (tx.direction === 'USD_TO_SYP') {
-                        amountHtml = `
-                            <div class="text-xs space-y-0.5">
-                                <div class="text-rose-600 font-bold" dir="ltr">- ${formatUSD(tx.fromAmount)}</div>
-                                <div class="text-emerald-600 font-bold" dir="ltr">+ ${formatSYP(tx.toAmount)}</div>
-                            </div>
-                        `;
-                        noteHtml = `${tx.note ? tx.note + ' — ' : ''}<span class="text-xs text-slate-500 font-medium">(تصريف بسعر ${tx.rate.toLocaleString()} ل.س)</span>`;
-                    } else {
-                        amountHtml = `
-                            <div class="text-xs space-y-0.5">
-                                <div class="text-rose-600 font-bold" dir="ltr">- ${formatSYP(tx.fromAmount)}</div>
-                                <div class="text-emerald-600 font-bold" dir="ltr">+ ${formatUSD(tx.toAmount)}</div>
-                            </div>
-                        `;
-                        noteHtml = `${tx.note ? tx.note + ' — ' : ''}<span class="text-xs text-slate-500 font-medium">(شراء دولار بسعر ${tx.rate.toLocaleString()} ل.س)</span>`;
-                    }
-
-                    actionsHtml = hasPermission('editDeleteTx') ? `
-                        <button type="button" onclick="deleteTransaction('${tx.id}')" title="حذف الحركة" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    ` : '<span class="text-[11px] text-slate-300">للقراءة</span>';
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition';
-                tr.innerHTML = `
-                    <td class="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap" dir="ltr">${tx.date}</td>
-                    <td class="py-3.5 px-4 whitespace-nowrap">${badgeHtml}</td>
-                    <td class="py-3.5 px-4 whitespace-nowrap">${categoryBadgeHtml}</td>
-                    <td class="py-3.5 px-4 text-slate-700 font-medium">${noteHtml}</td>
-                    <td class="py-3.5 px-4 whitespace-nowrap">${attachmentHtml}</td>
-                    <td class="py-3.5 px-4 whitespace-nowrap">${amountHtml}</td>
-                    <td class="py-3.5 px-4 text-center no-print">${actionsHtml}</td>
-                `;
-                tbody.appendChild(tr);
-
-                const card = document.createElement('div');
-                card.className = 'p-4 hover:bg-slate-50 transition space-y-2.5';
-                card.innerHTML = `
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            ${badgeHtml}
-                            ${categoryBadgeHtml}
-                        </div>
-                        <div class="text-left shrink-0">${amountHtml}</div>
-                    </div>
-                    <p class="text-sm text-slate-800 font-medium leading-relaxed">${noteHtml}</p>
-                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-100 text-xs">
-                        <span class="text-slate-400" dir="ltr">${tx.date}</span>
-                        <div class="flex items-center gap-2">
-                            ${getTxImages(tx).length > 0 ? attachmentHtml : ''}
-                            ${actionsHtml}
-                        </div>
-                    </div>
-                `;
-                mobileList.appendChild(card);
-            });
-        }
-
-        function openModal(id) {
-            const modal = document.getElementById(id);
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeModal(id) {
-            const modal = document.getElementById(id);
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        function openTransactionModal(type) {
-            document.getElementById('transactionForm').reset();
-            populateCategoryDropdowns();
-            document.getElementById('txId').value = '';
-            document.getElementById('txType').value = type;
-            document.getElementById('txDate').value = toDateTimeLocalValue(getCurrentDateTime());
-            removeAttachedImage();
-            
-            const title = document.getElementById('txModalTitle');
-            const submitBtn = document.getElementById('txSubmitBtn');
-
-            if (type === 'income') {
-                title.textContent = 'إضافة إيراد جديد للورشة';
-                title.className = 'text-lg sm:text-xl font-extrabold text-emerald-700';
-                submitBtn.className = 'flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm';
-                submitBtn.textContent = 'إضافة الإيراد';
-            } else {
-                title.textContent = 'تسجيل مصروف جديد على الورشة';
-                title.className = 'text-lg sm:text-xl font-extrabold text-rose-700';
-                submitBtn.className = 'flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm';
-                submitBtn.textContent = 'تسجيل المصروف';
-            }
-            openModal('transactionModal');
-        }
-
-        function openEditTransactionModal(txId) {
-            const tx = state.transactions.find(t => t.id === txId);
-            if (!tx) return;
-
-            document.getElementById('transactionForm').reset();
-            populateCategoryDropdowns();
-            document.getElementById('txId').value = tx.id;
-            document.getElementById('txType').value = tx.type;
-            document.getElementById('txAmount').value = tx.amount;
-            document.getElementById('txNote').value = tx.note;
-            document.getElementById('txDate').value = toDateTimeLocalValue(tx.date);
-
-            if (tx.category) {
-                const catSelect = document.getElementById('txCategory');
-                const activeCats = getActiveCategories();
-                if (!activeCats.includes(tx.category)) {
-                    const opt = document.createElement('option');
-                    opt.value = tx.category;
-                    opt.textContent = tx.category;
-                    catSelect.appendChild(opt);
-                }
-                catSelect.value = tx.category;
-            }
-
-            const radios = document.getElementsByName('txCurrency');
-            radios.forEach(r => {
-                r.checked = (r.value === tx.currency);
-            });
-
-            currentAttachedImages = [...getTxImages(tx)];
-            renderAttachedImagesPreview();
-
-            const title = document.getElementById('txModalTitle');
-            const submitBtn = document.getElementById('txSubmitBtn');
-
-            title.textContent = tx.type === 'income' ? 'تعديل بند الإيراد' : 'تعديل بند المصروف';
-            title.className = 'text-lg sm:text-xl font-extrabold text-blue-700';
-            submitBtn.className = 'flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm';
-            submitBtn.textContent = 'حفظ التعديلات';
-
-            openModal('transactionModal');
-        }
-
-        function submitTransaction(e) {
-            e.preventDefault();
-            if (isServerStorageFull()) {
-                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
-                openBackupModal();
-                return;
-            }
-            const txId = document.getElementById('txId').value;
-            const type = document.getElementById('txType').value;
-            const category = document.getElementById('txCategory').value;
-            const currency = document.querySelector('input[name="txCurrency"]:checked').value;
-            const amount = parseFloat(document.getElementById('txAmount').value);
-            const note = document.getElementById('txNote').value.trim();
-            const txDate = fromDateTimeLocalValue(document.getElementById('txDate').value);
-
-            if (isNaN(amount) || amount <= 0) {
-                showToast('يرجى إدخال مبلغ صحيح أكبر من الصفر', true);
+            if (typeof XLSX === 'undefined') {
+                showToast('جاري تحميل مكتبة الإكسل، يرجى المحاولة بعد ثوانٍ...', true);
                 return;
             }
 
-            if (txId) {
-                const index = state.transactions.findIndex(t => t.id === txId);
-                if (index !== -1) {
-                    state.transactions[index].category = category;
-                    state.transactions[index].currency = currency;
-                    state.transactions[index].amount = amount;
-                    state.transactions[index].note = note;
-                    state.transactions[index].date = txDate;
-                    state.transactions[index].images = [...currentAttachedImages];
-                    delete state.transactions[index].image;
-                    saveTransactionToCloud(state.transactions[index]);
-                    showToast('تم تعديل البند وحفظه سحابياً بنجاح');
-                }
-            } else {
-                const currentStats = calculateWorkshopStats(state.activeWorkshopId);
-                if (type === 'expense') {
-                    if (currency === 'USD' && amount > currentStats.usdBalance) {
-                        showToast('تنبيه: الرصيد في صندوق الدولار سيصبح بالسالب!', true);
-                    } else if (currency === 'SYP' && amount > currentStats.sypBalance) {
-                        showToast('تنبيه: الرصيد في صندوق السوري سيصبح بالسالب!', true);
-                    } else {
-                        showToast('تم تسجيل المصروف وحفظه سحابياً');
-                    }
-                } else {
-                    showToast('تم إضافة الإيراد وحفظه سحابياً');
-                }
-
-                const newTx = {
-                    id: 'tx-' + Date.now(),
-                    workshopId: state.activeWorkshopId,
-                    type: type,
-                    category: category,
-                    currency: currency,
-                    amount: amount,
-                    note: note,
-                    images: [...currentAttachedImages],
-                    date: txDate
-                };
-                state.transactions.push(newTx);
-                saveTransactionToCloud(newTx);
-            }
-
-            closeModal('transactionModal');
-            updateAllUI();
-        }
-
-        function openExchangeModal() {
-            document.getElementById('exchangeForm').reset();
-            document.getElementById('exRateInput').value = state.lastUsedRate || '';
-            document.getElementById('exDate').value = toDateTimeLocalValue(getCurrentDateTime());
-            calculateExchangePreview();
-            openModal('exchangeModal');
-        }
-
-        function calculateExchangePreview() {
-            const direction = document.querySelector('input[name="exDirection"]:checked').value;
-            const rate = parseFloat(document.getElementById('exRateInput').value) || 0;
-            const amount = parseFloat(document.getElementById('exSourceAmount').value) || 0;
-            
-            const label = document.getElementById('exAmountLabel');
-            const preview = document.getElementById('exResultPreview');
-
-            if (direction === 'USD_TO_SYP') {
-                label.textContent = 'المبلغ بالدولار المراد تصريفه ($):';
-                const resultSyp = amount * rate;
-                preview.textContent = formatSYP(resultSyp);
-                preview.className = 'text-xl sm:text-2xl font-extrabold text-blue-700';
-            } else {
-                label.textContent = 'المبلغ بالليرة السورية المراد تحويله (ل.س):';
-                const resultUsd = rate > 0 ? (amount / rate) : 0;
-                preview.textContent = formatUSD(resultUsd);
-                preview.className = 'text-xl sm:text-2xl font-extrabold text-emerald-700';
-            }
-        }
-
-        function submitExchange(e) {
-            e.preventDefault();
-            if (isServerStorageFull()) {
-                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
-                openBackupModal();
-                return;
-            }
-            const direction = document.querySelector('input[name="exDirection"]:checked').value;
-            const rate = parseFloat(document.getElementById('exRateInput').value);
-            const sourceAmount = parseFloat(document.getElementById('exSourceAmount').value);
-            const note = document.getElementById('exNote').value.trim();
-            const exDate = fromDateTimeLocalValue(document.getElementById('exDate').value);
-
-            if (isNaN(rate) || rate <= 0 || isNaN(sourceAmount) || sourceAmount <= 0) {
-                showToast('يرجى إدخال سعر الصرف والمبلغ بشكل صحيح', true);
-                return;
-            }
-
-            let toAmount = 0;
-            if (direction === 'USD_TO_SYP') {
-                toAmount = Math.round(sourceAmount * rate);
-            } else {
-                toAmount = Number((sourceAmount / rate).toFixed(2));
-            }
-
-            state.lastUsedRate = rate;
-
-            const newExTx = {
-                id: 'tx-' + Date.now(),
-                workshopId: state.activeWorkshopId,
-                type: 'exchange',
-                direction: direction,
-                fromAmount: sourceAmount,
-                toAmount: toAmount,
-                rate: rate,
-                note: note || 'عملية صرافة داخلية',
-                date: exDate
-            };
-            state.transactions.push(newExTx);
-            saveTransactionToCloud(newExTx);
-
-            closeModal('exchangeModal');
-            updateAllUI();
-            showToast('تمت عملية الصرافة وحفظها سحابياً بنجاح');
-        }
-
-        function openNewWorkshopModal() {
-            document.getElementById('newWorkshopForm').reset();
-            openModal('newWorkshopModal');
-        }
-
-        function submitNewWorkshop(e) {
-            e.preventDefault();
-            if (isServerStorageFull()) {
-                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
-                openBackupModal();
-                return;
-            }
-            const name = document.getElementById('wsName').value.trim();
-            const desc = document.getElementById('wsDesc').value.trim();
-            const initUsd = parseFloat(document.getElementById('wsInitUsd').value) || 0;
-            const initSyp = parseFloat(document.getElementById('wsInitSyp').value) || 0;
-
-            if (!name) return;
-
-            const newId = 'ws-' + Date.now();
-            const newWs = {
-                id: newId,
-                name: name,
-                description: desc,
-                isActive: true,
-                categories: [...DEFAULT_WORKSHOP_CATEGORIES]
-            };
-            state.workshops.push(newWs);
-            saveWorkshopToCloud(newWs);
-
-            if (initUsd > 0) {
-                const usdTx = {
-                    id: 'tx-' + (Date.now() + 1),
-                    workshopId: newId,
-                    type: 'income',
-                    category: 'عام / دفعات زبون',
-                    currency: 'USD',
-                    amount: initUsd,
-                    note: 'رصيد افتتاحي لصندوق الدولار',
-                    images: [],
-                    date: getCurrentDateTime()
-                };
-                state.transactions.push(usdTx);
-                saveTransactionToCloud(usdTx);
-            }
-
-            if (initSyp > 0) {
-                const sypTx = {
-                    id: 'tx-' + (Date.now() + 2),
-                    workshopId: newId,
-                    type: 'income',
-                    category: 'عام / دفعات زبون',
-                    currency: 'SYP',
-                    amount: initSyp,
-                    note: 'رصيد افتتاحي لصندوق السوري',
-                    images: [],
-                    date: getCurrentDateTime()
-                };
-                state.transactions.push(sypTx);
-                saveTransactionToCloud(sypTx);
-            }
-
-            state.activeWorkshopId = newId;
-            closeModal('newWorkshopModal');
-            updateAllUI();
-            showToast(`تم إنشاء "${name}" وحفظها سحابياً`);
-        }
-
-        function openDeleteWorkshopModal() {
-            const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-            if (!ws) return;
-            document.getElementById('deleteWsNameTarget').textContent = ws.name;
-            openModal('deleteWorkshopModal');
-        }
-
-        function confirmDeleteWorkshop() {
-            const targetId = state.activeWorkshopId;
-            const txsToDelete = state.transactions.filter(t => t.workshopId === targetId);
-
-            state.workshops = state.workshops.filter(w => w.id !== targetId);
-            state.transactions = state.transactions.filter(t => t.workshopId !== targetId);
-
-            deleteWorkshopFromCloud(targetId, txsToDelete);
-
-            if (state.workshops.length > 0) {
-                state.activeWorkshopId = state.workshops[0].id;
-            } else {
-                state.activeWorkshopId = null;
-            }
-
-            closeModal('deleteWorkshopModal');
-            updateAllUI();
-            showToast('تم حذف الورشة وجميع سجلاتها');
-        }
-
-        function deleteTransaction(txId) {
-            state.transactions = state.transactions.filter(t => t.id !== txId);
-            deleteTransactionFromCloud(txId);
-            updateAllUI();
-            showToast('تم حذف البند وتحديث الأرصدة');
-        }
-
-        // ================= طباعة وتنسيق كشف الحساب لمقياس ورقة A4 =================
-        function printWorkshopReport() {
-            const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-            if (!ws) return;
-
-            const filterCategory = document.getElementById('filterCategory').value;
-            const stats = calculateWorkshopStats(ws.id);
-
-            let wsTxs = state.transactions
+            const wsTxs = state.transactions
                 .filter(t => t.workshopId === ws.id)
-                .slice()
-                .sort((a, b) => a.date.localeCompare(b.date));
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            if (filterCategory !== 'all') {
-                wsTxs = wsTxs.filter(t => (t.category || 'عام / دفعات زبون') === filterCategory && t.type !== 'exchange');
-            }
+            // بناء مصفوفة البيانات مع معادلات إكسل الحقيقية
+            const rows = [
+                [`كشف حساب ورشة: ${ws.name}`, '', '', '', '', '', '', '', ''],
+                [`الوصف: ${ws.description || '—'}`, '', `تاريخ التصدير: ${getCurrentDateTime()}`, '', '', '', '', '', ''],
+                [],
+                [
+                    '#',
+                    'التاريخ والوقت',
+                    'نوع الحركة',
+                    'التصنيف',
+                    'البيان / التفاصيل',
+                    'مقبوضات دولار ($)',
+                    'مدفوعات دولار ($)',
+                    'مقبوضات سوري (ل.س)',
+                    'مدفوعات سوري (ل.س)'
+                ]
+            ];
 
-            let rowsHtml = '';
-            let filteredUsdNet = 0;
-            let filteredSypNet = 0;
+            const startDataRow = 5; // الصف رقم 5 في الإكسل (1-indexed)
 
             wsTxs.forEach((tx, idx) => {
-                let rowBgClass = '';
-                let typeBadgeHtml = '';
-                let catText = tx.category || 'عام / دفعات زبون';
-                let detailsText = tx.note || '-';
-                let amountHtml = '';
+                let typeLabel = '';
+                let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
 
                 if (tx.type === 'income') {
-                    rowBgClass = 'bg-emerald-50/50';
-                    typeBadgeHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-1.5 py-0.5 rounded text-[10px]">↓ وارد</span>';
-                    const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                    amountHtml = `<span class="text-emerald-700 font-extrabold">+ ${val}</span>`;
-                    if (tx.currency === 'USD') filteredUsdNet += tx.amount;
-                    else filteredSypNet += tx.amount;
+                    typeLabel = 'إيراد / مقبوض';
+                    if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
+                    else sypIn = Number(tx.amount) || 0;
                 } else if (tx.type === 'expense') {
-                    rowBgClass = 'bg-rose-50/50';
-                    typeBadgeHtml = '<span class="inline-block bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded text-[10px]">↑ صادر</span>';
-                    const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                    amountHtml = `<span class="text-rose-700 font-extrabold">- ${val}</span>`;
-                    if (tx.currency === 'USD') filteredUsdNet -= tx.amount;
-                    else filteredSypNet -= tx.amount;
+                    typeLabel = 'مصروف / مسحوب';
+                    if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
+                    else sypOut = Number(tx.amount) || 0;
                 } else if (tx.type === 'exchange') {
-                    catText = 'تحويل داخلي';
-                    rowBgClass = 'bg-amber-50/60';
-                    typeBadgeHtml = '<span class="inline-block bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⇄ صرافة</span>';
+                    typeLabel = 'صرافة عملة';
                     if (tx.direction === 'USD_TO_SYP') {
-                        detailsText += ` <span class="text-amber-800 font-medium">(تصريف بسعر ${tx.rate.toLocaleString()} ل.س)</span>`;
-                        amountHtml = `<div class="text-rose-700 font-bold">- ${formatUSD(tx.fromAmount)}</div><div class="text-emerald-700 font-bold">+ ${formatSYP(tx.toAmount)}</div>`;
+                        usdOut = Number(tx.fromAmount) || 0;
+                        sypIn = Number(tx.toAmount) || 0;
                     } else {
-                        detailsText += ` <span class="text-amber-800 font-medium">(شراء دولار بسعر ${tx.rate.toLocaleString()} ل.س)</span>`;
-                        amountHtml = `<div class="text-rose-700 font-bold">- ${formatSYP(tx.fromAmount)}</div><div class="text-emerald-700 font-bold">+ ${formatUSD(tx.toAmount)}</div>`;
+                        sypOut = Number(tx.fromAmount) || 0;
+                        usdIn = Number(tx.toAmount) || 0;
                     }
                 }
 
-                rowsHtml += `
-                    <tr class="border-b border-slate-200 ${rowBgClass}">
-                        <td class="py-1.5 px-2 text-center text-[11px] font-bold text-slate-600">${idx + 1}</td>
-                        <td class="py-1.5 px-2 text-[11px] whitespace-nowrap text-slate-600" dir="ltr">${tx.date}</td>
-                        <td class="py-1.5 px-2 whitespace-nowrap">${typeBadgeHtml}</td>
-                        <td class="py-1.5 px-2 text-[11px] font-bold text-slate-700 whitespace-nowrap">${catText}</td>
-                        <td class="py-1.5 px-2 text-[11px] text-slate-800 font-medium">${detailsText}</td>
-                        <td class="py-1.5 px-2 text-[11px] text-left whitespace-nowrap" dir="ltr">${amountHtml}</td>
-                    </tr>
-                `;
+                rows.push([
+                    idx + 1,
+                    tx.date || '',
+                    typeLabel,
+                    tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام'),
+                    tx.note || '',
+                    usdIn,
+                    usdOut,
+                    sypIn,
+                    sypOut
+                ]);
             });
 
+            // في حال عدم وجود حركات بعد، نضيف صفاً فارغاً لتعمل المعادلات دون خطأ
             if (wsTxs.length === 0) {
-                rowsHtml = `<tr><td colspan="6" class="py-5 text-center text-slate-400 text-xs">لا توجد حركات مسجلة ضمن هذا النطاق</td></tr>`;
+                rows.push([1, getCurrentDateTime(), '—', '—', 'لا توجد حركات مسجلة', 0, 0, 0, 0]);
             }
 
-            const titleSuffix = filterCategory !== 'all' ? ` (تصنيف: ${filterCategory})` : '';
-            const summarySection = filterCategory !== 'all'
-                ? `
-                <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 mb-3.5 flex justify-between items-center flex-wrap gap-2">
-                    <div>
-                        <span class="text-xs font-extrabold text-indigo-900">صافي حركة التصنيف (${filterCategory})</span>
-                    </div>
-                    <div class="flex gap-4 text-xs">
-                        <div>
-                            <span class="text-slate-500">الدولار: </span>
-                            <strong class="text-sm font-extrabold text-slate-900" dir="ltr">${formatUSD(filteredUsdNet)}</strong>
-                        </div>
-                        <div>
-                            <span class="text-slate-500">السوري: </span>
-                            <strong class="text-sm font-extrabold text-slate-900">${formatSYP(filteredSypNet)}</strong>
-                        </div>
-                    </div>
-                </div>
-                `
-                : `
-                <div class="grid grid-cols-2 gap-2.5 mb-3.5">
-                    <div class="border ${stats.usdBalance < 0 ? 'border-rose-400 bg-rose-50/70' : 'border-emerald-300 bg-emerald-50/50'} rounded-lg px-3 py-2 flex flex-col justify-between">
-                        <div class="flex justify-between items-center gap-1">
-                            <span class="text-[11px] ${stats.usdBalance < 0 ? 'text-rose-800' : 'text-emerald-900'} font-bold">صندوق الدولار ($):</span>
-                            <span class="text-sm sm:text-base font-extrabold ${stats.usdBalance < 0 ? 'text-rose-700' : 'text-emerald-800'}" dir="ltr">${formatUSD(stats.usdBalance)}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/70 flex justify-between font-medium">
-                            <span>وارد: <strong class="text-emerald-700" dir="ltr">${formatUSD(stats.usdIn)}</strong></span>
-                            <span>صادر: <strong class="text-rose-700" dir="ltr">${formatUSD(stats.usdOut)}</strong></span>
-                        </div>
-                    </div>
+            const endDataRow = startDataRow + Math.max(wsTxs.length, 1) - 1;
+            const totalRowNum = endDataRow + 1;
+            const balanceRowNum = endDataRow + 2;
 
-                    <div class="border ${stats.sypBalance < 0 ? 'border-rose-400 bg-rose-50/70' : 'border-blue-300 bg-blue-50/50'} rounded-lg px-3 py-2 flex flex-col justify-between">
-                        <div class="flex justify-between items-center gap-1">
-                            <span class="text-[11px] ${stats.sypBalance < 0 ? 'text-rose-800' : 'text-blue-900'} font-bold">صندوق السوري (ل.س):</span>
-                            <span class="text-sm sm:text-base font-extrabold ${stats.sypBalance < 0 ? 'text-rose-700' : 'text-blue-800'}">${formatSYP(stats.sypBalance)}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/70 flex justify-between font-medium">
-                            <span>وارد: <strong class="text-emerald-700">${formatSYP(stats.sypIn)}</strong></span>
-                            <span>صادر: <strong class="text-rose-700">${formatSYP(stats.sypOut)}</strong></span>
-                        </div>
-                    </div>
-                </div>
-                `;
+            // صف المجاميع باستخدام دالة SUM الحقيقية في إكسل
+            rows.push([
+                '',
+                '',
+                '',
+                '',
+                'المجموع الإجمالي (تلقائي):',
+                { t: 'n', f: `SUM(F${startDataRow}:F${endDataRow})` },
+                { t: 'n', f: `SUM(G${startDataRow}:G${endDataRow})` },
+                { t: 'n', f: `SUM(H${startDataRow}:H${endDataRow})` },
+                { t: 'n', f: `SUM(I${startDataRow}:I${endDataRow})` }
+            ]);
 
-            const reportHtml = `
-                <div class="border-b-2 border-slate-800 pb-2.5 mb-3.5 flex justify-between items-end gap-2">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">كشف حساب: ${ws.name}${titleSuffix}</h2>
-                        ${ws.description ? `<p class="text-[11px] text-slate-600 mt-0.5">${ws.description}</p>` : ''}
-                    </div>
-                    <div class="text-left text-[10px] text-slate-500 shrink-0">
-                        <p class="font-bold text-slate-800">نظام محاسبة الورشات</p>
-                        <p>التاريخ: <span dir="ltr">${getCurrentDateTime()}</span></p>
-                    </div>
-                </div>
+            // صف الرصيد الصافي باستخدام معادلة الطرح الحقيقية في إكسل
+            rows.push([
+                '',
+                '',
+                '',
+                '',
+                'الرصيد الصافي المتبقي:',
+                { t: 'n', f: `F${totalRowNum}-G${totalRowNum}` },
+                '',
+                { t: 'n', f: `H${totalRowNum}-I${totalRowNum}` },
+                ''
+            ]);
 
-                ${summarySection}
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border border-slate-300 border-collapse">
-                        <thead>
-                            <tr class="bg-slate-800 text-white border-b border-slate-300 text-[11px] font-bold">
-                                <th class="py-1.5 px-2 text-center w-8">#</th>
-                                <th class="py-1.5 px-2">التاريخ والوقت</th>
-                                <th class="py-1.5 px-2">النوع</th>
-                                <th class="py-1.5 px-2">التصنيف</th>
-                                <th class="py-1.5 px-2">البيان والتفاصيل</th>
-                                <th class="py-1.5 px-2 text-left">المبلغ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            // تفعيل اتجاه الورقة من اليمين إلى اليسار (RTL) في إكسل
+            worksheet['!views'] = [{ rightToLeft: true }];
 
-            document.getElementById('printableReportArea').innerHTML = reportHtml;
-            openModal('printPreviewModal');
+            // ضبط عرض الأعمدة تلقائياً لتكون واضحة ومقروءة
+            worksheet['!cols'] = [
+                { wch: 6 },  // #
+                { wch: 18 }, // التاريخ
+                { wch: 16 }, // نوع الحركة
+                { wch: 20 }, // التصنيف
+                { wch: 36 }, // البيان
+                { wch: 18 }, // مقبوضات دولار
+                { wch: 18 }, // مدفوعات دولار
+                { wch: 20 }, // مقبوضات سوري
+                { wch: 20 }  // مدفوعات سوري
+            ];
+
+            // دمج خلايا العنوان العلوي
+            worksheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+                { s: { r: 1, c: 2 }, e: { r: 1, c: 8 } }
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            workbook.Workbook = { Views: [{ RTL: true }] };
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'كشف حساب الورشة');
+
+            const safeName = ws.name.replace(/[\\/:*?"<>|]/g, '_');
+            XLSX.writeFile(workbook, `كشف_حساب_${safeName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+            showToast(`تم تصدير ملف الإكسل لورشة "${ws.name}" بمعادلات جمع ورصيد شغالة!`);
         }
 
-        function downloadReportPDF() {
-            const element = document.getElementById('printableReportArea');
-            const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-            const btn = document.getElementById('downloadPdfBtn');
-
-            if (typeof html2pdf === 'undefined') {
-                showToast('جاري تحميل أداة الـ PDF، حاول بعد ثوانٍ أو استخدم زر "حفظ صفحة"', true);
-                return;
-            }
-
-            const origText = btn.innerHTML;
-            btn.innerHTML = '⏳ جاري التجهيز...';
-            btn.disabled = true;
-
-            const origMaxHeight = element.style.maxHeight;
-            const origOverflow = element.style.overflow;
-            element.style.maxHeight = 'none';
-            element.style.overflow = 'visible';
-
-            const fileName = `كشف_حساب_${ws ? ws.name.replace(/\s+/g, '_') : 'ورشة'}_${new Date().toISOString().slice(0, 10)}.pdf`;
-            const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     fileName,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.maxHeight = origMaxHeight;
-                element.style.overflow = origOverflow;
-                btn.innerHTML = origText;
-                btn.disabled = false;
-                showToast('تم تنزيل ملف الـ PDF بمقاس A4 بنجاح!');
-            }).catch((err) => {
-                console.error('PDF Error:', err);
-                element.style.maxHeight = origMaxHeight;
-                element.style.overflow = origOverflow;
-                btn.innerHTML = origText;
-                btn.disabled = false;
-                showToast('تعذر توليد PDF داخل نافذة المعاينة، جرب زر "حفظ صفحة"', true);
-            });
-        }
-
-        function triggerNativePrint() {
-            document.body.classList.add('printing-report');
-            showToast('جاري تجهيز نافذة الطباعة...');
-            setTimeout(() => {
-                try {
-                    window.focus();
-                    window.print();
-                } catch (e) {
-                    showToast('المتصفح المدمج يمنع الطباعة المباشرة، استخدم زر "حفظ ملف" أو "نسخ نصي"', true);
-                }
-                setTimeout(() => {
-                    document.body.classList.remove('printing-report');
-                }, 800);
-            }, 200);
-        }
-
-        function downloadReportHTML() {
-            try {
-                const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-                const content = document.getElementById('printableReportArea').innerHTML;
-                const fullHtml = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>كشف حساب - ${ws ? ws.name : 'ورشة'}</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet"><style>@page{size:A4 portrait;margin:10mm;}body{font-family:'Tajawal',sans-serif;padding:16px;max-width:820px;margin:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{.no-print-btn{display:none!important;}body{padding:0;max-width:100%;}}</style></head><body><div class="no-print-btn" style="margin-bottom:16px;text-align:left;"><button onclick="window.print()" style="background:#1e293b;color:#fff;padding:8px 18px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px;">🖨️ طباعة الكشف الآن</button></div>${content}</body></html>`;
-                
-                const fileName = `كشف_حساب_${ws ? ws.name.replace(/\s+/g, '_') : 'ورشة'}.html`;
-                const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-                const blobUrl = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = fileName;
-                a.target = '_blank';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-                showToast('تم إنشاء الملف!');
-            } catch (err) {
-                showToast('تعذر التنزيل، استخدم زر "نسخ نصي"', true);
-            }
-        }
-
-        function copyReportText() {
-            const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
-            if (!ws) return;
-            const filterCategory = document.getElementById('filterCategory').value;
-            const stats = calculateWorkshopStats(ws.id);
-            
-            let wsTxs = state.transactions
-                .filter(t => t.workshopId === ws.id)
-                .slice()
-                .sort((a, b) => a.date.localeCompare(b.date));
-
-            if (filterCategory !== 'all') {
-                wsTxs = wsTxs.filter(t => (t.category || 'عام / دفعات زبون') === filterCategory && t.type !== 'exchange');
-            }
-
-            let text = `📊 كشف حساب: ${ws.name}${filterCategory !== 'all' ? ' (' + filterCategory + ')' : ''}\n`;
-            text += `📅 التاريخ: ${getCurrentDateTime()}\n`;
-            text += `--------------------------------\n`;
-            if (filterCategory === 'all') {
-                text += `💵 رصيد الدولار: ${formatUSD(stats.usdBalance)}\n`;
-                text += `💴 رصيد السوري: ${formatSYP(stats.sypBalance)}\n`;
-                text += `--------------------------------\n`;
-            }
-            text += `📋 تفاصيل الحركات:\n`;
-
-            wsTxs.forEach((tx, i) => {
-                const cat = tx.category ? `[${tx.category}] ` : '';
-                if (tx.type === 'income') {
-                    const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                    text += `${i + 1}. [وارد] ${cat}+${val} | ${tx.note} (${tx.date})\n`;
-                } else if (tx.type === 'expense') {
-                    const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
-                    text += `${i + 1}. [صادر] ${cat}-${val} | ${tx.note} (${tx.date})\n`;
-                } else if (tx.type === 'exchange') {
-                    const fromStr = tx.direction === 'USD_TO_SYP' ? formatUSD(tx.fromAmount) : formatSYP(tx.fromAmount);
-                    const toStr = tx.direction === 'USD_TO_SYP' ? formatSYP(tx.toAmount) : formatUSD(tx.toAmount);
-                    text += `${i + 1}. [صرافة] من ${fromStr} إلى ${toStr} (سعر ${tx.rate}) | ${tx.note} (${tx.date})\n`;
-                }
-            });
-
-            const tempInput = document.createElement('textarea');
-            tempInput.value = text;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-
-            showToast('تم نسخ كشف الحساب نصياً!');
-        }
-
-        function updateCloudBadge(status, text) {
-            const badge = document.getElementById('cloudStatusBadge');
-            const dot = document.getElementById('cloudStatusDot');
-            const label = document.getElementById('cloudStatusText');
-            if (!badge || !dot || !label) return;
-
-            label.textContent = text;
-            if (status === 'connected') {
-                badge.className = 'flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-700/60 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-300';
-                dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-            } else if (status === 'saving') {
-                badge.className = 'flex items-center gap-1.5 bg-blue-950/80 border border-blue-700/60 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-300';
-                dot.className = 'w-2 h-2 rounded-full bg-blue-400 animate-ping';
-            } else if (status === 'error') {
-                badge.className = 'flex items-center gap-1.5 bg-rose-950/80 border border-rose-700/60 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-300';
-                dot.className = 'w-2 h-2 rounded-full bg-rose-400';
-            }
-        }
-
-        let cloudFns = {};
-
-        async function saveWorkshopToCloud(ws) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحفظ...');
-                const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'workshops', ws.id);
-                await setDoc(ref, {
-                    id: ws.id,
-                    name: ws.name,
-                    description: ws.description || '',
-                    isActive: ws.isActive !== false,
-                    categories: ws.categories || [...DEFAULT_WORKSHOP_CATEGORIES]
-                });
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error saving workshop:', err);
-                if (err && (err.code === 'resource-exhausted' || String(err).includes('quota'))) {
-                    showToast('⚠️ السيرفر ممتلئ! يرجى عمل نسخ احتياطي للورشات غير النشطة لتفريغ المساحة', true);
-                    openBackupModal();
-                }
-                updateCloudBadge('error', 'خطأ في الحفظ');
-            }
-        }
-
-        async function saveTransactionToCloud(tx) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحفظ...');
-                const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'transactions', tx.id);
-                const payload = { ...tx };
-                if (Array.isArray(payload.images)) {
-                    payload.imagesJson = JSON.stringify(payload.images);
-                    delete payload.images;
-                }
-                await setDoc(ref, payload);
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error saving transaction:', err);
-                if (err && (err.code === 'resource-exhausted' || String(err).includes('quota'))) {
-                    showToast('⚠️ السيرفر ممتلئ! يرجى عمل نسخ احتياطي للورشات غير النشطة لتفريغ المساحة', true);
-                    openBackupModal();
-                }
-                updateCloudBadge('error', 'خطأ في الحفظ');
-            }
-        }
-
-        async function saveTransactionToCloud(tx) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحفظ...');
-                const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'transactions', tx.id);
-                const payload = { ...tx };
-                if (Array.isArray(payload.images)) {
-                    payload.imagesJson = JSON.stringify(payload.images);
-                    delete payload.images;
-                }
-                await setDoc(ref, payload);
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error saving transaction:', err);
-                updateCloudBadge('error', 'خطأ في الحفظ');
-            }
-        }
-
-        async function deleteTransactionFromCloud(txId) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحذف...');
-                const { doc, deleteDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'transactions', txId);
-                await deleteDoc(ref);
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error deleting transaction:', err);
-                updateCloudBadge('error', 'خطأ في المزامنة');
-            }
-        }
-
-        async function deleteWorkshopFromCloud(wsId, txsToDelete) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحذف...');
-                const { doc, deleteDoc } = cloudFns;
-                await deleteDoc(doc(db, 'artifacts', appId, 'workshops', wsId));
-                for (const tx of txsToDelete) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'transactions', tx.id));
-                }
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error deleting workshop:', err);
-                updateCloudBadge('error', 'خطأ في المزامنة');
-            }
-        }
-
-        function syncUsersCache() {
-            try {
-                localStorage.setItem('ws_app_users_cache', JSON.stringify(state.users));
-            } catch (e) {}
-        }
-
-        function hasPermission(permKey) {
-            const u = state.loggedInUser;
-            if (!u) return false;
-            if (u.isAdmin) return true;
-            return Boolean(u.permissions && u.permissions[permKey]);
-        }
-
-        function refreshAuthScreenState() {
-            const authScreen = document.getElementById('authScreen');
-            if (state.loggedInUser) {
-                authScreen.classList.add('hidden');
-            } else {
-                authScreen.classList.remove('hidden');
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const errBox = document.getElementById('authErrorBox');
-
-            const found = state.users.find(u => u.username === username && u.password === password);
-            if (!found) {
-                errBox.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
-                errBox.classList.remove('hidden');
-                return;
-            }
-
-            errBox.classList.add('hidden');
-            state.loggedInUser = found;
-            sessionStorage.setItem('ws_logged_user_id', found.id);
-            document.getElementById('loginForm').reset();
-
-            refreshAuthScreenState();
-            updateAllUI();
-            showToast(`تم تسجيل الدخول بنجاح (${found.username})`);
-        }
-
-        function logoutUser() {
-            state.loggedInUser = null;
-            sessionStorage.setItem('ws_logged_user_id', '');
-            refreshAuthScreenState();
-        }
-
-        function applyUserPermissionsUI() {
-            const u = state.loggedInUser;
-            if (!u) return;
-
-            const roleTag = u.isAdmin ? 'مدير عام' : 'مستخدم بصلاحيات محددة';
-            document.getElementById('loggedInUserLabel').textContent = `${u.username} (${roleTag})`;
-
-            const manageUsersBtn = document.getElementById('manageUsersBtn');
-            if (u.isAdmin) manageUsersBtn.classList.remove('hidden');
-            else manageUsersBtn.classList.add('hidden');
-
-            const restoreSec = document.getElementById('restoreBackupSection');
-            const smartArchiveSec = document.getElementById('smartArchiveSection');
-            if (restoreSec) {
-                restoreSec.classList.toggle('hidden', !u.isAdmin);
-            }
-            if (smartArchiveSec) {
-                smartArchiveSec.classList.toggle('hidden', !u.isAdmin);
-            }
-
-            const globalSec = document.getElementById('globalSummarySection');
-            if (hasPermission('viewGlobal')) globalSec.classList.remove('hidden');
-            else globalSec.classList.add('hidden');
-
-            const canWorkshops = hasPermission('manageWorkshops');
-            document.getElementById('addWorkshopBtn').classList.toggle('hidden', !canWorkshops);
-            document.getElementById('btnDeleteWorkshop').classList.toggle('hidden', !canWorkshops);
-            document.getElementById('btnManageCategories').classList.toggle('hidden', !canWorkshops);
-            const toggleWsBtn = document.getElementById('toggleWsStatusBtn');
-            if (toggleWsBtn) toggleWsBtn.classList.toggle('hidden', !canWorkshops);
-            document.getElementById('btnAddIncome').classList.toggle('hidden', !canAddTx);
-            document.getElementById('btnAddExpense').classList.toggle('hidden', !canAddTx);
-            document.getElementById('btnAddExchange').classList.toggle('hidden', !canAddTx);
-
-            const canPrint = hasPermission('print');
-            document.getElementById('btnPrintReport').classList.toggle('hidden', !canPrint);
-        }
-
-        function openUsersModal() {
-            if (!state.loggedInUser || !state.loggedInUser.isAdmin) return;
-            resetUserForm();
-            renderUsersList();
-            openModal('usersModal');
-        }
-
-        function resetUserForm() {
-            document.getElementById('userForm').reset();
-            document.getElementById('editUserId').value = '';
-            document.getElementById('userFormTitle').textContent = '+ إضافة مستخدم جديد';
-            document.getElementById('saveUserBtn').textContent = 'حفظ المستخدم وصلاحياته';
-            document.getElementById('cancelEditUserBtn').classList.add('hidden');
-            document.getElementById('userPermissionsBox').classList.remove('hidden');
-            document.getElementById('permAddTx').checked = true;
-            document.getElementById('permEditDeleteTx').checked = false;
-            document.getElementById('permManageWorkshops').checked = false;
-            document.getElementById('permViewGlobal').checked = false;
-            document.getElementById('permPrint').checked = true;
-        }
-
-        function saveUserAccount(e) {
-            e.preventDefault();
-            if (!state.loggedInUser || !state.loggedInUser.isAdmin) return;
-
-            const editId = document.getElementById('editUserId').value;
-            const username = document.getElementById('userAccountName').value.trim();
-            const password = document.getElementById('userAccountPass').value;
-
-            if (!username || !password) return;
-
-            const duplicate = state.users.find(u => u.username === username && u.id !== editId);
-            if (duplicate) {
-                showToast('اسم المستخدم هذا مستخدم مسبقاً، اختر اسماً آخر!', true);
-                return;
-            }
-
-            if (editId) {
-                const idx = state.users.findIndex(u => u.id === editId);
-                if (idx !== -1) {
-                    state.users[idx].username = username;
-                    state.users[idx].password = password;
-                    if (!state.users[idx].isAdmin) {
-                        state.users[idx].permissions = {
-                            addTx: document.getElementById('permAddTx').checked,
-                            editDeleteTx: document.getElementById('permEditDeleteTx').checked,
-                            manageWorkshops: document.getElementById('permManageWorkshops').checked,
-                            viewGlobal: document.getElementById('permViewGlobal').checked,
-                            print: document.getElementById('permPrint').checked
-                        };
-                    }
-                    if (state.loggedInUser.id === editId) {
-                        state.loggedInUser = state.users[idx];
-                        applyUserPermissionsUI();
-                    }
-                    syncUsersCache();
-                    saveUserToCloud(state.users[idx]);
-                    showToast('تم تحديث بيانات المستخدم وصلاحياته');
-                }
-            } else {
-                const newUser = {
-                    id: 'user-' + Date.now(),
-                    username: username,
-                    password: password,
-                    isAdmin: false,
-                    permissions: {
-                        addTx: document.getElementById('permAddTx').checked,
-                        editDeleteTx: document.getElementById('permEditDeleteTx').checked,
-                        manageWorkshops: document.getElementById('permManageWorkshops').checked,
-                        viewGlobal: document.getElementById('permViewGlobal').checked,
-                        print: document.getElementById('permPrint').checked
-                    }
-                };
-                state.users.push(newUser);
-                syncUsersCache();
-                saveUserToCloud(newUser);
-                showToast(`تمت إضافة المستخدم "${username}" بنجاح`);
-            }
-
-            resetUserForm();
-            renderUsersList();
-        }
-
-        function editUserAccount(userId) {
-            const u = state.users.find(item => item.id === userId);
-            if (!u) return;
-
-            document.getElementById('editUserId').value = u.id;
-            document.getElementById('userAccountName').value = u.username;
-            document.getElementById('userAccountPass').value = u.password;
-            document.getElementById('userFormTitle').textContent = `تعديل حساب: ${u.username}`;
-            document.getElementById('saveUserBtn').textContent = 'حفظ التعديلات';
-            document.getElementById('cancelEditUserBtn').classList.remove('hidden');
-
-            if (u.isAdmin) {
-                document.getElementById('userPermissionsBox').classList.add('hidden');
-            } else {
-                document.getElementById('userPermissionsBox').classList.remove('hidden');
-                document.getElementById('permAddTx').checked = Boolean(u.permissions?.addTx);
-                document.getElementById('permEditDeleteTx').checked = Boolean(u.permissions?.editDeleteTx);
-                document.getElementById('permManageWorkshops').checked = Boolean(u.permissions?.manageWorkshops);
-                document.getElementById('permViewGlobal').checked = Boolean(u.permissions?.viewGlobal);
-                document.getElementById('permPrint').checked = Boolean(u.permissions?.print);
-        // ================= مراقبة مساحة السيرفر السحابي والأرشفة الذكية =================
-        const MAX_CLOUD_BYTES = 950 * 1024 * 1024; // 950 MB حد الأمان قبل 1 GB
-
-        function getEstimatedCloudUsageBytes() {
-            try {
-                const payload = JSON.stringify({
-                    workshops: state.workshops,
-                    transactions: state.transactions,
-                    users: state.users
-                });
-                return new Blob([payload]).size;
-            } catch (e) {
-                return 0;
-            }
-        }
-
-        function isServerStorageFull() {
-            return getEstimatedCloudUsageBytes() >= MAX_CLOUD_BYTES;
-        }
-
-        function updateCloudStorageUsage() {
-            const usedBytes = getEstimatedCloudUsageBytes();
-            const usedMB = (usedBytes / (1024 * 1024)).toFixed(2);
-            const maxMB = 1024;
-            const percent = Math.min(100, Math.round((usedBytes / (1024 * 1024 * maxMB)) * 100));
-
-            const headerPill = document.getElementById('headerStoragePill');
-            if (headerPill) {
-                headerPill.textContent = `${percent}%`;
-                if (percent >= 85) {
-                    headerPill.className = 'hidden sm:inline-block bg-rose-600 text-white text-[10px] px-1.5 py-0.5 rounded-md animate-pulse';
-                } else {
-                    headerPill.className = 'hidden sm:inline-block bg-slate-700 text-sky-300 text-[10px] px-1.5 py-0.5 rounded-md';
-                }
-            }
-
-            const modalText = document.getElementById('modalStorageText');
-            const modalBar = document.getElementById('modalStorageBar');
-            if (modalText && modalBar) {
-                modalText.textContent = `${usedMB} MB / ${maxMB} MB (${percent}%)`;
-                modalBar.style.width = `${Math.max(2, percent)}%`;
-                if (percent >= 85) {
-                    modalBar.className = 'bg-rose-500 h-2.5 rounded-full transition-all duration-500';
-                } else if (percent >= 65) {
-                    modalBar.className = 'bg-amber-500 h-2.5 rounded-full transition-all duration-500';
-                } else {
-                    modalBar.className = 'bg-emerald-500 h-2.5 rounded-full transition-all duration-500';
-                }
-            }
-
-            const banner = document.getElementById('serverFullBanner');
-            if (banner) {
-                if (percent >= 85) {
-                    banner.classList.remove('hidden');
-                } else {
-                    banner.classList.add('hidden');
-                }
-            }
-        }
-
-        function openBackupModal() {
-            applyUserPermissionsUI();
-            updateCloudStorageUsage();
-            renderActiveWorkshopsChecklist();
-            openModal('backupModal');
-        }
-
-        function renderActiveWorkshopsChecklist() {
-            const listEl = document.getElementById('activeWorkshopsChecklist');
-            if (!listEl) return;
-
-            if (state.workshops.length === 0) {
-                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد ورشات مسجلة حالياً</p>';
-                updateArchiveSummaryCount();
-                return;
-            }
-
-            listEl.innerHTML = '';
-            state.workshops.forEach(ws => {
-                const txCount = state.transactions.filter(t => t.workshopId === ws.id).length;
-                const isWsActive = ws.isActive !== false;
-
-                const label = document.createElement('label');
-                label.className = 'flex items-center justify-between p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition';
-                label.innerHTML = `
-                    <div class="flex items-center gap-2.5">
-                        <input type="checkbox" class="active-ws-checkbox w-4 h-4 accent-emerald-600" value="${ws.id}" ${isWsActive ? 'checked' : ''} onchange="updateArchiveSummaryCount()">
-                        <div>
-                            <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">${ws.name}</span>
-                            <span class="text-[11px] text-slate-500">${txCount} حركة/فاتورة مسجلة</span>
-                        </div>
-                    </div>
-                    <span class="ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isWsActive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                        ${isWsActive ? 'نشطة (ستبقى)' : 'غير نشطة (ستؤرشف وتحذف)'}
-                    </span>
-                `;
-                listEl.appendChild(label);
-            });
-
-            updateArchiveSummaryCount();
-        }
-
-        function updateArchiveSummaryCount() {
-            const checkboxes = document.querySelectorAll('.active-ws-checkbox');
-            let inactiveWsCount = 0;
-            let inactiveTxCount = 0;
-
-            checkboxes.forEach(cb => {
-                const pill = cb.closest('label').querySelector('.ws-status-pill');
-                if (cb.checked) {
-                    pill.textContent = 'نشطة (ستبقى)';
-                    pill.className = 'ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800';
-                } else {
-                    pill.textContent = 'غير نشطة (ستؤرشف وتحذف)';
-                    pill.className = 'ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800';
-                    inactiveWsCount++;
-                    inactiveTxCount += state.transactions.filter(t => t.workshopId === cb.value).length;
-                }
-            });
-
-            const statsEl = document.getElementById('archiveStatsText');
-            const btn = document.getElementById('runSmartArchiveBtn');
-            if (statsEl) {
-                statsEl.textContent = `سيتم أرشفة وحذف: ${inactiveWsCount} ورشة (${inactiveTxCount} فاتورة)`;
-            }
-            if (btn) {
-                btn.disabled = (inactiveWsCount === 0);
-                btn.classList.toggle('opacity-50', inactiveWsCount === 0);
-                btn.classList.toggle('cursor-not-allowed', inactiveWsCount === 0);
-            }
-        }
-
-        async function archiveAndCleanInactiveWorkshops() {
-            if (!state.loggedInUser || !state.loggedInUser.isAdmin) return;
-
-            const checkboxes = document.querySelectorAll('.active-ws-checkbox');
-            const activeIds = new Set();
-            checkboxes.forEach(cb => {
-                if (cb.checked) activeIds.add(cb.value);
-            });
-
-            const inactiveWorkshops = state.workshops.filter(w => !activeIds.has(w.id));
-            if (inactiveWorkshops.length === 0) {
-                showToast('يرجى إلغاء تحديد الورشة غير النشطة أولاً لأرشفتها', true);
-                return;
-            }
-
-            const inactiveIds = new Set(inactiveWorkshops.map(w => w.id));
-            const inactiveTransactions = state.transactions.filter(t => inactiveIds.has(t.workshopId));
-
-            const btn = document.getElementById('runSmartArchiveBtn');
-            const origHtml = btn.innerHTML;
-            btn.innerHTML = '⏳ جاري التنزيل وتفريغ السحابة...';
-            btn.disabled = true;
-
-            try {
-                const archivePayload = {
-                    archiveType: 'INACTIVE_WORKSHOPS_ARCHIVE',
-                    archivedAt: getCurrentDateTime(),
-                    workshops: inactiveWorkshops,
-                    transactions: inactiveTransactions
-                };
-                const jsonStr = JSON.stringify(archivePayload, null, 2);
-                const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `أرشيف_ورشات_منتهية_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 5000);
-
-                for (const ws of inactiveWorkshops) {
-                    const wsTxs = inactiveTransactions.filter(t => t.workshopId === ws.id);
-                    await deleteWorkshopFromCloud(ws.id, wsTxs);
-                }
-
-                state.workshops = state.workshops.filter(w => activeIds.has(w.id));
-                state.transactions = state.transactions.filter(t => !inactiveIds.has(t.workshopId));
-
-                if (!state.workshops.some(w => w.id === state.activeWorkshopId)) {
-                    state.activeWorkshopId = state.workshops.length > 0 ? state.workshops[0].id : null;
-                }
-
-                renderActiveWorkshopsChecklist();
-                updateAllUI();
-                showToast(`تم تنزيل أرشيف ${inactiveWorkshops.length} ورشة وحذفها من السحابة لتوفير المساحة!`);
-            } catch (err) {
-                console.error('Archive error:', err);
-                showToast('حدث خطأ أثناء الأرشفة، لم يتم حذف البيانات', true);
-            } finally {
-                btn.innerHTML = origHtml;
-                updateArchiveSummaryCount();
-            }
-        }
-
-        function exportFullBackup() {
-            try {
-                const backupData = {
-                    exportedAt: getCurrentDateTime(),
-                    workshops: state.workshops,
-                    transactions: state.transactions,
-                    users: state.users
-                };
-                const jsonStr = JSON.stringify(backupData, null, 2);
-                const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `نسخة_احتياطية_كاملة_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 5000);
-                showToast('تم تنزيل ملف النسخة الاحتياطية الكاملة على جهازك');
-            } catch (err) {
-                showToast('تعذر تنزيل النسخة الاحتياطية', true);
-            }
-        }
-
-        function importFullBackup(event) {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (!Array.isArray(parsed.workshops) || !Array.isArray(parsed.transactions)) {
-                        showToast('ملف النسخة الاحتياطية غير صالح!', true);
-                        return;
-                    }
-
-                    if (parsed.archiveType === 'INACTIVE_WORKSHOPS_ARCHIVE') {
-                        const existingWsIds = new Set(state.workshops.map(w => w.id));
-                        const existingTxIds = new Set(state.transactions.map(t => t.id));
-
-                        for (const ws of parsed.workshops) {
-                            if (!existingWsIds.has(ws.id)) {
-                                state.workshops.push(ws);
-                                await saveWorkshopToCloud(ws);
-                            }
-                        }
-                        for (const tx of parsed.transactions) {
-                            if (!existingTxIds.has(tx.id)) {
-                                state.transactions.push(tx);
-                                await saveTransactionToCloud(tx);
-                            }
-                        }
-                        renderActiveWorkshopsChecklist();
-                        updateAllUI();
-                        closeModal('backupModal');
-                        showToast('تمت استعادة ودمج الورشات المؤرشفة بنجاح!');
-                        return;
-                    }
-
-                    state.workshops = parsed.workshops;
-                    state.transactions = parsed.transactions;
-                    if (Array.isArray(parsed.users) && parsed.users.length > 0) {
-                        state.users = parsed.users;
-                        syncUsersCache();
-                    }
-
-                    for (const ws of state.workshops) {
-                        await saveWorkshopToCloud(ws);
-                    }
-                    for (const tx of state.transactions) {
-                        await saveTransactionToCloud(tx);
-                    }
-                    for (const u of state.users) {
-                        await saveUserToCloud(u);
-                    }
-
-                    renderActiveWorkshopsChecklist();
-                    updateAllUI();
-                    closeModal('backupModal');
-                    showToast('تمت استعادة كافة البيانات وحفظها سحابياً بنجاح!');
-                } catch (err) {
-                    showToast('حدث خطأ أثناء قراءة ملف الاستعادة', true);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        async function saveUserToCloud(userObj) {
-            if (!cloudReady || !db) return;
-            try {
-                updateCloudBadge('saving', 'جاري الحفظ...');
-                const { doc, setDoc } = cloudFns;
-                const ref = doc(db, 'artifacts', appId, 'app_users', userObj.id);
-                await setDoc(ref, userObj);
-                updateCloudBadge('connected', 'محفوظ سحابياً');
-            } catch (err) {
-                console.error('Error saving user:', err);
-                updateCloudBadge('error', 'خطأ في الحفظ');
-            }
-        }
-
-        async function deleteUserFromCloud(userId) {
-            if (!cloudReady || !db) return;
-            try {
-                const { doc, deleteDoc } = cloudFns;
-                await deleteDoc(doc(db, 'artifacts', appId, 'app_users', userId));
-            } catch (err) {
-                console.error('Error deleting user:', err);
-            }
-        }
-
-        window.onload = function() {
-            const savedSessionId = sessionStorage.getItem('ws_logged_user_id');
-            if (savedSessionId && state.users.length > 0) {
-                state.loggedInUser = state.users.find(u => u.id === savedSessionId) || null;
-            }
-            refreshAuthScreenState();
-            updateAllUI();
-        };
-    </script>
-
-    <!-- تهيئة الاتصال السحابي المركزي الموحد -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        cloudFns = { doc, setDoc, deleteDoc, collection, onSnapshot };
-
-        const MY_CUSTOM_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
-            authDomain: "anas-alasfar.firebaseapp.com",
-            projectId: "anas-alasfar",
-            storageBucket: "anas-alasfar.firebasestorage.app",
-            messagingSenderId: "91067590533",
-            appId: "1:91067590533:web:34851c44aabb8a9e9a46ec"
-        };
-
-        async function initCloudStorage() {
-            try {
-                const app = initializeApp(MY_CUSTOM_FIREBASE_CONFIG);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                await signInAnonymously(auth);
-                cloudReady = true;
-                updateCloudBadge('connected', 'متصل مركزياً');
-
-                let initialWsLoaded = false;
-
-                // مزامنة المستخدمين مركزياً مع ضمان وجود حساب المدير الرئيسي دائماً
-                const usersCol = collection(db, 'artifacts', appId, 'app_users');
-                onSnapshot(usersCol, (snapshot) => {
-                    const loadedUsers = [];
-                    snapshot.forEach(docSnap => {
-                        loadedUsers.push(docSnap.data());
-                    });
-
-                    if (loadedUsers.length > 0) {
-                        state.users = loadedUsers;
-                        syncUsersCache();
-                    } else {
-                        state.users = [DEFAULT_MASTER_ADMIN];
-                        syncUsersCache();
-                        saveUserToCloud(DEFAULT_MASTER_ADMIN);
-                    }
-
-                    const savedSessionId = sessionStorage.getItem('ws_logged_user_id');
-                    if (savedSessionId) {
-                        const activeUser = state.users.find(u => u.id === savedSessionId);
-                        state.loggedInUser = activeUser || null;
-                    }
-
-                    refreshAuthScreenState();
-                    if (state.loggedInUser) {
-                        updateAllUI();
-                    }
-                }, (error) => {
-                    console.error('Users sync error:', error);
-                });
-
-                // مزامنة الورشات مركزياً
-                const wsCol = collection(db, 'artifacts', appId, 'workshops');
-                onSnapshot(wsCol, (snapshot) => {
-                    const loadedWorkshops = [];
-                    snapshot.forEach(docSnap => {
-                        loadedWorkshops.push(docSnap.data());
-                    });
-
-                    if (!initialWsLoaded && loadedWorkshops.length === 0) {
-                        initialWsLoaded = true;
-                        const starterWs = {
-                            id: 'ws-' + Date.now(),
-                            name: 'ورشة العمل الرئيسية',
-                            description: 'ورشة افتراضية جاهزة للعمل',
-                            isActive: true,
-                            categories: [...DEFAULT_WORKSHOP_CATEGORIES]
-                        };
-                        saveWorkshopToCloud(starterWs);
-                        return;
-                    }
-
-                    initialWsLoaded = true;
-                    state.workshops = loadedWorkshops;
-                    if (!state.activeWorkshopId && state.workshops.length > 0) {
-                        state.activeWorkshopId = state.workshops[0].id;
-                    }
-                    updateAllUI();
-                }, (error) => {
-                    console.error('Workshops sync error:', error);
-                    updateCloudBadge('error', 'تعذر المزامنة');
-                });
-
-                // مزامنة الحركات والفواتير مركزياً
-                const txCol = collection(db, 'artifacts', appId, 'transactions');
-                onSnapshot(txCol, (snapshot) => {
-                    const loadedTxs = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        if (data.imagesJson) {
-                            try {
-                                data.images = JSON.parse(data.imagesJson);
-                            } catch (e) {
-                                data.images = [];
-                            }
-                            delete data.imagesJson;
-                        } else if (!Array.isArray(data.images)) {
-                            data.images = [];
-                        }
-                        loadedTxs.push(data);
-                    });
-                    state.transactions = loadedTxs;
-                    updateAllUI();
-                }, (error) => {
-                    console.error('Transactions sync error:', error);
-                    updateCloudBadge('error', 'تعذر المزامنة');
-                });
-
-            } catch (err) {
-                console.error('Cloud init error:', err);
-                updateCloudBadge('error', 'وضع غير متصل');
-            }
-        }
-
-        initCloudStorage();
-    </script>
-</body>
-</html>
+        // ================= تنزيل واستيراد ورشة كملف مستقل =================
+// ... existing code ... -->
