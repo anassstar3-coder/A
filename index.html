@@ -54,12 +54,12 @@
             <div class="flex items-center gap-3 bg-slate-800/80 px-4 py-1.5 rounded-lg border border-slate-700 text-xs">
                 <div>
                     <span class="text-slate-400 text-[10px]">الصندوق السوري العام:</span>
-                    <span id="global-box-SYP" class="font-bold text-emerald-400 mr-1">0</span>
+                    <span id="global-box-SYP" class="font-bold mr-1">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
                 </div>
                 <div class="border-r border-slate-700 h-5 mx-1"></div>
                 <div>
                     <span class="text-slate-400 text-[10px]">صندوق الدولار العام:</span>
-                    <span id="global-box-USD" class="font-bold text-cyan-400 mr-1">0</span>
+                    <span id="global-box-USD" class="font-bold mr-1">0</span> <span class="text-[10px] text-slate-400">$</span>
                 </div>
             </div>
 
@@ -99,12 +99,12 @@
                     <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700 text-xs">
                         <div>
                             <span class="text-slate-400 text-[10px] block">صندوق الورشة (ل.س):</span>
-                            <span id="ws-box-SYP" class="font-bold text-emerald-400">0</span>
+                            <span id="ws-box-SYP" class="font-bold">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
                         </div>
                         <div class="border-r border-slate-700 h-6 mx-1"></div>
                         <div>
                             <span class="text-slate-400 text-[10px] block">صندوق الورشة ($):</span>
-                            <span id="ws-box-USD" class="font-bold text-cyan-400">0</span>
+                            <span id="ws-box-USD" class="font-bold">0</span> <span class="text-[10px] text-slate-400">$</span>
                         </div>
                     </div>
 
@@ -138,7 +138,7 @@
                 <div id="workshop-actions-bar" class="flex flex-wrap gap-2">
                     <button onclick="openTransactionModal('income')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">إضافة إيراد</button>
                     <button onclick="openTransactionModal('expense')" class="bg-slate-800 hover:bg-slate-700 text-rose-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">إضافة مصروف</button>
-                    <button onclick="openTransactionModal('exchange')" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">تحويل / صرافة</button>
+                    <button onclick="openTransactionModal('exchange')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">تحويل / صرافة</button>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
@@ -248,12 +248,12 @@
     </div>
 
     <script>
-        const STORAGE_KEY = "workshops_accounting_secure_data_v4";
+        const STORAGE_KEY = "workshops_accounting_secure_data_v5";
         let dbData = { users: [{ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] }], workshops: [] };
         let currentUser = null, currentWorkshopId = null, importedWorkshopTemp = null;
 
         function initApp() {
-            const possibleKeys = [STORAGE_KEY, "workshops_accounting_secure_data_v3", "workshops_accounting_secure_data_v2", "workshops_accounting_secure_data", "workshops_data"];
+            const possibleKeys = [STORAGE_KEY, "workshops_accounting_secure_data_v4", "workshops_accounting_secure_data_v3", "workshops_accounting_secure_data_v2", "workshops_accounting_secure_data"];
             for (let k of possibleKeys) {
                 const val = localStorage.getItem(k);
                 if (val) {
@@ -336,8 +336,12 @@
                     }
                 });
             });
-            document.getElementById("global-box-SYP").textContent = totalSYP.toLocaleString();
-            document.getElementById("global-box-USD").textContent = totalUSD.toLocaleString();
+            const sypEl = document.getElementById("global-box-SYP");
+            const usdEl = document.getElementById("global-box-USD");
+            sypEl.textContent = totalSYP.toLocaleString();
+            sypEl.className = totalSYP < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/60 px-1 rounded" : "font-bold text-emerald-400 mr-1";
+            usdEl.textContent = totalUSD.toLocaleString();
+            usdEl.className = totalUSD < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/60 px-1 rounded" : "font-bold text-cyan-400 mr-1";
         }
 
         function renderWorkshopsList() {
@@ -394,8 +398,12 @@
                     else { balUSD -= usdVal; balSYP += sypVal; }
                 }
             });
-            document.getElementById("ws-box-SYP").textContent = balSYP.toLocaleString();
-            document.getElementById("ws-box-USD").textContent = balUSD.toLocaleString();
+            const wsSYPEl = document.getElementById("ws-box-SYP");
+            const wsUSDEl = document.getElementById("ws-box-USD");
+            wsSYPEl.textContent = balSYP.toLocaleString();
+            wsSYPEl.className = balSYP < 0 ? "font-bold text-rose-400 bg-rose-950/60 px-1 rounded" : "font-bold text-emerald-400";
+            wsUSDEl.textContent = balUSD.toLocaleString();
+            wsUSDEl.className = balUSD < 0 ? "font-bold text-rose-400 bg-rose-950/60 px-1 rounded" : "font-bold text-cyan-400";
             renderTransactions();
         }
 
@@ -472,26 +480,30 @@
             let runningSYP = 0, runningUSD = 0;
             (w.transactions || []).forEach((tx, idx) => {
                 let amt = parseFloat(tx.amount) || 0, curDescText = "";
+                let badgeClass = '';
                 if (tx.type === 'income') {
                     if (tx.currency === 'USD') { runningUSD += amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP += amt; curDescText = `${amt.toLocaleString()} ل.س`; }
+                    badgeClass = 'bg-emerald-950 text-emerald-300';
                 } else if (tx.type === 'expense') {
                     if (tx.currency === 'USD') { runningUSD -= amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP -= amt; curDescText = `${amt.toLocaleString()} ل.س`; }
+                    badgeClass = 'bg-rose-950 text-rose-300';
                 } else if (tx.type === 'exchange') {
                     let usdVal = parseFloat(tx.usdAmount) || 0, sypVal = parseFloat(tx.sypAmount) || 0;
                     if (tx.direction === 'buy') { runningSYP -= sypVal; runningUSD += usdVal; curDescText = `شراء ${usdVal}$ بسعر ${tx.rate}`; }
                     else { runningUSD -= usdVal; runningSYP += sypVal; curDescText = `بيع ${usdVal}$ بسعر ${tx.rate}`; }
+                    badgeClass = 'bg-amber-950 text-amber-300';
                 }
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800";
                 tr.innerHTML = `
                     <td class="p-3 text-slate-300">${tx.date}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${tx.type==='income'?'bg-emerald-950 text-emerald-300':tx.type==='expense'?'bg-rose-950 text-rose-300':'bg-cyan-950 text-cyan-300'}">${tx.type==='income'?'إيراد':tx.type==='expense'?'مصروف':'صرافة'}</span></td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${tx.type==='income'?'إيراد':tx.type==='expense'?'مصروف':'تحويل/صرافة'}</span></td>
                     <td class="p-3 text-white">${tx.desc}</td>
                     <td class="p-3 font-semibold text-slate-200">${curDescText}</td>
-                    <td class="p-3 font-bold text-emerald-400">${runningSYP.toLocaleString()} ل.س</td>
-                    <td class="p-3 font-bold text-cyan-400">${runningUSD.toLocaleString()} $</td>
+                    <td class="p-3 font-bold ${runningSYP < 0 ? 'text-rose-400 bg-rose-950/60 px-1 rounded' : 'text-emerald-400'}">${runningSYP.toLocaleString()} ل.س</td>
+                    <td class="p-3 font-bold ${runningUSD < 0 ? 'text-rose-400 bg-rose-950/60 px-1 rounded' : 'text-cyan-400'}">${runningUSD.toLocaleString()} $</td>
                     <td class="p-3 text-center no-print">
                         <button onclick="deleteTransaction(${idx})" class="text-rose-400 text-[11px] bg-rose-950/60 border border-rose-900 px-2 py-0.5 rounded">حذف</button>
                     </td>
