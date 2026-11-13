@@ -21,7 +21,7 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- شاشة تسجيل الدخول -->
+    <!-- شاشة تسجيل الدخول بالتصميم الأصلي الأنيق -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
             <div class="text-center mb-6">
@@ -29,7 +29,7 @@
                     🏢
                 </div>
                 <h2 class="text-xl font-extrabold text-slate-900">تسجيل الدخول للنظام</h2>
-                <p class="text-xs text-slate-500 mt-1">أدخل كلمة المرور للوصول إلى حسابات الورشات</p>
+                <p class="text-xs text-slate-500 mt-1">أدخل اسم المستخدم وكلمة المرور للوصول</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
@@ -41,7 +41,7 @@
                     <input type="password" id="loginPass" placeholder="أدخل كلمة المرور" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-indigo-600 transition" required>
                 </div>
                 <div id="loginError" class="hidden bg-rose-50 text-rose-600 text-xs font-bold p-3 rounded-xl border border-rose-200 text-center">
-                    كلمة المرور غير صحيحة!
+                    اسم المستخدم أو كلمة المرور غير صحيحة!
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 transition">
                     دخول النظام
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <!-- التطبيق الرئيسي (مخفي حتى تسجيل الدخول) -->
+    <!-- التطبيق الرئيسي -->
     <div id="mainApp" class="hidden flex flex-col min-h-screen justify-between">
         
         <!-- الشريط العلوي الثابت للورشة الحالية والتبديل السريع -->
@@ -71,7 +71,10 @@
                         <!-- تضاف الورشات ديناميكياً -->
                     </select>
                     <button onclick="openBackupModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition border border-indigo-700 flex items-center gap-1.5">
-                        <span>💾 النسخ الاحتياطي والأرشفة</span>
+                        <span>💾 الأرشفة</span>
+                    </button>
+                    <button onclick="openUsersModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition border border-indigo-700 flex items-center gap-1.5">
+                        <span>👤 المستخدمين</span>
                     </button>
                     <button onclick="logout()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition">
                         خروج
@@ -116,7 +119,7 @@
                         <div class="p-2.5 bg-amber-200 text-amber-900 rounded-xl shrink-0 text-lg">🔒</div>
                         <div>
                             <h4 class="font-extrabold text-amber-950 text-sm">هذه الورشة حالياً (غير نشطة / مؤرشفة)</h4>
-                            <p class="text-xs text-amber-800 mt-0.5">التعديل والإضافة مقفلان لحماية بيانات الورشة المنتهية. لتعديل أو إضافة أي بند يرجى تفعيلها كـ "نشطة" من زر الإعدادات أدناه.</p>
+                            <p class="text-xs text-amber-800 mt-0.5">التعديل والإضافة مقفلان لحماية بيانات الورشة المنتهية. لتعديل أو إضافة أي بند يرجى تفعيلها كـ "نشطة" من زر إعدادات الورشة أدناه.</p>
                         </div>
                     </div>
                     <button type="button" onclick="toggleActiveWorkshopStatus()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition shrink-0 shadow-sm">
@@ -332,7 +335,7 @@
                 <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
             </div>
             <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-                هنا تظهر الورشات التي قمت بتغيير حالتها إلى <strong>"غير نشطة"</strong> لتتمكن من تنزيلها وحذفها من الموقع لتفريغ المساحة على السيرفر:
+                هنا تظهر الورشات التي قمت بتغيير حالتها إلى <strong>"غير نشطة"</strong> لتتمكن من تنزيلها وحذفها من الموقع لتفريغ المساحة:
             </p>
             <div id="inactiveWorkshopsList" class="flex-grow overflow-y-auto space-y-2 mb-4 divide-y divide-slate-100">
                 <!-- تعبئة ديناميكية -->
@@ -348,7 +351,37 @@
         </div>
     </div>
 
-    <!-- جافاسكريبت النظام الأساسي -->
+    <!-- نافذة إدارة المستخدمين وتعديل الحساب -->
+    <div id="usersModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-extrabold text-slate-900">إدارة المستخدمين وكلمات المرور</h3>
+                <button onclick="closeUsersModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+            <div class="space-y-4 flex-grow overflow-y-auto pr-1">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <h4 class="font-extrabold text-xs text-slate-800 mb-3">إضافة مستخدم جديد</h4>
+                    <form onsubmit="addNewUser(event)" class="space-y-3">
+                        <input type="text" id="newUsername" placeholder="اسم المستخدم الجديد" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-indigo-600" required>
+                        <input type="password" id="newUserPass" placeholder="كلمة المرور" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-indigo-600" required>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">إضافة المستخدم</button>
+                    </form>
+                </div>
+
+                <div>
+                    <h4 class="font-extrabold text-xs text-slate-800 mb-2">المستخدمون المسجلون</h4>
+                    <div id="usersListContainer" class="space-y-2 divide-y divide-slate-100">
+                        <!-- تعبئة ديناميكية -->
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 mt-4">
+                <button onclick="closeUsersModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- جافاسكريبت النظام الأساسي المحصن ضد ضياع البيانات -->
     <script>
         let db = {
             workshops: [
@@ -360,22 +393,34 @@
                     transactions: []
                 }
             ],
-            activeWorkshopId: 'ws_1'
+            activeWorkshopId: 'ws_1',
+            users: [
+                { user: 'anas', pass: '789456123147' }
+            ]
         };
 
         window.onload = function() {
             const saved = localStorage.getItem('workshops_app_data');
             if (saved) {
-                try { db = JSON.parse(saved); } catch(e) {}
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.workshops && Array.isArray(parsed.workshops)) {
+                        db = parsed;
+                        // ضمان وجود حساب افتراضي دائماً
+                        if (!db.users || !Array.isArray(db.users) || db.users.length === 0) {
+                            db.users = [{ user: 'anas', pass: '789456123147' }];
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error loading data:', e);
+                }
             }
-            // التحقق من تسجيل الدخول السابق
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
             }
             renderApp();
             
-            // تعيين تاريخ اليوم في النماذج
             const today = new Date().toISOString().split('T')[0];
             if(document.getElementById('transDate')) document.getElementById('transDate').value = today;
             if(document.getElementById('excDate')) document.getElementById('excDate').value = today;
@@ -387,10 +432,14 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const user = document.getElementById('loginUser').value;
-            const pass = document.getElementById('loginPass').value;
+            const inputUser = document.getElementById('loginUser').value.trim();
+            const inputPass = document.getElementById('loginPass').value.trim();
             
-            if (user === 'anas' && pass === '789456123147') {
+            if (!db.users) db.users = [{ user: 'anas', pass: '789456123147' }];
+
+            const found = db.users.find(u => u.user === inputUser && u.pass === inputPass);
+            
+            if (found) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
@@ -402,8 +451,9 @@
 
         function logout() {
             sessionStorage.removeItem('isLoggedIn');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden'); // إبقاء الشاشة واضحة لطلب تسجيل الدخول
+            location.reload();
         }
 
         function getActiveWorkshop() {
@@ -411,7 +461,10 @@
         }
 
         function renderApp() {
-            if (!db.workshops.some(w => w.id === db.activeWorkshopId) && db.workshops.length > 0) {
+            if (!db.workshops || db.workshops.length === 0) {
+                db.workshops = [{ id: 'ws_default', name: 'الورشة الرئيسية', description: '', isActive: true, transactions: [] }];
+            }
+            if (!db.workshops.some(w => w.id === db.activeWorkshopId)) {
                 db.activeWorkshopId = db.workshops[0].id;
             }
             renderTabs();
@@ -421,6 +474,7 @@
 
         function renderTabs() {
             const container = document.getElementById('workshopsTabsContainer');
+            if(!container) return;
             container.innerHTML = '';
             db.workshops.forEach(ws => {
                 const isActive = ws.id === db.activeWorkshopId;
@@ -438,6 +492,7 @@
 
         function renderQuickSelect() {
             const sel = document.getElementById('quickWorkshopSelect');
+            if(!sel) return;
             sel.innerHTML = '';
             db.workshops.forEach(ws => {
                 const opt = document.createElement('option');
@@ -480,7 +535,6 @@
                 if (inactiveBanner) inactiveBanner.classList.remove('hidden');
             }
 
-            // حساب الإجماليات
             let usdIncome = 0, usdExpense = 0, sypIncome = 0, sypExpense = 0;
             const tbody = document.getElementById('transactionsTableBody');
             tbody.innerHTML = '';
@@ -561,7 +615,6 @@
             }
         });
 
-        // النماذج
         function openTransactionModal(type) {
             const ws = getActiveWorkshop();
             if (ws.isActive === false) {
@@ -775,7 +828,6 @@
                     dlAnchor.remove();
                 }
             });
-            // حذفها من الموقع بعد التنزيل
             const selectedIds = Array.from(checkboxes).map(cb => cb.value);
             db.workshops = db.workshops.filter(w => !selectedIds.includes(w.id));
             if (db.workshops.length === 0) {
@@ -795,6 +847,66 @@
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
+        }
+
+        function openUsersModal() {
+            renderUsersList();
+            document.getElementById('usersModal').classList.remove('hidden');
+        }
+
+        function closeUsersModal() {
+            document.getElementById('usersModal').classList.add('hidden');
+        }
+
+        function renderUsersList() {
+            const container = document.getElementById('usersListContainer');
+            container.innerHTML = '';
+            if (!db.users) db.users = [{ user: 'anas', pass: '789456123147' }];
+
+            db.users.forEach((u, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between py-2 text-xs font-bold text-slate-700';
+                div.innerHTML = `
+                    <span>👤 ${u.user}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-400 font-mono">••••••••</span>
+                        ${db.users.length > 1 ? `<button onclick="deleteUser(${index})" class="text-rose-500 hover:text-rose-700">🗑️</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addNewUser(e) {
+            e.preventDefault();
+            const u = document.getElementById('newUsername').value.trim();
+            const p = document.getElementById('newUserPass').value.trim();
+            if (!u || !p) return;
+
+            if (!db.users) db.users = [{ user: 'anas', pass: '789456123147' }];
+            if (db.users.some(item => item.user === u)) {
+                alert('اسم المستخدم موجود مسبقاً!');
+                return;
+            }
+
+            db.users.push({ user: u, pass: p });
+            saveData();
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newUserPass').value = '';
+            renderUsersList();
+            alert('تمت إضافة المستخدم بنجاح!');
+        }
+
+        function deleteUser(index) {
+            if (db.users.length <= 1) {
+                alert('لا يمكنك حذف الحساب الوحيد في النظام!');
+                return;
+            }
+            if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
+                db.users.splice(index, 1);
+                saveData();
+                renderUsersList();
+            }
         }
 
         function printWorkshopReport() {
