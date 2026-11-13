@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام محاسبة الورشات والمشاريع - السحابي</title>
+    <title>محاسبة الورشات - إدارة الصناديق المزدوجة</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- مكتبات Firebase للربط السحابي المباشر -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -21,31 +21,33 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-md w-full shadow-2xl">
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-slate-800 border border-slate-700 rounded-xl mx-auto mb-3 flex items-center justify-center">
-                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+    <!-- شاشة تسجيل الدخول الأنيقة -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-[#0f172a] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl p-7 sm:p-9 max-w-md w-full shadow-2xl border border-slate-100 my-auto">
+            <div class="text-center mb-7">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-600/30">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
                 </div>
-                <h1 class="text-lg font-bold text-white tracking-wide">تسجيل الدخول للنظام</h1>
-                <p class="text-slate-400 text-xs mt-1">النظام المالي والمحاسبي للورشات والصناديق</p>
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">تسجيل الدخول للنظام</h1>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1.5 font-medium">أدخل اسم المستخدم وكلمة المرور للمتابعة</p>
             </div>
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">اسم المستخدم</label>
-                    <input type="text" id="login-user" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-slate-500" placeholder="أدخل اسم المستخدم">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المستخدم:</label>
+                    <input type="text" id="login-user" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white transition" placeholder="ادخل اسم المستخدم...">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">كلمة المرور</label>
-                    <input type="password" id="login-pass" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-slate-500" placeholder="••••••••">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">كلمة المرور:</label>
+                    <input type="password" id="login-pass" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white transition" placeholder="••••••••">
                 </div>
-                <div id="login-error" class="text-rose-400 text-xs hidden text-center bg-rose-950/40 p-2.5 rounded-lg border border-rose-900/50"></div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-lg text-xs transition border border-slate-700">دخول للنظام</button>
+                <div id="login-error" class="text-rose-600 text-xs font-semibold hidden text-center bg-rose-50 p-3 rounded-xl border border-rose-200"></div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-blue-600/25 mt-2">دخول إلى النظام</button>
             </form>
-            <div class="mt-4 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-400">
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] font-semibold text-slate-400">
                 <span id="login-cloud-status">حالة السحابة: جاري الاتصال...</span>
             </div>
         </div>
@@ -53,52 +55,85 @@
 
     <!-- التطبيق الأساسي -->
     <div id="app-content" class="hidden flex-col min-h-screen">
-        <!-- الشريط العلوي -->
-        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex flex-wrap justify-between items-center gap-4 no-print">
-            <div class="flex items-center gap-3">
-                <span class="text-sm font-bold text-white">نظام محاسبة الورشات</span>
-                <div onclick="openCloudConfigModal()" id="cloud-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 transition">
-                    <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-                    <span id="cloud-status-text">جاري الاتصال بالسحابة...</span>
+        <!-- الشريط العلوي الكحلي الأنيق -->
+        <header class="bg-[#0f172a] text-white sticky top-0 z-40 shadow-md no-print">
+            <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-600/30 shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold text-white leading-tight">محاسبة الورشات</h1>
+                        <p class="text-[11px] text-slate-400">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- الصناديق الكبرى الرئيسية -->
-            <div class="flex items-center gap-3 bg-slate-800/80 px-4 py-1.5 rounded-lg border border-slate-700 text-xs">
-                <div>
-                    <span class="text-slate-400 text-[10px]">الصندوق السوري العام:</span>
-                    <span id="global-box-SYP" class="font-bold mr-1">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
+                <!-- مؤشر السحابة وأزرار الإدارة -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div onclick="openCloudConfigModal()" id="cloud-status-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 transition">
+                        <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span id="cloud-status-text">جاري الاتصال...</span>
+                    </div>
+                    <button onclick="exportFullBackup()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-slate-700">نسخة كاملة</button>
+                    <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-slate-700 cursor-pointer">
+                        استعادة
+                        <input type="file" accept=".json" onchange="importFullBackup(event)" class="hidden">
+                    </label>
+                    <button onclick="openArchiveModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-slate-700">الأرشيف</button>
+                    <button onclick="openUsersModal()" id="users-btn" class="hidden bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 px-3 py-1.5 rounded-lg text-xs font-bold transition border border-blue-500/30">المستخدمين</button>
+                    <button onclick="logout()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition">خروج</button>
                 </div>
-                <div class="border-r border-slate-700 h-5 mx-1"></div>
-                <div>
-                    <span class="text-slate-400 text-[10px]">صندوق الدولار العام:</span>
-                    <span id="global-box-USD" class="font-bold mr-1">0</span> <span class="text-[10px] text-slate-400">$</span>
-                </div>
-            </div>
-
-            <!-- أزرار التحكم العلوية -->
-            <div class="flex flex-wrap items-center gap-2">
-                <button onclick="exportFullBackup()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">نسخة احتياطية كاملة</button>
-                <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700 cursor-pointer">
-                    استعادة كاملة
-                    <input type="file" accept=".json" onchange="importFullBackup(event)" class="hidden">
-                </label>
-                <button onclick="openArchiveModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">الأرشيف والتنبيهات</button>
-                <button onclick="openUsersModal()" id="users-btn" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">المستخدمين</button>
-                <button onclick="logout()" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-3 py-1.5 rounded text-xs font-medium transition">خروج</button>
             </div>
         </header>
 
         <!-- المحتوى الرئيسي -->
-        <main class="flex-1 p-4 max-w-7xl mx-auto w-full space-y-6">
+        <main class="flex-1 p-4 max-w-6xl mx-auto w-full space-y-5">
             
-            <!-- قسم الورشات -->
-            <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 no-print">
-                <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-                    <h2 class="text-sm font-bold text-white">قائمة الورشات والمشاريع</h2>
+            <!-- الصناديق الكبرى الرئيسية (بتصميم البطاقات الأنيق) -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-3.5 no-print">
+                <!-- بطاقة إجمالي الدولار -->
+                <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 block mb-1">إجمالي رصيد الدولار (كل الورشات)</span>
+                        <div class="flex items-baseline gap-1.5" dir="ltr">
+                            <span class="text-lg font-extrabold text-emerald-600">$</span>
+                            <span id="global-box-USD" class="text-2xl font-extrabold text-emerald-600">0.00</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-extrabold text-xl shrink-0">
+                        $
+                    </div>
+                </div>
+
+                <!-- بطاقة إجمالي السوري -->
+                <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 block mb-1">إجمالي رصيد السوري (كل الورشات)</span>
+                        <div class="flex items-baseline gap-1.5">
+                            <span id="global-box-SYP" class="text-2xl font-extrabold text-blue-600">0</span>
+                            <span class="text-xs font-extrabold text-blue-600">ل.س</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-extrabold text-sm shrink-0">
+                        ل.س
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم اختيار وإضافة الورشات -->
+            <section class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 no-print space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-1.5 rounded text-xs font-semibold transition border border-slate-700">+ ورشة جديدة</button>
-                        <label id="btn-import-ws" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        <h2 class="text-sm font-extrabold text-slate-800">اختر الورشة لإدارة حساباتها:</h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="flex-1 sm:flex-initial bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5">
+                            <span>+ إضافة ورشة جديدة</span>
+                        </button>
+                        <label id="btn-import-ws" class="flex-1 sm:flex-initial bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-center">
                             استيراد ورشة
                             <input type="file" accept=".json" onchange="importSingleWorkshop(event)" class="hidden">
                         </label>
@@ -106,80 +141,128 @@
                 </div>
 
                 <!-- معاينة الورشة المستوردة باللون الرمادي -->
-                <div id="imported-preview-box" class="hidden mb-4 bg-slate-800/80 border border-slate-600 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 grayscale">
+                <div id="imported-preview-box" class="hidden bg-slate-100 border border-slate-300 rounded-xl p-4 flex flex-wrap justify-between items-center gap-3 grayscale">
                     <div>
-                        <span class="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-[10px] font-bold">معاينة مؤقتة</span>
-                        <h4 id="imported-preview-name" class="font-bold text-slate-200 text-xs mt-1"></h4>
+                        <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] font-bold">معاينة مؤقتة</span>
+                        <h4 id="imported-preview-name" class="font-bold text-slate-800 text-xs mt-1"></h4>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="confirmImportedWorkshop()" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-1.5 rounded text-xs font-semibold border border-slate-500">اعتماد وإضافة الورشة</button>
-                        <button onclick="cancelImportedWorkshop()" class="bg-slate-900 text-slate-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold border border-slate-700">إلغاء</button>
+                        <button onclick="confirmImportedWorkshop()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold">اعتماد وإضافة الورشة</button>
+                        <button onclick="cancelImportedWorkshop()" class="bg-white text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300">إلغاء</button>
                     </div>
                 </div>
 
-                <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+                <!-- شبكة بطاقات الورشات -->
+                <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
             </section>
 
             <!-- تفاصيل الورشة النشطة المحددة -->
             <div id="active-workshop-container" class="hidden space-y-4">
-                <div id="workshop-header-banner" class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-3">
-                            <h3 id="current-workshop-title" class="text-base font-bold text-white"></h3>
-                            <span id="current-workshop-status-badge" class="px-2.5 py-0.5 rounded text-[11px] font-bold"></span>
+                <!-- بطاقة رأس الورشة والصناديق الفرعية -->
+                <div id="workshop-header-banner" class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200/80 space-y-5">
+                    
+                    <!-- الصف العلوي: اسم الورشة والحالة + أزرار العمليات -->
+                    <div class="flex flex-wrap justify-between items-start gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <h3 id="current-workshop-title" class="text-xl sm:text-2xl font-extrabold text-slate-900"></h3>
+                                <span id="current-workshop-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold"></span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 no-print">إدارة الصناديق المزدوجة وسجل الحركات المالية للورشة</p>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5 no-print">الصناديق الفرعية وسجل الحركات المالية للورشة</p>
+
+                        <!-- أزرار الطباعة والتصدير والإجراءات السريعة -->
+                        <div class="flex flex-wrap items-center gap-2 no-print">
+                            <button onclick="window.print()" title="طباعة كشف الحساب" class="bg-slate-900 hover:bg-slate-800 text-white p-2.5 rounded-xl transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            </button>
+                            <button onclick="exportCurrentWorkshopJson()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition border border-slate-200">تصدير الورشة</button>
+                            <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-100 border border-slate-200 text-slate-700 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none cursor-pointer">
+                                <option value="">المزيد...</option>
+                                <option value="toggle-status" id="opt-toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
+                                <option value="export-excel">تصدير Excel (.csv)</option>
+                                <option value="delete-workshop" id="opt-delete-workshop" class="text-rose-600">حذف الورشة نهائياً</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- الصناديق الفرعية للورشة -->
-                    <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 text-xs">
-                        <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (سوري):</span>
-                            <span id="ws-box-SYP" class="font-bold">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
-                        </div>
-                        <div class="border-r border-slate-700 h-6 mx-1"></div>
-                        <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (دولار):</span>
-                            <span id="ws-box-USD" class="font-bold">0</span> <span class="text-[10px] text-slate-400">$</span>
-                        </div>
+                    <!-- أزرار إضافة الحركات (إيراد - مصروف - صرافة) بنفس ألوان وتصميم الصورة -->
+                    <div id="workshop-actions-bar" class="grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap no-print">
+                        <button onclick="openTransactionModal('income')" class="bg-[#059669] hover:bg-[#047857] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                            <span>+ إيراد</span>
+                        </button>
+                        <button onclick="openTransactionModal('expense')" class="bg-[#e11d48] hover:bg-[#be123c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                            <span>− مصروف</span>
+                        </button>
+                        <button onclick="openTransactionModal('exchange')" class="bg-[#f59e0b] hover:bg-[#d97706] text-slate-950 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                            <span>⇄ صرافة</span>
+                        </button>
                     </div>
 
-                    <!-- إجراءات الورشة وتصديرها -->
-                    <div class="flex items-center gap-2 no-print">
-                        <button onclick="exportCurrentWorkshopJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">تصدير الورشة</button>
-                        <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none cursor-pointer">
-                            <option value="">إجراءات الورشة</option>
-                            <option value="toggle-status" id="opt-toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
-                            <option value="export-excel">تصدير Excel (.csv)</option>
-                            <option value="print-sheet">طباعة كشف الحساب</option>
-                            <option value="delete-workshop" id="opt-delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
-                        </select>
+                    <!-- الصناديق الفرعية للورشة (بطاقة الدولار + بطاقة الليرة السورية مع مجموع الإيرادات والمصروفات) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        <!-- صندوق الدولار الأمريكي للورشة -->
+                        <div id="ws-card-USD" class="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="inline-block px-2.5 py-0.5 rounded-md bg-emerald-200/70 text-emerald-900 text-[11px] font-extrabold mb-2">صندوق الدولار الأمريكي</span>
+                                    <div class="flex items-baseline gap-1.5" dir="ltr">
+                                        <span class="text-xl font-extrabold text-emerald-700">$</span>
+                                        <span id="ws-box-USD" class="text-2xl sm:text-3xl font-extrabold text-emerald-700">0.00</span>
+                                    </div>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="pt-2.5 border-t border-emerald-200/60 flex justify-between items-center text-[11px] font-bold">
+                                <span class="text-emerald-700">مجموع الإيرادات: <span id="ws-inc-USD" dir="ltr">$0</span></span>
+                                <span class="text-rose-600">مجموع المصروفات: <span id="ws-exp-USD" dir="ltr">$0</span></span>
+                            </div>
+                        </div>
+
+                        <!-- صندوق الليرة السورية للورشة -->
+                        <div id="ws-card-SYP" class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 sm:p-5 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="inline-block px-2.5 py-0.5 rounded-md bg-blue-200/70 text-blue-900 text-[11px] font-extrabold mb-2">صندوق الليرة السورية</span>
+                                    <div class="flex items-baseline gap-1.5">
+                                        <span id="ws-box-SYP" class="text-2xl sm:text-3xl font-extrabold text-blue-700">0</span>
+                                        <span class="text-sm font-extrabold text-blue-700">ل.س</span>
+                                    </div>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-extrabold text-sm shrink-0">
+                                    ل.س
+                                </div>
+                            </div>
+                            <div class="pt-2.5 border-t border-blue-200/60 flex justify-between items-center text-[11px] font-bold">
+                                <span class="text-blue-700">مجموع الإيرادات: <span id="ws-inc-SYP">0 ل.س</span></span>
+                                <span class="text-rose-600">مجموع المصروفات: <span id="ws-exp-SYP">0 ل.س</span></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- أزرار إضافة الحركات -->
-                <div id="workshop-actions-bar" class="flex flex-wrap gap-2 no-print">
-                    <button onclick="openTransactionModal('income')" class="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">+ إضافة إيراد</button>
-                    <button onclick="openTransactionModal('expense')" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">- إضافة مصروف</button>
-                    <button onclick="openTransactionModal('exchange')" class="bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">تحويل / صرافة عملات</button>
-                </div>
-
-                <!-- جدول الحركات -->
-                <div id="transactions-card" class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <!-- جدول الحركات المالية للورشة -->
+                <div id="transactions-card" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                    <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200/80 flex justify-between items-center">
+                        <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">سجل الحركات المالية للورشة</h4>
+                        <span id="tx-count-badge" class="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-0.5 rounded-full border border-slate-200">0 حركة</span>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right border-collapse">
                             <thead>
-                                <tr class="bg-slate-800/80 text-slate-300 text-xs border-b border-slate-700">
-                                    <th class="p-3">التاريخ</th>
-                                    <th class="p-3">نوع الحركة</th>
-                                    <th class="p-3">البيان والتفاصيل</th>
-                                    <th class="p-3">العملة والمبلغ</th>
-                                    <th class="p-3">الرصيد التراكمي (سوري)</th>
-                                    <th class="p-3">الرصيد التراكمي ($)</th>
-                                    <th class="p-3 text-center no-print">إجراءات</th>
+                                <tr class="bg-slate-50/80 text-slate-500 text-[11px] font-extrabold border-b border-slate-200">
+                                    <th class="p-3.5">التاريخ</th>
+                                    <th class="p-3.5">نوع الحركة</th>
+                                    <th class="p-3.5">البيان والتفاصيل</th>
+                                    <th class="p-3.5">العملة والمبلغ</th>
+                                    <th class="p-3.5">الرصيد التراكمي (سوري)</th>
+                                    <th class="p-3.5">الرصيد التراكمي ($)</th>
+                                    <th class="p-3.5 text-center no-print">إجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="transactions-table-body" class="divide-y divide-slate-800 text-xs"></tbody>
+                            <tbody id="transactions-table-body" class="divide-y divide-slate-100 text-xs"></tbody>
                         </table>
                     </div>
                 </div>
@@ -188,104 +271,107 @@
     </div>
 
     <!-- نافذة إعدادات الربط السحابي (محمية للمالك فقط وبكلمة مرور) -->
-    <div id="cloud-config-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="text-sm font-bold text-white">إعدادات المزامنة السحابية (للمالك فقط)</h3>
-                <span id="modal-cloud-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">متصل تلقائياً</span>
+    <div id="cloud-config-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900">إعدادات المزامنة السحابية (للمالك فقط)</h3>
+                <span id="modal-cloud-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">متصل تلقائياً</span>
             </div>
-            <p class="text-xs text-slate-400 leading-relaxed">
-                المشروع السحابي (<code class="text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded">anas-alasfar</code>) مثبت ومؤمّن. لتعديل أو تحديث مفاتيح السحابة، أدخل الكود أدناه مع تأكيد كلمة مرور المالك:
+            <p class="text-xs text-slate-500 leading-relaxed">
+                المشروع السحابي (<code class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">anas-alasfar</code>) مثبت ومؤمّن. لتعديل أو تحديث مفاتيح السحابة، أدخل الكود أدناه مع تأكيد كلمة مرور المالك:
             </p>
             <div>
-                <textarea id="firebase-config-input" rows="6" dir="ltr" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-slate-500"></textarea>
+                <textarea id="firebase-config-input" rows="6" dir="ltr" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none"></textarea>
             </div>
             <div>
-                <label class="block text-xs font-medium text-amber-300 mb-1">كلمة مرور المالك للتأكيد:</label>
-                <input type="password" id="cloud-admin-pass-confirm" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500" placeholder="أدخل كلمة مرور حساب المالك">
+                <label class="block text-xs font-bold text-amber-700 mb-1">كلمة مرور المالك للتأكيد:</label>
+                <input type="password" id="cloud-admin-pass-confirm" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600" placeholder="أدخل كلمة مرور حساب المالك">
             </div>
             <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
-                <button onclick="resetToDefaultCloud()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded text-xs">استعادة الإعداد التلقائي</button>
+                <button onclick="resetToDefaultCloud()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold">استعادة الإعداد التلقائي</button>
                 <div class="flex gap-2">
-                    <button onclick="closeCloudConfigModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
-                    <button onclick="saveCloudConfig()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ وتحديث الاتصال</button>
+                    <button onclick="closeCloudConfigModal()" class="bg-slate-100 text-slate-600 px-3.5 py-2 rounded-xl text-xs font-bold">إغلاق</button>
+                    <button onclick="saveCloudConfig()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold">حفظ وتحديث</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- نافذة ورشة جديدة -->
-    <div id="new-workshop-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-md w-full shadow-2xl space-y-3">
-            <h3 class="text-sm font-bold text-white">إضافة ورشة عمل جديدة</h3>
-            <input type="text" id="new-ws-name" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white focus:outline-none" placeholder="اسم الورشة أو المشروع">
+    <div id="new-workshop-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 class="text-base font-extrabold text-slate-900">إضافة ورشة عمل جديدة</h3>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">اسم الورشة أو المشروع:</label>
+                <input type="text" id="new-ws-name" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-blue-600" placeholder="مثال: ورشة البناء - مشروع النور">
+            </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeNewWorkshopModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إلغاء</button>
-                <button onclick="saveNewWorkshop()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ الورشة</button>
+                <button onclick="closeNewWorkshopModal()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold">إلغاء</button>
+                <button onclick="saveNewWorkshop()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-xs font-bold">حفظ الورشة</button>
             </div>
         </div>
     </div>
 
     <!-- نافذة الأرشيف والتنبيهات -->
-    <div id="archive-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-xl w-full shadow-2xl space-y-3">
-            <h3 class="text-sm font-bold text-white">إدارة الأرشيف وسعة التخزين</h3>
-            <div id="storage-quota-info" class="p-3 rounded bg-slate-800 border border-slate-700 text-xs"></div>
+    <div id="archive-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 max-w-xl w-full shadow-2xl space-y-4">
+            <h3 class="text-base font-extrabold text-slate-900">إدارة الأرشيف وسعة التخزين</h3>
+            <div id="storage-quota-info" class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold"></div>
             <div class="flex justify-between items-center pt-1">
-                <span class="text-xs text-slate-400">الورشات غير النشطة (المؤرشفة):</span>
-                <button onclick="exportAllInactiveWorkshops()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[11px] border border-slate-700">تصدير كل غير النشطة كملف</button>
+                <span class="text-xs font-bold text-slate-600">الورشات غير النشطة (المؤرشفة):</span>
+                <button onclick="exportAllInactiveWorkshops()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-200">تصدير الكل كملف</button>
             </div>
             <div id="inactive-workshops-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
             <div class="flex justify-end pt-2">
-                <button onclick="closeArchiveModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
+                <button onclick="closeArchiveModal()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold">إغلاق</button>
             </div>
         </div>
     </div>
 
     <!-- نافذة المستخدمين والصلاحيات الشاملة -->
-    <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="text-sm font-bold text-white">إدارة المستخدمين وتخصيص الصلاحيات</h3>
-                <span id="user-form-mode-badge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">إضافة مستخدم جديد</span>
+    <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-extrabold text-slate-900">إدارة المستخدمين وتخصيص الصلاحيات</h3>
+                <span id="user-form-mode-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">إضافة مستخدم جديد</span>
             </div>
 
             <!-- نموذج إضافة أو تعديل مستخدم -->
-            <div class="bg-slate-800/40 p-4 rounded-lg border border-slate-700 space-y-3">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3.5">
                 <input type="hidden" id="edit-user-index" value="-1">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">اسم المستخدم</label>
-                        <input type="text" id="user-form-name" placeholder="اسم المستخدم" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
+                        <input type="text" id="user-form-name" placeholder="اسم المستخدم" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">كلمة المرور</label>
-                        <input type="text" id="user-form-pass" placeholder="كلمة المرور" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                        <input type="text" id="user-form-pass" placeholder="كلمة المرور" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900">
                     </div>
                 </div>
 
                 <!-- صلاحيات العمليات -->
                 <div>
-                    <label class="block text-[11px] text-slate-300 font-semibold mb-1.5">صلاحيات العمليات المسموحة لهذا المستخدم:</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-900 p-3 rounded border border-slate-700 text-xs">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">صلاحيات العمليات المسموحة لهذا المستخدم:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-white p-3.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="perm-create-ws" class="rounded bg-slate-800 border-slate-600">
+                            <input type="checkbox" id="perm-create-ws" class="rounded text-blue-600">
                             <span>إنشاء واستيراد ورشات جديدة</span>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer text-rose-300">
-                            <input type="checkbox" id="perm-delete-ws" class="rounded bg-slate-800 border-slate-600">
+                        <label class="flex items-center gap-2 cursor-pointer text-rose-600">
+                            <input type="checkbox" id="perm-delete-ws" class="rounded text-rose-600">
                             <span>السماح بحذف الورشات</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="perm-add-tx" checked class="rounded bg-slate-800 border-slate-600">
-                            <span>إضافة حركات مالية (إيراد / مصروف / صرافة)</span>
+                            <input type="checkbox" id="perm-add-tx" checked class="rounded text-blue-600">
+                            <span>إضافة حركات (إيراد / مصروف / صرافة)</span>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer text-rose-300">
-                            <input type="checkbox" id="perm-delete-tx" class="rounded bg-slate-800 border-slate-600">
+                        <label class="flex items-center gap-2 cursor-pointer text-rose-600">
+                            <input type="checkbox" id="perm-delete-tx" class="rounded text-rose-600">
                             <span>السماح بحذف الحركات المالية</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer sm:col-span-2">
-                            <input type="checkbox" id="perm-toggle-ws" class="rounded bg-slate-800 border-slate-600">
+                            <input type="checkbox" id="perm-toggle-ws" class="rounded text-blue-600">
                             <span>تبديل حالة الورشة (نشطة / غير نشطة)</span>
                         </label>
                     </div>
@@ -293,69 +379,69 @@
 
                 <!-- الورشات المسموح رؤيتها -->
                 <div>
-                    <label class="block text-[11px] text-slate-300 font-semibold mb-1.5">الورشات المسموح له برؤيتها والعمل عليها:</label>
-                    <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-3 max-h-28 overflow-y-auto p-2.5 bg-slate-900 rounded border border-slate-700"></div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">الورشات المسموح له برؤيتها والعمل عليها:</label>
+                    <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-3 max-h-28 overflow-y-auto p-3 bg-white rounded-xl border border-slate-200"></div>
                 </div>
 
                 <div class="flex gap-2 pt-1">
-                    <button onclick="saveUserForm()" id="btn-save-user-form" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white py-2 rounded text-xs font-semibold transition">حفظ وإضافة المستخدم</button>
-                    <button onclick="resetUserForm()" id="btn-cancel-edit-user" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded text-xs font-semibold transition">إلغاء التعديل</button>
+                    <button onclick="saveUserForm()" id="btn-save-user-form" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold transition">حفظ وإضافة المستخدم</button>
+                    <button onclick="resetUserForm()" id="btn-cancel-edit-user" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold transition">إلغاء التعديل</button>
                 </div>
             </div>
 
             <!-- قائمة المستخدمين الحاليين -->
             <div class="space-y-2">
-                <h4 class="text-xs font-semibold text-slate-400">المستخدمون المسجلون حالياً:</h4>
+                <h4 class="text-xs font-extrabold text-slate-600">المستخدمون المسجلون حالياً:</h4>
                 <div id="users-list-container" class="space-y-2 max-h-48 overflow-y-auto"></div>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeUsersModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded text-xs">إغلاق النافذة</button>
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button onclick="closeUsersModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold">إغلاق النافذة</button>
             </div>
         </div>
     </div>
 
     <!-- نافذة إضافة حركة مالية -->
-    <div id="transaction-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-md w-full shadow-2xl space-y-3">
-            <h3 id="tx-modal-title" class="text-sm font-bold text-white">حركة مالية جديدة</h3>
-            <form onsubmit="saveTransaction(event)" class="space-y-3">
+    <div id="transaction-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 id="tx-modal-title" class="text-base font-extrabold text-slate-900">حركة مالية جديدة</h3>
+            <form onsubmit="saveTransaction(event)" class="space-y-3.5">
                 <input type="hidden" id="tx-type">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">البيان / التفاصيل</label>
-                    <input type="text" id="tx-desc" required class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="شرح الحركة المالية">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">البيان / التفاصيل</label>
+                    <input type="text" id="tx-desc" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600" placeholder="شرح الحركة المالية">
                 </div>
                 <div id="tx-currency-container">
-                    <label class="block text-xs font-medium text-slate-300 mb-1">عملة الحركة (سوري حصراً أو دولار حصراً)</label>
-                    <select id="tx-currency" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-xs text-white">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">عملة الحركة (سوري حصراً أو دولار حصراً)</label>
+                    <select id="tx-currency" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600">
                         <option value="SYP">ليرة سورية (ل.س)</option>
                         <option value="USD">دولار أمريكي ($)</option>
                     </select>
                 </div>
                 <div id="tx-amount-container">
-                    <label class="block text-xs font-medium text-slate-300 mb-1">المبلغ</label>
-                    <input type="number" step="any" id="tx-amount" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="0">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ</label>
+                    <input type="number" step="any" id="tx-amount" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600" placeholder="0">
                 </div>
                 <div id="tx-exchange-container" class="hidden space-y-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">نوع عملية الصرافة</label>
-                        <select id="ex-direction" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-xs text-white">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">نوع عملية الصرافة</label>
+                        <select id="ex-direction" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900">
                             <option value="buy">شراء دولار (دفع سوري واستلام دولار)</option>
                             <option value="sell">بيع دولار (دفع دولار واستلام سوري)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">المبلغ بالدولار ($)</label>
-                        <input type="number" step="any" id="ex-usd" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="0">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ بالدولار ($)</label>
+                        <input type="number" step="any" id="ex-usd" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-slate-900" placeholder="0">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">سعر صرف الدولار بالليرة السورية</label>
-                        <input type="number" step="any" id="ex-rate" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="مثلاً: 15000">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">سعر صرف الدولار بالليرة السورية</label>
+                        <input type="number" step="any" id="ex-rate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-bold text-slate-900" placeholder="مثلاً: 15000">
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeTransactionModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إلغاء</button>
-                    <button type="submit" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ الحركة</button>
+                    <button type="button" onclick="closeTransactionModal()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold">إلغاء</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-xs font-bold">حفظ الحركة</button>
                 </div>
             </form>
         </div>
@@ -480,7 +566,7 @@
                 if (unsubscribeSnapshot) unsubscribeSnapshot();
                 unsubscribeSnapshot = docRef.onSnapshot((docSnap) => {
                     isCloudConnected = true;
-                    updateCloudUI(true, "متصل بالسحابة (مزامنة فورية)");
+                    updateCloudUI(true, "متصل بالسحابة");
                     
                     if (docSnap.exists) {
                         const cloudData = docSnap.data();
@@ -519,11 +605,11 @@
                 }, (error) => {
                     console.error("Firestore Sync Error:", error);
                     isCloudConnected = false;
-                    updateCloudUI(false, "تعذر الاتصال بالسحابة (يعمل محلياً)");
+                    updateCloudUI(false, "يعمل محلياً");
                 });
             } catch (err) {
                 isCloudConnected = false;
-                updateCloudUI(false, "خطأ في الاتصال بالسحابة");
+                updateCloudUI(false, "خطأ اتصال");
             }
         }
 
@@ -539,17 +625,17 @@
             if (modalBadge) {
                 modalBadge.textContent = connected ? "متصل بالسحابة بنجاح" : "غير متصل بالسحابة";
                 modalBadge.className = connected
-                    ? "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800"
-                    : "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800";
+                    ? "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800"
+                    : "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800";
             }
 
             if (badge && dot) {
                 const cursorClass = isOwner() ? "cursor-pointer hover:opacity-90" : "cursor-default";
                 if (connected) {
-                    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 transition ${cursorClass}`;
+                    badge.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 transition ${cursorClass}`;
                     dot.className = "w-2 h-2 rounded-full bg-emerald-400";
                 } else {
-                    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 transition ${cursorClass}`;
+                    badge.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 transition ${cursorClass}`;
                     dot.className = "w-2 h-2 rounded-full bg-amber-400";
                 }
             }
@@ -566,9 +652,8 @@
             }
         }
 
-        // حماية نافذة الربط السحابي للمالك فقط وبكلمة مرور
         function openCloudConfigModal() {
-            if (!isOwner()) return; // لا يستجيب للمستخدمين العاديين إطلاقاً
+            if (!isOwner()) return;
             const saved = localStorage.getItem(CLOUD_CONFIG_KEY) || JSON.stringify(HARDCODED_FIREBASE_CONFIG, null, 2);
             document.getElementById("firebase-config-input").value = saved;
             document.getElementById("cloud-admin-pass-confirm").value = "";
@@ -685,6 +770,16 @@
             applyRolePermissionsUI();
             updateGlobalBoxes();
             renderWorkshopsList();
+            
+            // فتح أول ورشة تلقائياً إذا لم تكن هناك ورشة مفتوحة
+            if (!currentWorkshopId && dbData.workshops.length > 0) {
+                let accessible = dbData.workshops;
+                if (!isOwner()) {
+                    const allowed = currentUser.allowedWorkshops || [];
+                    accessible = accessible.filter(w => allowed.includes("all") || allowed.includes(w.id));
+                }
+                if (accessible.length > 0) selectWorkshop(accessible[0].id);
+            }
         }
 
         function updateGlobalBoxes() {
@@ -707,9 +802,9 @@
             const sypEl = document.getElementById("global-box-SYP");
             const usdEl = document.getElementById("global-box-USD");
             sypEl.textContent = totalSYP.toLocaleString();
-            sypEl.className = totalSYP < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-emerald-400 mr-1";
-            usdEl.textContent = totalUSD.toLocaleString();
-            usdEl.className = totalUSD < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-cyan-400 mr-1";
+            sypEl.className = totalSYP < 0 ? "text-2xl font-extrabold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg" : "text-2xl font-extrabold text-blue-600";
+            usdEl.textContent = totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            usdEl.className = totalUSD < 0 ? "text-2xl font-extrabold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg" : "text-2xl font-extrabold text-emerald-600";
         }
 
         function renderWorkshopsList() {
@@ -721,27 +816,27 @@
                 list = list.filter(w => allowed.includes("all") || allowed.includes(w.id));
             }
             if (list.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-6 text-slate-500 text-xs">لا توجد ورشات مخصصة لحسابك حالياً</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-6 text-slate-400 text-xs font-semibold">لا توجد ورشات مخصصة لحسابك حالياً</div>`;
                 return;
             }
             list.forEach(w => {
                 const isActive = w.active !== false;
                 const isSelected = w.id === currentWorkshopId;
                 const card = document.createElement("div");
-                card.className = `p-3.5 rounded-lg border transition flex flex-col justify-between gap-3 ${
+                card.onclick = () => selectWorkshop(w.id);
+                card.className = `p-4 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${
                     isActive 
-                        ? (isSelected ? 'bg-slate-800 border-slate-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:border-slate-700') 
-                        : 'bg-slate-800/30 border-slate-700/50 text-slate-400 grayscale'
+                        ? (isSelected ? 'bg-blue-50/70 border-blue-500 ring-2 ring-blue-500/20 shadow-sm' : 'bg-slate-50/70 border-slate-200 hover:border-blue-300 hover:bg-white') 
+                        : 'bg-slate-100 border-slate-300 text-slate-500 grayscale'
                 }`;
                 card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start gap-2">
-                            <h4 class="font-bold text-white text-xs">${w.name}</h4>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300'}">${isActive ? 'نشطة' : 'غير نشطة'}</span>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-extrabold text-slate-900 text-sm truncate">${w.name}</h4>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1">عدد الحركات: ${(w.transactions || []).length}</p>
+                        <p class="text-[11px] text-slate-400 font-semibold mt-0.5">عدد الحركات: ${(w.transactions || []).length}</p>
                     </div>
-                    <button onclick="selectWorkshop('${w.id}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-xs font-semibold border border-slate-700 transition">فتح الورشة</button>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold shrink-0 ${isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">${isActive ? 'نشطة' : 'غير نشطة'}</span>
                 `;
                 container.appendChild(card);
             });
@@ -772,8 +867,8 @@
             
             const isActive = w.active !== false;
             const badge = document.getElementById("current-workshop-status-badge");
-            badge.textContent = isActive ? "نشطة" : "غير نشطة (مؤرشفة)";
-            badge.className = `px-2.5 py-0.5 rounded text-[11px] font-bold ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300 border border-slate-600'}`;
+            badge.textContent = isActive ? "نشطة" : "غير نشطة";
+            badge.className = `px-3 py-0.5 rounded-full text-xs font-extrabold ${isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'}`;
 
             if (!hasPermission("addTx")) {
                 actionsBar.classList.add("hidden");
@@ -792,26 +887,57 @@
             }
 
             let balSYP = 0, balUSD = 0;
+            let incSYP = 0, expSYP = 0;
+            let incUSD = 0, expUSD = 0;
+
             (w.transactions || []).forEach(tx => {
                 let amt = parseFloat(tx.amount) || 0;
                 if (tx.type === 'income') {
-                    if (tx.currency === 'USD') balUSD += amt; else balSYP += amt;
+                    if (tx.currency === 'USD') { balUSD += amt; incUSD += amt; }
+                    else { balSYP += amt; incSYP += amt; }
                 } else if (tx.type === 'expense') {
-                    if (tx.currency === 'USD') balUSD -= amt; else balSYP -= amt;
+                    if (tx.currency === 'USD') { balUSD -= amt; expUSD += amt; }
+                    else { balSYP -= amt; expSYP += amt; }
                 } else if (tx.type === 'exchange') {
                     let usdVal = parseFloat(tx.usdAmount) || 0;
                     let sypVal = parseFloat(tx.sypAmount) || 0;
-                    if (tx.direction === 'buy') { balSYP -= sypVal; balUSD += usdVal; }
-                    else { balUSD -= usdVal; balSYP += sypVal; }
+                    if (tx.direction === 'buy') {
+                        balSYP -= sypVal; expSYP += sypVal;
+                        balUSD += usdVal; incUSD += usdVal;
+                    } else {
+                        balUSD -= usdVal; expUSD += usdVal;
+                        balSYP += sypVal; incSYP += sypVal;
+                    }
                 }
             });
 
-            const wsSYPEl = document.getElementById("ws-box-SYP");
+            // تحديث بطاقة الدولار للورشة
             const wsUSDEl = document.getElementById("ws-box-USD");
+            const wsCardUSD = document.getElementById("ws-card-USD");
+            wsUSDEl.textContent = balUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (balUSD < 0) {
+                wsUSDEl.className = "text-2xl sm:text-3xl font-extrabold text-rose-600";
+                wsCardUSD.className = "bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 space-y-3 transition";
+            } else {
+                wsUSDEl.className = "text-2xl sm:text-3xl font-extrabold text-emerald-700";
+                wsCardUSD.className = "bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-3 transition";
+            }
+            document.getElementById("ws-inc-USD").textContent = "$" + incUSD.toLocaleString();
+            document.getElementById("ws-exp-USD").textContent = "$" + expUSD.toLocaleString();
+
+            // تحديث بطاقة السوري للورشة
+            const wsSYPEl = document.getElementById("ws-box-SYP");
+            const wsCardSYP = document.getElementById("ws-card-SYP");
             wsSYPEl.textContent = balSYP.toLocaleString();
-            wsSYPEl.className = balSYP < 0 ? "font-bold text-rose-400 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-emerald-400";
-            wsUSDEl.textContent = balUSD.toLocaleString();
-            wsUSDEl.className = balUSD < 0 ? "font-bold text-rose-400 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-cyan-400";
+            if (balSYP < 0) {
+                wsSYPEl.className = "text-2xl sm:text-3xl font-extrabold text-rose-600";
+                wsCardSYP.className = "bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 space-y-3 transition";
+            } else {
+                wsSYPEl.className = "text-2xl sm:text-3xl font-extrabold text-blue-700";
+                wsCardSYP.className = "bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 sm:p-5 space-y-3 transition";
+            }
+            document.getElementById("ws-inc-SYP").textContent = incSYP.toLocaleString() + " ل.س";
+            document.getElementById("ws-exp-SYP").textContent = expSYP.toLocaleString() + " ل.س";
 
             renderTransactions();
         }
@@ -859,8 +985,6 @@
                 selectWorkshop(w.id);
             } else if (val === "export-excel") {
                 exportWorkshopExcel(w);
-            } else if (val === "print-sheet") {
-                window.print();
             } else if (val === "delete-workshop") {
                 if (!hasPermission("deleteWs")) { alert("ليس لديك صلاحية حذف الورشات."); return; }
                 if (confirm(`هل أنت متأكد من حذف ورشة "${w.name}" نهائياً؟`)) {
@@ -935,29 +1059,33 @@
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
             const tbody = document.getElementById("transactions-table-body");
+            const countBadge = document.getElementById("tx-count-badge");
             tbody.innerHTML = "";
             let runningSYP = 0, runningUSD = 0;
 
-            if (!w.transactions || w.transactions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد حركات مالية مسجلة في هذه الورشة بعد</td></tr>`;
+            const txList = w.transactions || [];
+            if (countBadge) countBadge.textContent = `${txList.length} حركة`;
+
+            if (txList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 font-semibold">لا توجد حركات مالية مسجلة في هذه الورشة بعد</td></tr>`;
                 return;
             }
 
             const canDeleteTx = hasPermission("deleteTx");
 
-            w.transactions.forEach((tx, idx) => {
+            txList.forEach((tx, idx) => {
                 let amt = parseFloat(tx.amount) || 0, curDescText = "";
                 let badgeClass = '', typeLabel = '';
 
                 if (tx.type === 'income') {
                     if (tx.currency === 'USD') { runningUSD += amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP += amt; curDescText = `${amt.toLocaleString()} ل.س`; }
-                    badgeClass = 'bg-emerald-950 text-emerald-300 border border-emerald-800/60';
+                    badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
                     typeLabel = 'إيراد';
                 } else if (tx.type === 'expense') {
                     if (tx.currency === 'USD') { runningUSD -= amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP -= amt; curDescText = `${amt.toLocaleString()} ل.س`; }
-                    badgeClass = 'bg-rose-950 text-rose-300 border border-rose-800/60';
+                    badgeClass = 'bg-rose-100 text-rose-800 border border-rose-200';
                     typeLabel = 'مصروف';
                 } else if (tx.type === 'exchange') {
                     let usdVal = parseFloat(tx.usdAmount) || 0, sypVal = parseFloat(tx.sypAmount) || 0;
@@ -968,21 +1096,21 @@
                         runningUSD -= usdVal; runningSYP += sypVal;
                         curDescText = `بيع ${usdVal.toLocaleString()} $ بسعر ${Number(tx.rate).toLocaleString()} ل.س`;
                     }
-                    badgeClass = 'bg-amber-950 text-amber-300 border border-amber-800/60';
-                    typeLabel = 'تحويل / صرافة';
+                    badgeClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+                    typeLabel = 'صرافة / تحويل';
                 }
 
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800";
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
                 tr.innerHTML = `
-                    <td class="p-3 text-slate-300 whitespace-nowrap">${tx.date}</td>
-                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-0.5 rounded text-[11px] font-bold ${badgeClass}">${typeLabel}</span></td>
-                    <td class="p-3 text-white">${tx.desc}</td>
-                    <td class="p-3 font-semibold text-slate-200 whitespace-nowrap">${curDescText}</td>
-                    <td class="p-3 font-bold whitespace-nowrap ${runningSYP < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-emerald-400'}">${runningSYP.toLocaleString()} ل.س</td>
-                    <td class="p-3 font-bold whitespace-nowrap ${runningUSD < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-cyan-400'}">${runningUSD.toLocaleString()} $</td>
-                    <td class="p-3 text-center no-print">
-                        ${canDeleteTx ? `<button onclick="deleteTransaction(${idx})" class="text-rose-400 hover:bg-rose-900/60 text-[11px] bg-rose-950/60 border border-rose-900 px-2.5 py-1 rounded transition">حذف</button>` : '<span class="text-slate-600 text-[10px]">محمي</span>'}
+                    <td class="p-3.5 text-slate-500 font-semibold whitespace-nowrap">${tx.date}</td>
+                    <td class="p-3.5 whitespace-nowrap"><span class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${badgeClass}">${typeLabel}</span></td>
+                    <td class="p-3.5 text-slate-800 font-bold">${tx.desc}</td>
+                    <td class="p-3.5 font-extrabold text-slate-700 whitespace-nowrap">${curDescText}</td>
+                    <td class="p-3.5 font-extrabold whitespace-nowrap ${runningSYP < 0 ? 'text-rose-600 bg-rose-50' : 'text-blue-700'}">${runningSYP.toLocaleString()} ل.س</td>
+                    <td class="p-3.5 font-extrabold whitespace-nowrap ${runningUSD < 0 ? 'text-rose-600 bg-rose-50' : 'text-emerald-700'}">${runningUSD.toLocaleString()} $</td>
+                    <td class="p-3.5 text-center no-print">
+                        ${canDeleteTx ? `<button onclick="deleteTransaction(${idx})" class="text-rose-600 hover:bg-rose-100 text-[11px] font-bold bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg transition">حذف</button>` : '<span class="text-slate-400 text-[10px]">محمي</span>'}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1006,7 +1134,7 @@
             const title = document.getElementById("tx-modal-title");
 
             if (type === 'exchange') {
-                title.textContent = "حركة تحويل وصرافة عملات";
+                title.textContent = "حركة صرافة وتحويل عملات";
                 amtContainer.classList.add("hidden");
                 curContainer.classList.add("hidden");
                 exContainer.classList.remove("hidden");
@@ -1103,27 +1231,27 @@
             let totalBytes = new Blob([JSON.stringify(dbData)]).size;
             let kbSize = (totalBytes / 1024).toFixed(2);
             if (kbSize > 4000) {
-                quotaDiv.innerHTML = `<span class="text-rose-400 font-bold">تنبيه هام: مساحة التخزين اقتربت من الامتلاء (${kbSize} KB / 5000 KB)! يرجى تصدير وحذف الورشات غير النشطة.</span>`;
+                quotaDiv.innerHTML = `<span class="text-rose-600 font-bold">تنبيه هام: مساحة التخزين اقتربت من الامتلاء (${kbSize} KB / 5000 KB)! يرجى تصدير وحذف الورشات غير النشطة.</span>`;
             } else {
-                quotaDiv.innerHTML = `<span class="text-emerald-400">حالة مساحة التخزين ممتازة (${kbSize} KB مستخدمة).</span>`;
+                quotaDiv.innerHTML = `<span class="text-emerald-700 font-bold">حالة مساحة التخزين ممتازة (${kbSize} KB مستخدمة).</span>`;
             }
 
             listDiv.innerHTML = "";
             const inactiveList = dbData.workshops.filter(w => w.active === false);
             if (inactiveList.length === 0) {
-                listDiv.innerHTML = `<p class="text-slate-500 text-xs py-2">لا توجد ورشات غير نشطة حالياً.</p>`;
+                listDiv.innerHTML = `<p class="text-slate-400 text-xs py-2">لا توجد ورشات غير نشطة حالياً.</p>`;
             } else {
                 inactiveList.forEach(w => {
                     const item = document.createElement("div");
-                    item.className = "flex justify-between items-center bg-slate-800 p-2.5 rounded border border-slate-700 text-xs";
+                    item.className = "flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs";
                     item.innerHTML = `
                         <div>
-                            <span class="font-bold text-white block">${w.name}</span>
-                            <span class="text-[10px] text-slate-400">الحركات: ${(w.transactions || []).length}</span>
+                            <span class="font-bold text-slate-900 block">${w.name}</span>
+                            <span class="text-[10px] text-slate-500">الحركات: ${(w.transactions || []).length}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="exportSingleInactive('${w.id}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded">نسخ كملف</button>
-                            ${hasPermission("deleteWs") ? `<button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2.5 py-1 rounded">حذف لتفريغ المساحة</button>` : ''}
+                            <button onclick="exportSingleInactive('${w.id}')" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-lg font-bold">نسخ كملف</button>
+                            ${hasPermission("deleteWs") ? `<button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg font-bold">حذف لتفريغ المساحة</button>` : ''}
                         </div>
                     `;
                     listDiv.appendChild(item);
@@ -1180,13 +1308,13 @@
         function renderWorkshopsCheckboxes(selectedList = []) {
             const cbContainer = document.getElementById("permissions-workshops-checkboxes");
             const isAll = selectedList.includes("all");
-            let html = `<label class="flex items-center gap-1.5 text-xs text-emerald-300 font-semibold cursor-pointer">
-                <input type="checkbox" value="all" ${isAll ? "checked" : ""} class="user-ws-cb"> كافة الورشات
+            let html = `<label class="flex items-center gap-1.5 text-xs text-emerald-700 font-extrabold cursor-pointer">
+                <input type="checkbox" value="all" ${isAll ? "checked" : ""} class="user-ws-cb rounded text-blue-600"> كافة الورشات
             </label>`;
             dbData.workshops.forEach(w => {
                 const isChecked = selectedList.includes(w.id);
-                html += `<label class="flex items-center gap-1.5 text-xs text-slate-200 cursor-pointer">
-                    <input type="checkbox" value="${w.id}" ${isChecked ? "checked" : ""} class="user-ws-cb"> ${w.name}
+                html += `<label class="flex items-center gap-1.5 text-xs text-slate-700 font-semibold cursor-pointer">
+                    <input type="checkbox" value="${w.id}" ${isChecked ? "checked" : ""} class="user-ws-cb rounded text-blue-600"> ${w.name}
                 </label>`;
             });
             cbContainer.innerHTML = html;
@@ -1205,7 +1333,7 @@
             document.getElementById("perm-toggle-ws").checked = false;
 
             document.getElementById("user-form-mode-badge").textContent = "إضافة مستخدم جديد";
-            document.getElementById("user-form-mode-badge").className = "text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+            document.getElementById("user-form-mode-badge").className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
             document.getElementById("btn-save-user-form").textContent = "حفظ وإضافة المستخدم";
             document.getElementById("btn-cancel-edit-user").classList.add("hidden");
             renderWorkshopsCheckboxes([]);
@@ -1229,7 +1357,7 @@
             renderWorkshopsCheckboxes(u.allowedWorkshops || []);
 
             document.getElementById("user-form-mode-badge").textContent = `تعديل صلاحيات: ${u.username}`;
-            document.getElementById("user-form-mode-badge").className = "text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800";
+            document.getElementById("user-form-mode-badge").className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800";
             document.getElementById("btn-save-user-form").textContent = "حفظ التعديلات والصلاحيات";
             document.getElementById("btn-cancel-edit-user").classList.remove("hidden");
         }
@@ -1288,28 +1416,28 @@
                 let permsBadges = "";
                 if (!isMainOwner) {
                     const p = u.permissions || {};
-                    if (p.createWs) permsBadges += `<span class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-200">إنشاء ورش</span>`;
-                    if (p.deleteWs) permsBadges += `<span class="px-1.5 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300">حذف ورش</span>`;
-                    if (p.addTx !== false) permsBadges += `<span class="px-1.5 py-0.5 bg-emerald-950 border border-emerald-800 rounded text-[10px] text-emerald-300">إضافة حركات</span>`;
-                    if (p.deleteTx) permsBadges += `<span class="px-1.5 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300">حذف حركات</span>`;
-                    if (p.toggleWs) permsBadges += `<span class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-200">تبديل حالة الورشة</span>`;
-                    if (!permsBadges) permsBadges = `<span class="px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-slate-400">مشاهدة فقط</span>`;
+                    if (p.createWs) permsBadges += `<span class="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold text-slate-800">إنشاء ورش</span>`;
+                    if (p.deleteWs) permsBadges += `<span class="px-2 py-0.5 bg-rose-100 border border-rose-200 rounded text-[10px] font-bold text-rose-800">حذف ورش</span>`;
+                    if (p.addTx !== false) permsBadges += `<span class="px-2 py-0.5 bg-emerald-100 border border-emerald-200 rounded text-[10px] font-bold text-emerald-800">إضافة حركات</span>`;
+                    if (p.deleteTx) permsBadges += `<span class="px-2 py-0.5 bg-rose-100 border border-rose-200 rounded text-[10px] font-bold text-rose-800">حذف حركات</span>`;
+                    if (p.toggleWs) permsBadges += `<span class="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold text-slate-800">تبديل حالة الورشة</span>`;
+                    if (!permsBadges) permsBadges = `<span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-500">مشاهدة فقط</span>`;
                 }
 
                 listContainer.innerHTML += `
-                    <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-800 p-3 rounded-lg border border-slate-700 text-xs">
+                    <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-white">${u.username}</span>
-                                <span class="text-[10px] text-slate-400">(${wsSummary})</span>
+                                <span class="font-extrabold text-slate-900">${u.username}</span>
+                                <span class="text-[11px] font-semibold text-slate-500">(${wsSummary})</span>
                             </div>
                             <div class="flex flex-wrap gap-1">${permsBadges}</div>
                         </div>
                         <div class="flex items-center gap-2">
                             ${!isMainOwner ? `
-                                <button onclick="editUser(${idx})" class="bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-800/60 px-2.5 py-1 rounded text-[11px] font-semibold">تعديل الصلاحيات</button>
-                                <button onclick="deleteUser(${idx})" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-2.5 py-1 rounded text-[11px]">حذف</button>
-                            ` : '<span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800 px-2 py-1 rounded">المالك الأساسي (صلاحيات مطلقة)</span>'}
+                                <button onclick="editUser(${idx})" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1.5 rounded-lg text-[11px] font-bold">تعديل الصلاحيات</button>
+                                <button onclick="deleteUser(${idx})" class="bg-rose-100 hover:bg-rose-200 text-rose-800 px-2.5 py-1.5 rounded-lg text-[11px] font-bold">حذف</button>
+                            ` : '<span class="text-[10px] text-emerald-800 font-extrabold bg-emerald-100 px-2.5 py-1 rounded-full">المالك الأساسي (صلاحيات مطلقة)</span>'}
                         </div>
                     </div>`;
             });
