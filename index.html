@@ -38,6 +38,10 @@
             scrollbar-width: none;
         }
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
             body {
                 background-color: #ffffff !important;
                 padding: 0 !important;
@@ -66,11 +70,11 @@
             #printableReportArea {
                 max-height: none !important;
                 overflow: visible !important;
-                padding: 10px !important;
+                padding: 0 !important;
             }
             table {
                 width: 100% !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
             }
         }
     </style>
@@ -137,9 +141,9 @@
                         <span class="sm:hidden">المستخدمون</span>
                     </button>
 
-                    <button type="button" id="backupBtn" onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="نسخة احتياطية على جهازك">
+                    <button type="button" id="backupBtn" onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="النسخ الاحتياطي وتفريغ المساحة">
                         <svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        <span class="hidden sm:inline">نسخ احتياطي</span>
+                        <span>النسخ الاحتياطي والأرشفة</span>
                     </button>
 
                     <div id="cloudStatusBadge" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold text-amber-400">
@@ -684,7 +688,7 @@
             <div class="bg-slate-900 text-white px-4 sm:px-5 py-3 flex flex-wrap justify-between items-center gap-2.5 no-print">
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    <span class="font-bold text-xs sm:text-sm">معاينة كشف الحساب</span>
+                    <span class="font-bold text-xs sm:text-sm">معاينة كشف الحساب (مقياس A4)</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <button type="button" id="downloadPdfBtn" onclick="downloadReportPDF()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
@@ -705,7 +709,7 @@
                 </div>
             </div>
 
-            <div id="printableReportArea" class="p-4 sm:p-8 bg-white text-slate-900 max-h-[78vh] overflow-y-auto">
+            <div id="printableReportArea" class="p-4 sm:p-6 bg-white text-slate-900 max-h-[80vh] overflow-y-auto">
             </div>
         </div>
     </div>
@@ -782,36 +786,62 @@
         </div>
     </div>
 
-    <!-- 9. نافذة النسخ الاحتياطي -->
+    <!-- 9. نافذة النسخ الاحتياطي والأرشفة الذكية لتفريغ المساحة -->
     <div id="backupModal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-auto">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                <h3 class="text-lg sm:text-xl font-extrabold text-slate-800">النسخ الاحتياطي وحفظ البيانات</h3>
+                <div>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-800">النسخ الاحتياطي والأرشفة الذكية</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">احفظ بياناتك أو أرشف الورشات المنتهية لتفريغ مساحة السحابة</p>
+                </div>
                 <button type="button" onclick="closeModal('backupModal')" class="text-slate-400 hover:text-slate-600 p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <div class="mt-4 space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                <div class="bg-sky-50 border border-sky-200 rounded-xl p-3.5 text-sky-900">
-                    <p class="font-extrabold mb-1">أين تُحفظ بياناتك الآن؟</p>
-                    <p class="text-xs">جميع الورشات والفواتير والصور والمستخدمين محفوظة تلقائياً في <strong>السحابة</strong> المركزية المرتبطة بحسابك. ولضمان عدم ضياع أي شيء أبداً ولتملك نسخة خاصة على جهازك أو هاتفك، يمكنك تنزيل ملف نسخة احتياطية في أي وقت.</p>
+            <div class="mt-4 space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed max-h-[75vh] overflow-y-auto pl-1">
+                
+                <!-- القسم الذكي: أرشفة وتفريغ الورشات غير النشطة -->
+                <div id="smartArchiveSection" class="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-start gap-2.5">
+                        <div class="p-2 bg-amber-100 text-amber-800 rounded-xl shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-amber-950 text-sm">أرشفة وتفريغ الورشات غير النشطة (لتوفير المساحة)</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">ضع علامة صح <strong>(✔)</strong> بجانب <strong>الورشات النشطة</strong> التي تريد بقاءها على الموقع. أما الورشات غير المحددة فسيتم تنزيلها في ملف أرشيف على جهازك ثم حذفها تلقائياً من السحابة لتفريغ المساحة!</p>
+                        </div>
+                    </div>
+
+                    <!-- قائمة تحديد الورشات النشطة -->
+                    <div id="activeWorkshopsChecklist" class="space-y-2 max-h-48 overflow-y-auto bg-white p-3 rounded-xl border border-amber-200">
+                        <!-- يتم توليد قائمة الورشات هنا -->
+                    </div>
+
+                    <div id="archiveSummaryBar" class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-1">
+                        <span id="archiveStatsText" class="text-xs font-bold text-slate-700">سيتم أرشفة وحذف: 0 ورشة</span>
+                        <button type="button" id="runSmartArchiveBtn" onclick="archiveAndCleanInactiveWorkshops()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+                            <span>📦 تنزيل أرشيف غير النشطة وحذفها من الموقع</span>
+                        </button>
+                    </div>
                 </div>
 
+                <!-- النسخ الاحتياطي الكامل -->
                 <div class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <h4 class="font-extrabold text-slate-800">1. تنزيل نسخة احتياطية كاملة</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">يحفظ كل الورشات والحسابات والصور في ملف واحد على جهازك</p>
+                        <h4 class="font-extrabold text-slate-800">1. تنزيل نسخة احتياطية كاملة لكل شيء</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">يحفظ كل الورشات الحالية والحسابات والصور في ملف واحد على جهازك</p>
                     </div>
                     <button type="button" onclick="exportFullBackup()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0">
-                        ⬇ تنزيل النسخة الآن
+                        ⬇ تنزيل النسخة الكاملة
                     </button>
                 </div>
 
+                <!-- استعادة بيانات أو أرشيف سابق -->
                 <div id="restoreBackupSection" class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <h4 class="font-extrabold text-slate-800">2. استعادة بيانات من ملف سابق</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">ارفع ملف النسخة الاحتياطية لاسترجاع كافة بياناتك فوراً</p>
+                        <h4 class="font-extrabold text-slate-800">2. استعادة بيانات أو دمج أرشيف سابق</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">ارفع ملف نسخة احتياطية أو ملف أرشيف سابق لإرجاع ورشاته للموقع فوراً</p>
                     </div>
                     <label class="w-full sm:w-auto text-center cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0">
                         ⬆ اختيار ملف الاستعادة
@@ -840,7 +870,6 @@
             'أجور عمال ونقل'
         ];
 
-        // حساب المدير العام الافتراضي المثبت مسبقاً للوصول الفوري من أي مكان
         const DEFAULT_MASTER_ADMIN = {
             id: 'user-admin-master-anas',
             username: 'anas',
@@ -876,7 +905,7 @@
 
         let db = null;
         let auth = null;
-        let appId = 'central-workshops-master-key'; // مفتاح مركزي موحد لكل متصفحاتك
+        let appId = 'central-workshops-master-key';
         let cloudReady = false;
         let currentAttachedImages = [];
 
@@ -933,7 +962,7 @@
             if (toastTimeout) clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.add('translate-y-24', 'opacity-0');
-            }, 3200);
+            }, 3500);
         }
 
         function getActiveWorkshop() {
@@ -1931,6 +1960,7 @@
             showToast('تم حذف البند وتحديث الأرصدة');
         }
 
+        // ================= طباعة وتنسيق كشف الحساب لمقياس ورقة A4 =================
         function printWorkshopReport() {
             const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
             if (!ws) return;
@@ -1959,23 +1989,23 @@
                 let amountHtml = '';
 
                 if (tx.type === 'income') {
-                    rowBgClass = 'bg-emerald-50/60';
-                    typeBadgeHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded text-[11px]">↓ وارد</span>';
+                    rowBgClass = 'bg-emerald-50/50';
+                    typeBadgeHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-1.5 py-0.5 rounded text-[10px]">↓ وارد</span>';
                     const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
                     amountHtml = `<span class="text-emerald-700 font-extrabold">+ ${val}</span>`;
                     if (tx.currency === 'USD') filteredUsdNet += tx.amount;
                     else filteredSypNet += tx.amount;
                 } else if (tx.type === 'expense') {
-                    rowBgClass = 'bg-rose-50/60';
-                    typeBadgeHtml = '<span class="inline-block bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 rounded text-[11px]">↑ صادر</span>';
+                    rowBgClass = 'bg-rose-50/50';
+                    typeBadgeHtml = '<span class="inline-block bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded text-[10px]">↑ صادر</span>';
                     const val = tx.currency === 'USD' ? formatUSD(tx.amount) : formatSYP(tx.amount);
                     amountHtml = `<span class="text-rose-700 font-extrabold">- ${val}</span>`;
                     if (tx.currency === 'USD') filteredUsdNet -= tx.amount;
                     else filteredSypNet -= tx.amount;
                 } else if (tx.type === 'exchange') {
                     catText = 'تحويل داخلي';
-                    rowBgClass = 'bg-amber-50/70';
-                    typeBadgeHtml = '<span class="inline-block bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded text-[11px]">⇄ صرافة</span>';
+                    rowBgClass = 'bg-amber-50/60';
+                    typeBadgeHtml = '<span class="inline-block bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px]">⇄ صرافة</span>';
                     if (tx.direction === 'USD_TO_SYP') {
                         detailsText += ` <span class="text-amber-800 font-medium">(تصريف بسعر ${tx.rate.toLocaleString()} ل.س)</span>`;
                         amountHtml = `<div class="text-rose-700 font-bold">- ${formatUSD(tx.fromAmount)}</div><div class="text-emerald-700 font-bold">+ ${formatSYP(tx.toAmount)}</div>`;
@@ -1987,64 +2017,74 @@
 
                 rowsHtml += `
                     <tr class="border-b border-slate-200 ${rowBgClass}">
-                        <td class="py-2 px-2.5 text-center text-xs font-bold text-slate-600">${idx + 1}</td>
-                        <td class="py-2 px-2.5 text-xs whitespace-nowrap text-slate-600" dir="ltr">${tx.date}</td>
-                        <td class="py-2 px-2.5 whitespace-nowrap">${typeBadgeHtml}</td>
-                        <td class="py-2 px-2.5 text-xs font-bold text-slate-700 whitespace-nowrap">${catText}</td>
-                        <td class="py-2 px-2.5 text-xs text-slate-800 font-medium">${detailsText}</td>
-                        <td class="py-2 px-2.5 text-xs text-left whitespace-nowrap" dir="ltr">${amountHtml}</td>
+                        <td class="py-1.5 px-2 text-center text-[11px] font-bold text-slate-600">${idx + 1}</td>
+                        <td class="py-1.5 px-2 text-[11px] whitespace-nowrap text-slate-600" dir="ltr">${tx.date}</td>
+                        <td class="py-1.5 px-2 whitespace-nowrap">${typeBadgeHtml}</td>
+                        <td class="py-1.5 px-2 text-[11px] font-bold text-slate-700 whitespace-nowrap">${catText}</td>
+                        <td class="py-1.5 px-2 text-[11px] text-slate-800 font-medium">${detailsText}</td>
+                        <td class="py-1.5 px-2 text-[11px] text-left whitespace-nowrap" dir="ltr">${amountHtml}</td>
                     </tr>
                 `;
             });
 
             if (wsTxs.length === 0) {
-                rowsHtml = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-sm">لا توجد حركات مسجلة ضمن هذا النطاق</td></tr>`;
+                rowsHtml = `<tr><td colspan="6" class="py-5 text-center text-slate-400 text-xs">لا توجد حركات مسجلة ضمن هذا النطاق</td></tr>`;
             }
 
             const titleSuffix = filterCategory !== 'all' ? ` (تصنيف: ${filterCategory})` : '';
             const summarySection = filterCategory !== 'all'
                 ? `
-                <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4 mb-6 flex justify-between items-center flex-wrap gap-4">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 mb-3.5 flex justify-between items-center flex-wrap gap-2">
                     <div>
-                        <span class="text-xs font-bold text-indigo-800 block">صافي حركة التصنيف (${filterCategory}):</span>
-                        <span class="text-xs text-slate-500">إجمالي المقبوضات ناقص المسحوبات لهذا التصنيف</span>
+                        <span class="text-xs font-extrabold text-indigo-900">صافي حركة التصنيف (${filterCategory})</span>
                     </div>
-                    <div class="flex gap-6">
+                    <div class="flex gap-4 text-xs">
                         <div>
-                            <span class="text-[11px] text-slate-500 block">بالدولار:</span>
-                            <strong class="text-lg font-extrabold text-slate-900" dir="ltr">${formatUSD(filteredUsdNet)}</strong>
+                            <span class="text-slate-500">الدولار: </span>
+                            <strong class="text-sm font-extrabold text-slate-900" dir="ltr">${formatUSD(filteredUsdNet)}</strong>
                         </div>
                         <div>
-                            <span class="text-[11px] text-slate-500 block">بالسوري:</span>
-                            <strong class="text-lg font-extrabold text-slate-900">${formatSYP(filteredSypNet)}</strong>
+                            <span class="text-slate-500">السوري: </span>
+                            <strong class="text-sm font-extrabold text-slate-900">${formatSYP(filteredSypNet)}</strong>
                         </div>
                     </div>
                 </div>
                 `
                 : `
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div class="border-2 ${stats.usdBalance < 0 ? 'border-rose-400 bg-rose-50' : 'border-emerald-300 bg-emerald-50/70'} rounded-xl p-4">
-                        <div class="text-xs ${stats.usdBalance < 0 ? 'text-rose-800' : 'text-emerald-900'} font-bold">رصيد صندوق الدولار ($)</div>
-                        <div class="text-2xl font-extrabold mt-1 ${stats.usdBalance < 0 ? 'text-rose-700' : 'text-emerald-800'}" dir="ltr">${formatUSD(stats.usdBalance)}</div>
-                        <div class="text-[11px] text-slate-600 mt-2 font-medium">وارد: <span class="text-emerald-700 font-bold">${formatUSD(stats.usdIn)}</span> | صادر: <span class="text-rose-700 font-bold">${formatUSD(stats.usdOut)}</span></div>
+                <div class="grid grid-cols-2 gap-2.5 mb-3.5">
+                    <div class="border ${stats.usdBalance < 0 ? 'border-rose-400 bg-rose-50/70' : 'border-emerald-300 bg-emerald-50/50'} rounded-lg px-3 py-2 flex flex-col justify-between">
+                        <div class="flex justify-between items-center gap-1">
+                            <span class="text-[11px] ${stats.usdBalance < 0 ? 'text-rose-800' : 'text-emerald-900'} font-bold">صندوق الدولار ($):</span>
+                            <span class="text-sm sm:text-base font-extrabold ${stats.usdBalance < 0 ? 'text-rose-700' : 'text-emerald-800'}" dir="ltr">${formatUSD(stats.usdBalance)}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/70 flex justify-between font-medium">
+                            <span>وارد: <strong class="text-emerald-700" dir="ltr">${formatUSD(stats.usdIn)}</strong></span>
+                            <span>صادر: <strong class="text-rose-700" dir="ltr">${formatUSD(stats.usdOut)}</strong></span>
+                        </div>
                     </div>
-                    <div class="border-2 ${stats.sypBalance < 0 ? 'border-rose-400 bg-rose-50' : 'border-blue-300 bg-blue-50/70'} rounded-xl p-4">
-                        <div class="text-xs ${stats.sypBalance < 0 ? 'text-rose-800' : 'text-blue-900'} font-bold">رصيد صندوق السوري (ل.س)</div>
-                        <div class="text-2xl font-extrabold mt-1 ${stats.sypBalance < 0 ? 'text-rose-700' : 'text-blue-800'}">${formatSYP(stats.sypBalance)}</div>
-                        <div class="text-[11px] text-slate-600 mt-2 font-medium">وارد: <span class="text-emerald-700 font-bold">${formatSYP(stats.sypIn)}</span> | صادر: <span class="text-rose-700 font-bold">${formatSYP(stats.sypOut)}</span></div>
+
+                    <div class="border ${stats.sypBalance < 0 ? 'border-rose-400 bg-rose-50/70' : 'border-blue-300 bg-blue-50/50'} rounded-lg px-3 py-2 flex flex-col justify-between">
+                        <div class="flex justify-between items-center gap-1">
+                            <span class="text-[11px] ${stats.sypBalance < 0 ? 'text-rose-800' : 'text-blue-900'} font-bold">صندوق السوري (ل.س):</span>
+                            <span class="text-sm sm:text-base font-extrabold ${stats.sypBalance < 0 ? 'text-rose-700' : 'text-blue-800'}">${formatSYP(stats.sypBalance)}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/70 flex justify-between font-medium">
+                            <span>وارد: <strong class="text-emerald-700">${formatSYP(stats.sypIn)}</strong></span>
+                            <span>صادر: <strong class="text-rose-700">${formatSYP(stats.sypOut)}</strong></span>
+                        </div>
                     </div>
                 </div>
                 `;
 
             const reportHtml = `
-                <div class="border-b-2 border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start gap-2">
+                <div class="border-b-2 border-slate-800 pb-2.5 mb-3.5 flex justify-between items-end gap-2">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">كشف حساب: ${ws.name}${titleSuffix}</h2>
-                        <p class="text-xs sm:text-sm text-slate-600 mt-1">${ws.description || ''}</p>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">كشف حساب: ${ws.name}${titleSuffix}</h2>
+                        ${ws.description ? `<p class="text-[11px] text-slate-600 mt-0.5">${ws.description}</p>` : ''}
                     </div>
-                    <div class="sm:text-left text-xs text-slate-500">
+                    <div class="text-left text-[10px] text-slate-500 shrink-0">
                         <p class="font-bold text-slate-800">نظام محاسبة الورشات</p>
-                        <p class="mt-0.5">تاريخ الطباعة: ${getCurrentDateTime()}</p>
+                        <p>التاريخ: <span dir="ltr">${getCurrentDateTime()}</span></p>
                     </div>
                 </div>
 
@@ -2053,13 +2093,13 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-right border border-slate-300 border-collapse">
                         <thead>
-                            <tr class="bg-slate-800 text-white border-b border-slate-300 text-xs font-bold">
-                                <th class="py-2.5 px-2.5 text-center w-10">#</th>
-                                <th class="py-2.5 px-2.5">التاريخ والوقت</th>
-                                <th class="py-2.5 px-2.5">النوع</th>
-                                <th class="py-2.5 px-2.5">التصنيف</th>
-                                <th class="py-2.5 px-2.5">البيان والتفاصيل</th>
-                                <th class="py-2.5 px-2.5 text-left">المبلغ</th>
+                            <tr class="bg-slate-800 text-white border-b border-slate-300 text-[11px] font-bold">
+                                <th class="py-1.5 px-2 text-center w-8">#</th>
+                                <th class="py-1.5 px-2">التاريخ والوقت</th>
+                                <th class="py-1.5 px-2">النوع</th>
+                                <th class="py-1.5 px-2">التصنيف</th>
+                                <th class="py-1.5 px-2">البيان والتفاصيل</th>
+                                <th class="py-1.5 px-2 text-left">المبلغ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2094,7 +2134,7 @@
 
             const fileName = `كشف_حساب_${ws ? ws.name.replace(/\s+/g, '_') : 'ورشة'}_${new Date().toISOString().slice(0, 10)}.pdf`;
             const opt = {
-                margin:       [10, 10, 10, 10],
+                margin:       [8, 8, 8, 8],
                 filename:     fileName,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
@@ -2106,7 +2146,7 @@
                 element.style.overflow = origOverflow;
                 btn.innerHTML = origText;
                 btn.disabled = false;
-                showToast('تم تنزيل ملف الـ PDF بنجاح!');
+                showToast('تم تنزيل ملف الـ PDF بمقاس A4 بنجاح!');
             }).catch((err) => {
                 console.error('PDF Error:', err);
                 element.style.maxHeight = origMaxHeight;
@@ -2137,7 +2177,7 @@
             try {
                 const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
                 const content = document.getElementById('printableReportArea').innerHTML;
-                const fullHtml = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>كشف حساب - ${ws ? ws.name : 'ورشة'}</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Tajawal',sans-serif;padding:24px;max-width:900px;margin:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{.no-print-btn{display:none!important;}}</style></head><body><div class="no-print-btn" style="margin-bottom:20px;text-align:left;"><button onclick="window.print()" style="background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-weight:bold;cursor:pointer;">🖨️ طباعة الكشف الآن</button></div>${content}</body></html>`;
+                const fullHtml = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>كشف حساب - ${ws ? ws.name : 'ورشة'}</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet"><style>@page{size:A4 portrait;margin:10mm;}body{font-family:'Tajawal',sans-serif;padding:16px;max-width:820px;margin:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@media print{.no-print-btn{display:none!important;}body{padding:0;max-width:100%;}}</style></head><body><div class="no-print-btn" style="margin-bottom:16px;text-align:left;"><button onclick="window.print()" style="background:#1e293b;color:#fff;padding:8px 18px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px;">🖨️ طباعة الكشف الآن</button></div>${content}</body></html>`;
                 
                 const fileName = `كشف_حساب_${ws ? ws.name.replace(/\s+/g, '_') : 'ورشة'}.html`;
                 const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
@@ -2344,7 +2384,7 @@
 
         function logoutUser() {
             state.loggedInUser = null;
-            sessionStorage.removeItem('ws_logged_user_id');
+            sessionStorage.setItem('ws_logged_user_id', '');
             refreshAuthScreenState();
         }
 
@@ -2360,9 +2400,12 @@
             else manageUsersBtn.classList.add('hidden');
 
             const restoreSec = document.getElementById('restoreBackupSection');
+            const smartArchiveSec = document.getElementById('smartArchiveSection');
             if (restoreSec) {
-                if (u.isAdmin) restoreSec.classList.remove('hidden');
-                else restoreSec.classList.add('hidden');
+                restoreSec.classList.toggle('hidden', !u.isAdmin);
+            }
+            if (smartArchiveSec) {
+                smartArchiveSec.classList.toggle('hidden', !u.isAdmin);
             }
 
             const globalSec = document.getElementById('globalSummarySection');
@@ -2546,9 +2589,141 @@
             });
         }
 
+        // ================= ميزة النسخ الاحتياطي والأرشفة الذكية لتفريغ المساحة =================
         function openBackupModal() {
             applyUserPermissionsUI();
+            renderActiveWorkshopsChecklist();
             openModal('backupModal');
+        }
+
+        function renderActiveWorkshopsChecklist() {
+            const listEl = document.getElementById('activeWorkshopsChecklist');
+            if (!listEl) return;
+
+            if (state.workshops.length === 0) {
+                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">لا توجد ورشات مسجلة حالياً</p>';
+                updateArchiveSummaryCount();
+                return;
+            }
+
+            listEl.innerHTML = '';
+            state.workshops.forEach(ws => {
+                const txCount = state.transactions.filter(t => t.workshopId === ws.id).length;
+                const isCurrentlySelected = ws.id === state.activeWorkshopId;
+
+                const label = document.createElement('label');
+                label.className = 'flex items-center justify-between p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition';
+                label.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <input type="checkbox" class="active-ws-checkbox w-4 h-4 accent-emerald-600" value="${ws.id}" ${isCurrentlySelected ? 'checked' : ''} onchange="updateArchiveSummaryCount()">
+                        <div>
+                            <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">${ws.name}</span>
+                            <span class="text-[11px] text-slate-500">${txCount} حركة/فاتورة مسجلة</span>
+                        </div>
+                    </div>
+                    <span class="ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isCurrentlySelected ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                        ${isCurrentlySelected ? 'نشطة (ستبقى)' : 'غير نشطة (ستؤرشف وتحذف)'}
+                    </span>
+                `;
+                listEl.appendChild(label);
+            });
+
+            updateArchiveSummaryCount();
+        }
+
+        function updateArchiveSummaryCount() {
+            const checkboxes = document.querySelectorAll('.active-ws-checkbox');
+            let inactiveWsCount = 0;
+            let inactiveTxCount = 0;
+
+            checkboxes.forEach(cb => {
+                const pill = cb.closest('label').querySelector('.ws-status-pill');
+                if (cb.checked) {
+                    pill.textContent = 'نشطة (ستبقى)';
+                    pill.className = 'ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800';
+                } else {
+                    pill.textContent = 'غير نشطة (ستؤرشف وتحذف)';
+                    pill.className = 'ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800';
+                    inactiveWsCount++;
+                    inactiveTxCount += state.transactions.filter(t => t.workshopId === cb.value).length;
+                }
+            });
+
+            const statsEl = document.getElementById('archiveStatsText');
+            const btn = document.getElementById('runSmartArchiveBtn');
+            if (statsEl) {
+                statsEl.textContent = `سيتم أرشفة وحذف: ${inactiveWsCount} ورشة (${inactiveTxCount} فاتورة)`;
+            }
+            if (btn) {
+                btn.disabled = (inactiveWsCount === 0);
+                btn.classList.toggle('opacity-50', inactiveWsCount === 0);
+                btn.classList.toggle('cursor-not-allowed', inactiveWsCount === 0);
+            }
+        }
+
+        async function archiveAndCleanInactiveWorkshops() {
+            if (!state.loggedInUser || !state.loggedInUser.isAdmin) return;
+
+            const checkboxes = document.querySelectorAll('.active-ws-checkbox');
+            const activeIds = new Set();
+            checkboxes.forEach(cb => {
+                if (cb.checked) activeIds.add(cb.value);
+            });
+
+            const inactiveWorkshops = state.workshops.filter(w => !activeIds.has(w.id));
+            if (inactiveWorkshops.length === 0) {
+                showToast('يرجى إلغاء تحديد الورشة غير النشطة أولاً لأرشفتها', true);
+                return;
+            }
+
+            const inactiveIds = new Set(inactiveWorkshops.map(w => w.id));
+            const inactiveTransactions = state.transactions.filter(t => inactiveIds.has(t.workshopId));
+
+            const btn = document.getElementById('runSmartArchiveBtn');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '⏳ جاري التنزيل وتفريغ السحابة...';
+            btn.disabled = true;
+
+            try {
+                const archivePayload = {
+                    archiveType: 'INACTIVE_WORKSHOPS_ARCHIVE',
+                    archivedAt: getCurrentDateTime(),
+                    workshops: inactiveWorkshops,
+                    transactions: inactiveTransactions
+                };
+                const jsonStr = JSON.stringify(archivePayload, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `أرشيف_ورشات_منتهية_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+                for (const ws of inactiveWorkshops) {
+                    const wsTxs = inactiveTransactions.filter(t => t.workshopId === ws.id);
+                    await deleteWorkshopFromCloud(ws.id, wsTxs);
+                }
+
+                state.workshops = state.workshops.filter(w => activeIds.has(w.id));
+                state.transactions = state.transactions.filter(t => !inactiveIds.has(t.workshopId));
+
+                if (!state.workshops.some(w => w.id === state.activeWorkshopId)) {
+                    state.activeWorkshopId = state.workshops.length > 0 ? state.workshops[0].id : null;
+                }
+
+                renderActiveWorkshopsChecklist();
+                updateAllUI();
+                showToast(`تم تنزيل أرشيف ${inactiveWorkshops.length} ورشة وحذفها من السحابة لتوفير المساحة!`);
+            } catch (err) {
+                console.error('Archive error:', err);
+                showToast('حدث خطأ أثناء الأرشفة، لم يتم حذف البيانات', true);
+            } finally {
+                btn.innerHTML = origHtml;
+                updateArchiveSummaryCount();
+            }
         }
 
         function exportFullBackup() {
@@ -2564,12 +2739,12 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `نسخة_احتياطية_الورشات_${new Date().toISOString().slice(0, 10)}.json`;
+                a.download = `نسخة_احتياطية_كاملة_${new Date().toISOString().slice(0, 10)}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 5000);
-                showToast('تم تنزيل ملف النسخة الاحتياطية على جهازك');
+                showToast('تم تنزيل ملف النسخة الاحتياطية الكاملة على جهازك');
             } catch (err) {
                 showToast('تعذر تنزيل النسخة الاحتياطية', true);
             }
@@ -2586,6 +2761,30 @@
                         showToast('ملف النسخة الاحتياطية غير صالح!', true);
                         return;
                     }
+
+                    if (parsed.archiveType === 'INACTIVE_WORKSHOPS_ARCHIVE') {
+                        const existingWsIds = new Set(state.workshops.map(w => w.id));
+                        const existingTxIds = new Set(state.transactions.map(t => t.id));
+
+                        for (const ws of parsed.workshops) {
+                            if (!existingWsIds.has(ws.id)) {
+                                state.workshops.push(ws);
+                                await saveWorkshopToCloud(ws);
+                            }
+                        }
+                        for (const tx of parsed.transactions) {
+                            if (!existingTxIds.has(tx.id)) {
+                                state.transactions.push(tx);
+                                await saveTransactionToCloud(tx);
+                            }
+                        }
+                        renderActiveWorkshopsChecklist();
+                        updateAllUI();
+                        closeModal('backupModal');
+                        showToast('تمت استعادة ودمج الورشات المؤرشفة بنجاح!');
+                        return;
+                    }
+
                     state.workshops = parsed.workshops;
                     state.transactions = parsed.transactions;
                     if (Array.isArray(parsed.users) && parsed.users.length > 0) {
@@ -2603,6 +2802,7 @@
                         await saveUserToCloud(u);
                     }
 
+                    renderActiveWorkshopsChecklist();
                     updateAllUI();
                     closeModal('backupModal');
                     showToast('تمت استعادة كافة البيانات وحفظها سحابياً بنجاح!');
@@ -2689,7 +2889,6 @@
                         state.users = loadedUsers;
                         syncUsersCache();
                     } else {
-                        // إذا كانت قاعدة البيانات السحابية خالية من المستخدمين بعد، ارفع الحساب المثبت مسبقاً فوراً
                         state.users = [DEFAULT_MASTER_ADMIN];
                         syncUsersCache();
                         saveUserToCloud(DEFAULT_MASTER_ADMIN);
