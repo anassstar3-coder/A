@@ -183,7 +183,7 @@
         <main class="max-w-7xl w-full mx-auto px-3 sm:px-6 py-5 space-y-5 flex-1">
 
             <!-- الصناديق العامة (إجمالي كافة الورشات المسموحة) -->
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-4 no-print">
                 <div id="global-usd-card" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-500 mb-1">إجمالي رصيد الدولار (كل الورشات)</p>
@@ -224,7 +224,7 @@
             </section>
 
             <!-- معاينة ورشة مستوردة (تظهر مؤقتاً باللون الرمادي قبل الاعتماد) -->
-            <section id="import-preview-banner" class="hidden bg-slate-200 border-2 border-dashed border-slate-400 rounded-2xl p-4 grayscale">
+            <section id="import-preview-banner" class="hidden bg-slate-200 border-2 border-dashed border-slate-400 rounded-2xl p-4 grayscale no-print">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <span class="bg-slate-700 text-white text-[10px] font-bold px-2 py-0.5 rounded">معاينة قبل الاعتماد</span>
@@ -252,9 +252,11 @@
                         <div>
                             <div class="flex items-center gap-2.5 flex-wrap">
                                 <h2 id="ws-title" class="text-xl sm:text-2xl font-black text-slate-900"></h2>
-                                <button id="btn-toggle-status" onclick="toggleWorkshopStatus()" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition"></button>
+                                <button id="btn-toggle-status" onclick="toggleWorkshopStatus()" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition no-print"></button>
                             </div>
                             <p id="ws-desc" class="text-xs text-slate-500 font-semibold mt-1"></p>
+                            <!-- ترويسة الطباعة توضح الفلتر المختار -->
+                            <p id="print-filter-subtitle" class="hidden print-only text-xs font-extrabold text-blue-800 mt-1"></p>
                         </div>
 
                         <!-- أزرار العمليات والتصدير -->
@@ -268,7 +270,7 @@
                             </div>
 
                             <!-- أزرار الطباعة والتصدير والحذف -->
-                            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">🖨 طباعة</button>
+                            <button onclick="printFilteredReport()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">🖨 طباعة</button>
                             <button onclick="exportWorkshopPDF()" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">📄 حفظ PDF (A4)</button>
                             <button onclick="exportWorkshopExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">📊 تصدير Excel</button>
                             <button onclick="exportSingleWorkshop()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">تصدير الورشة</button>
@@ -306,22 +308,46 @@
                     </div>
                 </div>
 
-                <!-- شريط الفلترة والبحث وجدول الحركات المستقلة -->
-                <div id="printable-area" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
-                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 no-print">
+                <!-- شريط الفلترة المتقدم والبحث وجدول الحركات المستقلة -->
+                <div id="printable-area" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 no-print">
                         <div class="flex flex-wrap items-center gap-2 flex-1">
-                            <input type="text" id="filter-search" oninput="renderCurrentWorkshop()" placeholder="ابحث في الوصف أو التاريخ..."
-                                class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold w-full sm:w-56 outline-none focus:border-blue-600">
+                            <!-- فلتر نوع الحركة (إيرادات لحال / مصروفات لحال / صرافة لحال) -->
+                            <select id="filter-type" onchange="renderCurrentWorkshop()" class="px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs font-extrabold outline-none focus:border-blue-600">
+                                <option value="ALL">كل الحركات (إيرادات + مصروفات)</option>
+                                <option value="income">الإيرادات فقط (+)</option>
+                                <option value="expense">المصروفات فقط (-)</option>
+                                <option value="exchange">عمليات الصرافة فقط (⇄)</option>
+                            </select>
+
+                            <!-- فلتر البنود والتصنيفات -->
                             <select id="filter-category" onchange="renderCurrentWorkshop()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold outline-none focus:border-blue-600">
                                 <option value="ALL">كل البنود / التصنيفات</option>
                             </select>
+
+                            <!-- فلتر العملة -->
                             <select id="filter-currency" onchange="renderCurrentWorkshop()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold outline-none focus:border-blue-600">
                                 <option value="ALL">كل العملات</option>
                                 <option value="USD">دولار ($)</option>
                                 <option value="SYP">سوري (ل.س)</option>
                             </select>
+
+                            <!-- البحث النصي -->
+                            <input type="text" id="filter-search" oninput="renderCurrentWorkshop()" placeholder="ابحث في الوصف أو التاريخ..."
+                                class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold w-full sm:w-48 outline-none focus:border-blue-600">
+
+                            <!-- زر إعادة ضبط الفلاتر -->
+                            <button type="button" onclick="resetFilters()" class="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition">إعادة ضبط</button>
                         </div>
-                        <span id="filtered-count-label" class="text-xs font-bold text-slate-500">عدد الحركات المعروضة: 0</span>
+                    </div>
+
+                    <!-- شريط ملخص مجاميع الفلتر المعروض (يظهر في الشاشة وعند الطباعة) -->
+                    <div id="filtered-summary-bar" class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
+                        <span id="filtered-count-label" class="text-slate-700">عدد الحركات المعروضة: 0</span>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <span class="text-emerald-700">مجموع الدولار المعروض: <span id="filtered-usd-sum" class="dir-ltr inline-block">$ 0</span></span>
+                            <span class="text-blue-700">مجموع السوري المعروض: <span id="filtered-syp-sum" class="dir-ltr inline-block">0 ل.س</span></span>
+                        </div>
                     </div>
 
                     <!-- الجدول المتجاوب -->
@@ -343,7 +369,7 @@
                         </table>
                     </div>
                     <div id="empty-transactions" class="hidden py-8 text-center text-xs font-bold text-slate-400">
-                        لا توجد حركات مالية مسجلة مطابقة للبحث.
+                        لا توجد حركات مالية مسجلة مطابقة للبحث أو التصنيف المحدد.
                     </div>
                 </div>
 
@@ -364,15 +390,15 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">العملة:</label>
-                        <select id="tx-currency" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-extrabold outline-none focus:border-blue-600">
+                        <select id="tx-currency" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-extrabold outline-none focus:border-blue-600">
                             <option value="USD">دولار أمريكي ($)</option>
                             <option value="SYP">ليرة سورية (ل.س)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ:</label>
-                        <input type="number" step="any" min="0.01" id="tx-amount" required placeholder="0"
-                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-blue-600">
+                        <input type="text" inputmode="decimal" id="tx-amount" required placeholder="0"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-blue-600 dir-ltr text-right">
                     </div>
                 </div>
 
@@ -443,13 +469,13 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ بالدولار ($):</label>
-                        <input type="number" step="any" min="0.01" id="ex-usd-amount" required oninput="updateExchangePreview()" placeholder="100"
-                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-amber-500">
+                        <input type="text" inputmode="decimal" id="ex-usd-amount" required oninput="updateExchangePreview()" placeholder="100"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-amber-500 dir-ltr text-right">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">سعر الصرف (ل.س):</label>
-                        <input type="number" step="any" min="1" id="ex-rate" required oninput="updateExchangePreview()" placeholder="15000"
-                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-amber-500">
+                        <input type="text" inputmode="decimal" id="ex-rate" required oninput="updateExchangePreview()" placeholder="15000"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-black outline-none focus:border-amber-500 dir-ltr text-right">
                     </div>
                 </div>
 
@@ -648,7 +674,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // إعدادات مشروعك السحابي
         const firebaseConfig = {
             apiKey: "AIzaSyDummyKeyForAnasAlasfarProject",
             authDomain: "anas-alasfar.firebaseapp.com",
@@ -669,7 +694,6 @@
             db = getFirestore(app);
 
             signInAnonymously(auth).catch(() => {
-                // في حال كانت قواعد Firestore مفتوحة بدون مصادقة مجهولة
                 initCloudListeners();
             });
 
@@ -686,50 +710,62 @@
             setCloudUIStatus(true, "متصل بالسحابة (1GB دائمة)");
 
             try {
-                // جلب الإعدادات والمستخدمين من السحابة أولاً
-                const metaRef = doc(db, "workshops_system", "meta_config");
-                const metaSnap = await getDoc(metaRef);
-                if (metaSnap.exists()) {
-                    const remoteMeta = metaSnap.data();
-                    if (remoteMeta.owner) appData.owner = remoteMeta.owner;
-                    if (Array.isArray(remoteMeta.subUsers)) appData.subUsers = remoteMeta.subUsers;
-                    saveLocalOnly();
-                } else if (appData.workshops.length > 0) {
-                    await pushAllToCloud();
+                // 1. جلب الإعدادات والمستخدمين من جميع المسارات المحتملة
+                const metaPaths = [
+                    doc(db, "workshops_system", "meta_config"),
+                    doc(db, "workshops_system", "master_data")
+                ];
+                for (const mRef of metaPaths) {
+                    try {
+                        const mSnap = await getDoc(mRef);
+                        if (mSnap.exists()) {
+                            const remoteMeta = mSnap.data();
+                            if (remoteMeta.owner && remoteMeta.owner.username) appData.owner = remoteMeta.owner;
+                            if (Array.isArray(remoteMeta.subUsers) && remoteMeta.subUsers.length > 0) {
+                                appData.subUsers = remoteMeta.subUsers;
+                            }
+                            if (Array.isArray(remoteMeta.workshops) && remoteMeta.workshops.length > 0) {
+                                mergeWorkshopsFromCloud(remoteMeta.workshops);
+                            }
+                        }
+                    } catch (e) {}
                 }
 
-                // جلب الورشات من السحابة (كل ورشة في وثيقة مستقلة لسعة 1GB)
-                const wsColRef = collection(db, "workshops_system_items");
-                const wsSnap = await getDocs(wsColRef);
-                if (!wsSnap.empty) {
-                    const cloudWorkshops = [];
-                    wsSnap.forEach(d => cloudWorkshops.push(d.data()));
-                    // دمج ذكي يحمي جميع الورشات
-                    mergeWorkshopsFromCloud(cloudWorkshops);
-                } else {
-                    // التحقق من وجود بيانات في الوثيقة القديمة master_data وترحيلها تلقائياً
-                    const legacyRef = doc(db, "workshops_system", "master_data");
-                    const legacySnap = await getDoc(legacyRef);
-                    if (legacySnap.exists() && legacySnap.data().workshops) {
-                        mergeWorkshopsFromCloud(legacySnap.data().workshops);
-                        await pushAllToCloud();
-                    }
+                // 2. جلب الورشات من المجموعات السحابية القديمة والجديدة لضمان عدم ضياع أي ورشة
+                const collectionsToCheck = ["workshops_system_items", "workshops"];
+                for (const colName of collectionsToCheck) {
+                    try {
+                        const wsSnap = await getDocs(collection(db, colName));
+                        if (!wsSnap.empty) {
+                            const cloudWorkshops = [];
+                            wsSnap.forEach(d => {
+                                const data = d.data();
+                                if (data && data.id && data.name) cloudWorkshops.push(data);
+                            });
+                            if (cloudWorkshops.length > 0) {
+                                mergeWorkshopsFromCloud(cloudWorkshops);
+                            }
+                        }
+                    } catch (e) {}
                 }
 
-                // الاستماع الفوري للتحديثات من الأجهزة الأخرى
-                onSnapshot(wsColRef, (snapshot) => {
+                // 3. الاستماع الفوري للتحديثات
+                onSnapshot(collection(db, "workshops_system_items"), (snapshot) => {
                     if (ignoreNextSnapshot) {
                         ignoreNextSnapshot = false;
                         return;
                     }
                     if (!snapshot.empty) {
                         const updatedList = [];
-                        snapshot.forEach(d => updatedList.push(d.data()));
-                        mergeWorkshopsFromCloud(updatedList);
+                        snapshot.forEach(d => {
+                            const data = d.data();
+                            if (data && data.id && data.name) updatedList.push(data);
+                        });
+                        if (updatedList.length > 0) mergeWorkshopsFromCloud(updatedList);
                     }
                 });
 
-                onSnapshot(metaRef, (docSnap) => {
+                onSnapshot(doc(db, "workshops_system", "meta_config"), (docSnap) => {
                     if (docSnap.exists()) {
                         const m = docSnap.data();
                         if (m.owner) appData.owner = m.owner;
@@ -744,7 +780,6 @@
             }
         }
 
-        // دالة الحفظ في السحابة
         window.syncWorkshopToCloud = async function(ws) {
             if (!db || !cloudReady) return;
             try {
@@ -806,38 +841,37 @@
         let currentTxImages = [];
         let wipeTimerInterval = null;
 
-        // تهيئة واستعادة البيانات المحلية والقديمة عند التشغيل
+        // فحص واستعادة شاملة لكل مفاتيح التخزين في المتصفح لحماية جميع بياناتك القديمة والجديدة
         function initAppData() {
-            const possibleKeys = [
-                STORAGE_KEY,
-                'workshops_accounting_v4_data',
-                'workshops_accounting_v3_data',
-                'workshops_accounting_data',
-                'workshops_data'
-            ];
-
             let mergedWorkshopsMap = new Map();
 
-            possibleKeys.forEach(k => {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key || key === SESSION_KEY) continue;
                 try {
-                    const raw = localStorage.getItem(k);
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
+                    const raw = localStorage.getItem(key);
+                    if (!raw || (!raw.startsWith('{') && !raw.startsWith('['))) continue;
+                    const parsed = JSON.parse(raw);
+
+                    if (parsed && typeof parsed === 'object') {
                         if (parsed.owner && parsed.owner.username) appData.owner = parsed.owner;
                         if (Array.isArray(parsed.subUsers) && parsed.subUsers.length > 0) appData.subUsers = parsed.subUsers;
-                        const wsList = Array.isArray(parsed) ? parsed : (parsed.workshops || []);
+
+                        const wsList = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.workshops) ? parsed.workshops : []);
                         wsList.forEach(ws => {
-                            if (ws && ws.id && !mergedWorkshopsMap.has(ws.id)) {
-                                if (!Array.isArray(ws.categories) || ws.categories.length === 0) {
-                                    ws.categories = ['عام', 'أجور', 'مواد', 'كهرباء', 'نقل'];
+                            if (ws && ws.id && ws.name && Array.isArray(ws.transactions)) {
+                                if (!mergedWorkshopsMap.has(ws.id)) {
+                                    if (!Array.isArray(ws.categories) || ws.categories.length === 0) {
+                                        ws.categories = ['عام', 'أجور', 'مواد', 'كهرباء', 'نقل'];
+                                    }
+                                    if (typeof ws.active === 'undefined') ws.active = true;
+                                    mergedWorkshopsMap.set(ws.id, ws);
                                 }
-                                if (typeof ws.active === 'undefined') ws.active = true;
-                                mergedWorkshopsMap.set(ws.id, ws);
                             }
                         });
                     }
                 } catch (e) {}
-            });
+            }
 
             if (mergedWorkshopsMap.size > 0) {
                 appData.workshops = Array.from(mergedWorkshopsMap.values());
@@ -974,6 +1008,16 @@
         }
 
         // ==================== تنسيق الأرقام (بدون فواصل صفرية) ====================
+        function parseCleanNumber(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return NaN;
+            const normalized = String(val)
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .replace(/,/g, '')
+                .trim();
+            return parseFloat(normalized);
+        }
+
         function formatNum(num) {
             const n = Number(num) || 0;
             return Number.isInteger(n)
@@ -1085,6 +1129,14 @@
             renderCurrentWorkshop();
         }
 
+        function resetFilters() {
+            document.getElementById('filter-type').value = 'ALL';
+            document.getElementById('filter-category').value = 'ALL';
+            document.getElementById('filter-currency').value = 'ALL';
+            document.getElementById('filter-search').value = '';
+            renderCurrentWorkshop();
+        }
+
         function renderCurrentWorkshop() {
             const ws = appData.workshops.find(w => w.id === selectedWorkshopId);
             const container = document.getElementById('active-workshop-container');
@@ -1103,7 +1155,7 @@
             // زر حالة الورشة (نشطة / غير نشطة)
             const statusBtn = document.getElementById('btn-toggle-status');
             statusBtn.textContent = ws.active ? 'نشطة ✓' : 'غير نشطة (مقفلة)';
-            statusBtn.className = `px-2.5 py-1 rounded-lg text-xs font-extrabold transition ${
+            statusBtn.className = `px-2.5 py-1 rounded-lg text-xs font-extrabold transition no-print ${
                 ws.active ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-200 text-slate-700 border border-slate-300'
             }`;
             statusBtn.disabled = !(currentUser.isOwner || currentUser.permissions.toggleWs);
@@ -1157,20 +1209,47 @@
         function renderTransactionsTable(ws, txs) {
             const tbody = document.getElementById('transactions-tbody');
             const emptyState = document.getElementById('empty-transactions');
+            const typeFilter = document.getElementById('filter-type').value;
             const search = document.getElementById('filter-search').value.trim().toLowerCase();
             const catFilter = document.getElementById('filter-category').value;
             const currFilter = document.getElementById('filter-currency').value;
 
+            // تحديث عنوان الطباعة ليعكس التصنيف المختار
+            const typeNames = {
+                'ALL': 'تقرير شامل (كافة الحركات)',
+                'income': 'تقرير الإيرادات فقط (+)',
+                'expense': 'تقرير المصروفات فقط (-)',
+                'exchange': 'تقرير عمليات الصرافة فقط (⇄)'
+            };
+            const printSubtitle = `التصنيف المطبوع: ${typeNames[typeFilter]} | البند: ${catFilter === 'ALL' ? 'الكل' : catFilter} | العملة: ${currFilter === 'ALL' ? 'الكل' : currFilter}`;
+            document.getElementById('print-filter-subtitle').textContent = printSubtitle;
+
             const filtered = txs.filter(tx => {
+                const matchType = typeFilter === 'ALL' || tx.type === typeFilter;
                 const matchSearch = !search || (tx.desc && tx.desc.toLowerCase().includes(search)) || (tx.date && tx.date.includes(search));
                 const matchCat = catFilter === 'ALL' || (tx.category || 'عام') === catFilter;
                 let matchCurr = true;
                 if (currFilter === 'USD') matchCurr = (tx.currency === 'USD' || tx.type === 'exchange');
                 if (currFilter === 'SYP') matchCurr = (tx.currency === 'SYP' || tx.type === 'exchange');
-                return matchSearch && matchCat && matchCurr;
+                return matchType && matchSearch && matchCat && matchCurr;
+            });
+
+            // حساب مجاميع الحركات المعروضة حسب الفلتر
+            let sumUsd = 0, sumSyp = 0;
+            filtered.forEach(tx => {
+                if (tx.type === 'income' || tx.type === 'expense') {
+                    if (tx.currency === 'USD') sumUsd += Number(tx.amount) || 0;
+                    else sumSyp += Number(tx.amount) || 0;
+                } else if (tx.type === 'exchange') {
+                    sumUsd += Number(tx.usdAmount) || 0;
+                    sumSyp += Number(tx.sypAmount) || 0;
+                }
             });
 
             document.getElementById('filtered-count-label').textContent = `عدد الحركات المعروضة: ${filtered.length}`;
+            document.getElementById('filtered-usd-sum').textContent = formatUSD(sumUsd);
+            document.getElementById('filtered-syp-sum').textContent = formatSYP(sumSyp);
+
             tbody.innerHTML = '';
 
             if (filtered.length === 0) {
@@ -1241,6 +1320,10 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function printFilteredReport() {
+            window.print();
         }
 
         // ==================== إدارة الورشات ====================
@@ -1397,7 +1480,6 @@
             sel.value = selectedCat;
         }
 
-        // ضغط الصور المرفقة (حد أقصى صورتين)
         function handleTxImagesSelect(e) {
             const files = Array.from(e.target.files).slice(0, 2);
             if (files.length === 0) return;
@@ -1447,7 +1529,11 @@
             const editId = document.getElementById('tx-edit-id').value;
             const type = document.getElementById('tx-type').value;
             const currency = document.getElementById('tx-currency').value;
-            const amount = parseFloat(document.getElementById('tx-amount').value);
+            const amount = parseCleanNumber(document.getElementById('tx-amount').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('يرجى إدخال مبلغ صحيح أكبر من الصفر!');
+                return;
+            }
             const category = document.getElementById('tx-category').value || 'عام';
             const date = document.getElementById('tx-date').value;
             const desc = document.getElementById('tx-desc').value.trim();
@@ -1469,14 +1555,15 @@
                 });
             }
 
-            // إعادة الفلتر للكل لتظهر الحركة فوراً
+            // تصفير الفلاتر لتظهر الحركة الجديدة مباشرة
+            document.getElementById('filter-type').value = 'ALL';
             document.getElementById('filter-category').value = 'ALL';
             document.getElementById('filter-currency').value = 'ALL';
 
             saveLocalOnly();
-            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
             closeModal('tx-modal');
             renderAll();
+            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
         }
 
         // ==================== عملية الصرافة / التحويل ====================
@@ -1541,8 +1628,8 @@
         }
 
         function updateExchangePreview() {
-            const usd = parseFloat(document.getElementById('ex-usd-amount').value) || 0;
-            const rate = parseFloat(document.getElementById('ex-rate').value) || 0;
+            const usd = parseCleanNumber(document.getElementById('ex-usd-amount').value) || 0;
+            const rate = parseCleanNumber(document.getElementById('ex-rate').value) || 0;
             document.getElementById('ex-syp-preview').textContent = formatSYP(Math.round(usd * rate));
         }
 
@@ -1553,8 +1640,12 @@
 
             const editId = document.getElementById('ex-edit-id').value;
             const direction = document.getElementById('ex-direction').value;
-            const usdAmount = parseFloat(document.getElementById('ex-usd-amount').value);
-            const rate = parseFloat(document.getElementById('ex-rate').value);
+            const usdAmount = parseCleanNumber(document.getElementById('ex-usd-amount').value);
+            const rate = parseCleanNumber(document.getElementById('ex-rate').value);
+            if (isNaN(usdAmount) || usdAmount <= 0 || isNaN(rate) || rate <= 0) {
+                alert('يرجى إدخال مبلغ وسعر صرف صحيحين!');
+                return;
+            }
             const sypAmount = Math.round(usdAmount * rate);
             const date = document.getElementById('ex-date').value;
             const desc = document.getElementById('ex-desc').value.trim() || 'تحويل عملة';
@@ -1577,9 +1668,9 @@
             }
 
             saveLocalOnly();
-            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
             closeModal('exchange-modal');
             renderAll();
+            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
         }
 
         async function deleteTransaction(txId) {
@@ -1589,8 +1680,8 @@
 
             ws.transactions = ws.transactions.filter(t => t.id !== txId);
             saveLocalOnly();
-            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
             renderAll();
+            if (window.syncWorkshopToCloud) await window.syncWorkshopToCloud(ws);
         }
 
         function openImageViewer(txId, imgIdx) {
@@ -1821,10 +1912,12 @@
         function exportWorkshopPDF() {
             const ws = appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
+            const typeFilter = document.getElementById('filter-type').value;
+            const suffix = typeFilter === 'income' ? '_ايرادات' : (typeFilter === 'expense' ? '_مصروفات' : '');
             const el = document.getElementById('active-workshop-container');
             const opt = {
                 margin: 10,
-                filename: `تقرير_ورشة_${ws.name}.pdf`,
+                filename: `تقرير_${ws.name}${suffix}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -1835,8 +1928,21 @@
         function exportWorkshopExcel() {
             const ws = appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
+            const typeFilter = document.getElementById('filter-type').value;
+            const catFilter = document.getElementById('filter-category').value;
+            const currFilter = document.getElementById('filter-currency').value;
+
+            const filtered = ws.transactions.filter(tx => {
+                const matchType = typeFilter === 'ALL' || tx.type === typeFilter;
+                const matchCat = catFilter === 'ALL' || (tx.category || 'عام') === catFilter;
+                let matchCurr = true;
+                if (currFilter === 'USD') matchCurr = (tx.currency === 'USD' || tx.type === 'exchange');
+                if (currFilter === 'SYP') matchCurr = (tx.currency === 'SYP' || tx.type === 'exchange');
+                return matchType && matchCat && matchCurr;
+            });
+
             let csv = '\uFEFFالتاريخ,النوع,البند,البيان,المبلغ,العملة\n';
-            ws.transactions.forEach(tx => {
+            filtered.forEach(tx => {
                 const typeLabel = tx.type === 'income' ? 'إيراد' : (tx.type === 'expense' ? 'مصروف' : 'صرافة');
                 const amt = tx.type === 'exchange' ? `${tx.usdAmount}$ / ${tx.sypAmount} ل.س` : tx.amount;
                 const curr = tx.type === 'exchange' ? 'تحويل' : tx.currency;
