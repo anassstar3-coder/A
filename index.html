@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام محاسبة الورشات والمشاريع</title>
+    <title>نظام محاسبة الورشات والمشاريع - السحابي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- مكتبات Firebase للربط السحابي المباشر -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; }
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             body { background: white !important; color: black !important; }
+            .grayscale-inactive { filter: none !important; opacity: 1 !important; color: black !important; background: white !important; }
         }
     </style>
 </head>
@@ -21,13 +26,16 @@
     <div id="login-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-md w-full shadow-2xl">
             <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-slate-800 border border-slate-700 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
                 <h1 class="text-lg font-bold text-white tracking-wide">تسجيل الدخول للنظام</h1>
                 <p class="text-slate-400 text-xs mt-1">النظام المالي والمحاسبي للورشات والصناديق</p>
             </div>
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">اسم المستخدم</label>
-                    <input type="text" id="login-user" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-slate-500" placeholder="اسم المستخدم">
+                    <input type="text" id="login-user" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-slate-500" placeholder="أدخل اسم المستخدم">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">كلمة المرور</label>
@@ -36,18 +44,23 @@
                 <div id="login-error" class="text-rose-400 text-xs hidden text-center bg-rose-950/40 p-2.5 rounded-lg border border-rose-900/50"></div>
                 <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-lg text-xs transition border border-slate-700">دخول للنظام</button>
             </form>
+            <div class="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center text-[11px] text-slate-400">
+                <span id="login-cloud-status">حالة السحابة: جاري الفحص...</span>
+                <button onclick="openCloudConfigModal()" class="text-slate-300 hover:text-white underline">إعدادات الربط السحابي</button>
+            </div>
         </div>
     </div>
 
     <!-- التطبيق الأساسي -->
     <div id="app-content" class="hidden flex-col min-h-screen">
-        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+        <!-- الشريط العلوي -->
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex flex-wrap justify-between items-center gap-4 no-print">
             <div class="flex items-center gap-3">
                 <span class="text-sm font-bold text-white">نظام محاسبة الورشات</span>
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>متصل محلياً (آمن)</span>
-                </div>
+                <button onclick="openCloudConfigModal()" id="cloud-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 hover:opacity-90 transition cursor-pointer" title="انقر لإدارة الربط السحابي">
+                    <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span id="cloud-status-text">تخزين محلي فقط (اضغط للربط السحابي)</span>
+                </button>
             </div>
 
             <!-- الصناديق الكبرى الرئيسية -->
@@ -63,6 +76,7 @@
                 </div>
             </div>
 
+            <!-- أزرار التحكم العلوية -->
             <div class="flex flex-wrap items-center gap-2">
                 <button onclick="exportFullBackup()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">نسخة احتياطية كاملة</button>
                 <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700 cursor-pointer">
@@ -75,117 +89,87 @@
             </div>
         </header>
 
+        <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 max-w-7xl mx-auto w-full space-y-6">
-            <section class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            
+            <!-- قسم الورشات -->
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 no-print">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
                     <h2 class="text-sm font-bold text-white">قائمة الورشات والمشاريع</h2>
                     <div class="flex items-center gap-2">
-                        <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-semibold transition border border-slate-700">ورشة جديدة</button>
-                        <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
+                        <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-1.5 rounded text-xs font-semibold transition border border-slate-700">+ ورشة جديدة</button>
+                        <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
                             استيراد ورشة
                             <input type="file" accept=".json" onchange="importSingleWorkshop(event)" class="hidden">
                         </label>
                     </div>
                 </div>
+
+                <!-- معاينة الورشة المستوردة باللون الرمادي -->
+                <div id="imported-preview-box" class="hidden mb-4 bg-slate-800/80 border border-slate-600 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 grayscale">
+                    <div>
+                        <span class="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-[10px] font-bold">معاينة مؤقتة</span>
+                        <h4 id="imported-preview-name" class="font-bold text-slate-200 text-xs mt-1"></h4>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="confirmImportedWorkshop()" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-1.5 rounded text-xs font-semibold border border-slate-500">اعتماد وإضافة الورشة</button>
+                        <button onclick="cancelImportedWorkshop()" class="bg-slate-900 text-slate-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold border border-slate-700">إلغاء</button>
+                    </div>
+                </div>
+
                 <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
             </section>
 
+            <!-- تفاصيل الورشة النشطة المحددة -->
             <div id="active-workshop-container" class="hidden space-y-4">
                 <div id="workshop-header-banner" class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
                     <div>
                         <div class="flex items-center gap-3">
-                            <h3 id="current-workshop-title" class="text-sm font-bold text-white"></h3>
-                            <span id="current-workshop-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold"></span>
+                            <h3 id="current-workshop-title" class="text-base font-bold text-white"></h3>
+                            <span id="current-workshop-status-badge" class="px-2.5 py-0.5 rounded text-[11px] font-bold"></span>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">الصناديق الفرعية وحركات الورشة</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5 no-print">الصناديق الفرعية وسجل الحركات المالية للورشة</p>
                     </div>
 
-                    <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700 text-xs">
+                    <!-- الصناديق الفرعية للورشة -->
+                    <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 text-xs">
                         <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (ل.س):</span>
+                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (سوري):</span>
                             <span id="ws-box-SYP" class="font-bold">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
                         </div>
                         <div class="border-r border-slate-700 h-6 mx-1"></div>
                         <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة ($):</span>
+                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (دولار):</span>
                             <span id="ws-box-USD" class="font-bold">0</span> <span class="text-[10px] text-slate-400">$</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <!-- إجراءات الورشة وتصديرها -->
+                    <div class="flex items-center gap-2 no-print">
                         <button onclick="exportCurrentWorkshopJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">تصدير الورشة</button>
-                        <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none">
+                        <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none cursor-pointer">
                             <option value="">إجراءات الورشة</option>
                             <option value="toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
-                            <option value="export-excel">تصدير Excel بمعادلات الجمع</option>
+                            <option value="export-excel">تصدير Excel (.csv)</option>
                             <option value="print-sheet">طباعة كشف الحساب</option>
                             <option value="delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
                         </select>
                     </div>
                 </div>
-                <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
-            </section>
 
-            <div id="active-workshop-container" class="hidden space-y-4">
-                <div id="workshop-header-banner" class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-3">
-                            <h3 id="current-workshop-title" class="text-sm font-bold text-white"></h3>
-                            <span id="current-workshop-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold"></span>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">الصناديق الفرعية وحركات الورشة</p>
-                    </div>
-
-                    <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700 text-xs">
-                        <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (ل.س):</span>
-                            <span id="ws-box-SYP" class="font-bold">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
-                        </div>
-                        <div class="border-r border-slate-700 h-6 mx-1"></div>
-                        <div>
-                            <span class="text-slate-400 text-[10px] block">صندوق الورشة ($):</span>
-                            <span id="ws-box-USD" class="font-bold">0</span> <span class="text-[10px] text-slate-400">$</span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none">
-                            <option value="">إجراءات الورشة</option>
-                            <option value="toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
-                            <option value="download-json">تنزيل الورشة كملف مفرد</option>
-                            <option value="export-excel">تصدير Excel بمعادلات الجمع</option>
-                            <option value="print-sheet">طباعة كشف الحساب</option>
-                            <option value="delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
-                        </select>
-                        <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition cursor-pointer border border-slate-700">
-                            استيراد ورشة
-                            <input type="file" accept=".json" onchange="importSingleWorkshop(event)" class="hidden">
-                        </label>
-                    </div>
+                <!-- أزرار إضافة الحركات -->
+                <div id="workshop-actions-bar" class="flex flex-wrap gap-2 no-print">
+                    <button onclick="openTransactionModal('income')" class="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">+ إضافة إيراد</button>
+                    <button onclick="openTransactionModal('expense')" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">- إضافة مصروف</button>
+                    <button onclick="openTransactionModal('exchange')" class="bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border border-amber-800/60 px-4 py-2 rounded-lg text-xs font-semibold transition">تحويل / صرافة عملات</button>
                 </div>
 
-                <div id="imported-preview-box" class="hidden bg-slate-900 border border-slate-700 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <h4 class="font-bold text-slate-200 text-xs">معاينة ورشة مستوردة جديدة (باللون الرمادي مؤقتاً)</h4>
-                        <p id="imported-preview-name" class="text-[11px] text-slate-400"></p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="confirmImportedWorkshop()" class="bg-emerald-800 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-semibold">اعتماد الورشة</button>
-                        <button onclick="cancelImportedWorkshop()" class="bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded text-xs font-semibold">إلغاء</button>
-                    </div>
-                </div>
-
-                <div id="workshop-actions-bar" class="flex flex-wrap gap-2">
-                    <button onclick="openTransactionModal('income')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">إضافة إيراد</button>
-                    <button onclick="openTransactionModal('expense')" class="bg-slate-800 hover:bg-slate-700 text-rose-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">إضافة مصروف</button>
-                    <button onclick="openTransactionModal('exchange')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-3.5 py-1.5 rounded text-xs font-semibold">تحويل / صرافة</button>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <!-- جدول الحركات -->
+                <div id="transactions-card" class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-right border-collapse">
                             <thead>
-                                <tr class="bg-slate-800/60 text-slate-400 text-xs border-b border-slate-800">
+                                <tr class="bg-slate-800/80 text-slate-300 text-xs border-b border-slate-700">
                                     <th class="p-3">التاريخ</th>
                                     <th class="p-3">نوع الحركة</th>
                                     <th class="p-3">البيان والتفاصيل</th>
@@ -203,45 +187,87 @@
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- نافذة إعدادات الربط السحابي (Firebase) -->
+    <div id="cloud-config-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white">إعدادات المزامنة السحابية (Firebase)</h3>
+                <span id="modal-cloud-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">غير متصل</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                لفتح بياناتك ومزامنتها تلقائياً من أي جهاز (موبايل أو كمبيوتر)، الصق كود <code class="text-slate-200 bg-slate-800 px-1 rounded">firebaseConfig</code> الخاص بمشروعك هنا:
+            </p>
+            <div>
+                <textarea id="firebase-config-input" rows="7" dir="ltr" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-slate-500" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abcdef"
+}'></textarea>
+            </div>
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
+                <button onclick="disconnectCloud()" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-3 py-1.5 rounded text-xs">فصل السحابة</button>
+                <div class="flex gap-2">
+                    <button onclick="closeCloudConfigModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
+                    <button onclick="saveCloudConfig()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ والاتصال بالسحابة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة ورشة جديدة -->
     <div id="new-workshop-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-md w-full shadow-2xl space-y-3">
             <h3 class="text-sm font-bold text-white">إضافة ورشة عمل جديدة</h3>
-            <input type="text" id="new-ws-name" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="اسم الورشة">
+            <input type="text" id="new-ws-name" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white focus:outline-none" placeholder="اسم الورشة أو المشروع">
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeNewWorkshopModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إلغاء</button>
-                <button onclick="saveNewWorkshop()" class="bg-slate-700 text-white px-3.5 py-1.5 rounded text-xs font-semibold">حفظ</button>
+                <button onclick="saveNewWorkshop()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ الورشة</button>
             </div>
         </div>
     </div>
 
+    <!-- نافذة الأرشيف والتنبيهات -->
     <div id="archive-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-xl w-full shadow-2xl space-y-3">
-            <h3 class="text-sm font-bold text-white">إدارة الأرشيف والتخزين المحلي</h3>
+            <h3 class="text-sm font-bold text-white">إدارة الأرشيف وسعة التخزين</h3>
             <div id="storage-quota-info" class="p-3 rounded bg-slate-800 border border-slate-700 text-xs"></div>
+            <div class="flex justify-between items-center pt-1">
+                <span class="text-xs text-slate-400">الورشات غير النشطة (المؤرشفة):</span>
+                <button onclick="exportAllInactiveWorkshops()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[11px] border border-slate-700">تصدير كل غير النشطة كملف</button>
+            </div>
             <div id="inactive-workshops-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
             <div class="flex justify-end pt-2">
-                <button onclick="closeArchiveModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إغلاق</button>
+                <button onclick="closeArchiveModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
             </div>
         </div>
     </div>
 
+    <!-- نافذة المستخدمين والصلاحيات -->
     <div id="users-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-xl w-full shadow-2xl space-y-3">
             <h3 class="text-sm font-bold text-white">إدارة المستخدمين والصلاحيات</h3>
-            <div class="bg-slate-800/40 p-3 rounded border border-slate-700 space-y-2">
-                <input type="text" id="new-user-name" placeholder="اسم المستخدم" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
-                <input type="password" id="new-user-pass" placeholder="كلمة المرور" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
-                <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded border border-slate-700"></div>
-                <button onclick="addNewUser()" class="w-full bg-slate-800 text-white py-1.5 rounded text-xs font-semibold border border-slate-700">إضافة مستخدم</button>
+            <div class="bg-slate-800/40 p-3 rounded border border-slate-700 space-y-2.5">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="new-user-name" placeholder="اسم المستخدم الجديد" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                    <input type="password" id="new-user-pass" placeholder="كلمة المرور" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1">الورشات المسموح لهذا المستخدم رؤيتها والعمل عليها:</label>
+                    <div id="permissions-workshops-checkboxes" class="flex flex-wrap gap-3 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded border border-slate-700"></div>
+                </div>
+                <button onclick="addNewUser()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-1.5 rounded text-xs font-semibold border border-slate-700">إضافة المستخدم</button>
             </div>
             <div id="users-list-container" class="space-y-2 max-h-40 overflow-y-auto"></div>
             <div class="flex justify-end pt-2">
-                <button onclick="closeUsersModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إغلاق</button>
+                <button onclick="closeUsersModal()" class="bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded text-xs">إغلاق</button>
             </div>
         </div>
     </div>
 
+    <!-- نافذة إضافة حركة مالية -->
     <div id="transaction-modal" class="fixed inset-0 z-50 bg-slate-950/80 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 max-w-md w-full shadow-2xl space-y-3">
             <h3 id="tx-modal-title" class="text-sm font-bold text-white">حركة مالية جديدة</h3>
@@ -249,51 +275,82 @@
                 <input type="hidden" id="tx-type">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">البيان / التفاصيل</label>
-                    <input type="text" id="tx-desc" required class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white">
+                    <input type="text" id="tx-desc" required class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="شرح الحركة المالية">
                 </div>
                 <div id="tx-currency-container">
-                    <label class="block text-xs font-medium text-slate-300 mb-1">عملة الحركة (سوري أو دولار)</label>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">عملة الحركة (سوري حصراً أو دولار حصراً)</label>
                     <select id="tx-currency" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-xs text-white">
-                        <option value="SYP">ليرة سورية (SYP)</option>
-                        <option value="USD">دولار أمريكي (USD)</option>
+                        <option value="SYP">ليرة سورية (ل.س)</option>
+                        <option value="USD">دولار أمريكي ($)</option>
                     </select>
                 </div>
                 <div id="tx-amount-container">
                     <label class="block text-xs font-medium text-slate-300 mb-1">المبلغ</label>
-                    <input type="number" step="any" id="tx-amount" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white">
+                    <input type="number" step="any" id="tx-amount" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="0">
                 </div>
                 <div id="tx-exchange-container" class="hidden space-y-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">نوع التحويل / الصرافة</label>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">نوع عملية الصرافة</label>
                         <select id="ex-direction" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-xs text-white">
-                            <option value="buy">شراء دولار</option>
-                            <option value="sell">بيع دولار</option>
+                            <option value="buy">شراء دولار (دفع سوري واستلام دولار)</option>
+                            <option value="sell">بيع دولار (دفع دولار واستلام سوري)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">المبلغ بالدولار ($)</label>
-                        <input type="number" step="any" id="ex-usd" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white">
+                        <input type="number" step="any" id="ex-usd" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="0">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">سعر الصرف</label>
-                        <input type="number" step="any" id="ex-rate" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white">
+                        <label class="block text-xs font-medium text-slate-300 mb-1">سعر صرف الدولار بالليرة السورية</label>
+                        <input type="number" step="any" id="ex-rate" class="w-full bg-slate-800 border border-slate-700 rounded px-3.5 py-2 text-xs text-white" placeholder="مثلاً: 15000">
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeTransactionModal()" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs">إلغاء</button>
-                    <button type="submit" class="bg-slate-700 text-white px-3.5 py-1.5 rounded text-xs font-semibold">حفظ</button>
+                    <button type="submit" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-semibold">حفظ الحركة</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        // مفاتيح التخزين المحلي والسحابي
         const STORAGE_KEY = "workshops_accounting_secure_data_v5";
-        let dbData = { users: [{ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] }], workshops: [] };
-        let currentUser = null, currentWorkshopId = null, importedWorkshopTemp = null;
+        const CLOUD_CONFIG_KEY = "workshops_firebase_custom_config";
+        
+        // تم تثبيت إعدادات السحابة الخاصة بك للاتصال التلقائي من أي جهاز
+        const HARDCODED_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
+            authDomain: "anas-alasfar.firebaseapp.com",
+            projectId: "anas-alasfar",
+            storageBucket: "anas-alasfar.firebasestorage.app",
+            messagingSenderId: "91067590533",
+            appId: "1:91067590533:web:34851c44aabb8a9e9a46ec"
+        };
 
-        function initApp() {
-            const possibleKeys = [STORAGE_KEY, "workshops_accounting_secure_data_v4", "workshops_accounting_secure_data_v3", "workshops_accounting_secure_data_v2", "workshops_accounting_secure_data"];
+        let dbData = {
+            users: [{ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] }],
+            workshops: [],
+            lastUpdated: 0
+        };
+        
+        let currentUser = null;
+        let currentWorkshopId = null;
+        let importedWorkshopTemp = null;
+        let firestoreDb = null;
+        let isCloudConnected = false;
+        let unsubscribeSnapshot = null;
+
+        // تهيئة التطبيق واستعادة البيانات بأمان
+        async function initApp() {
+            // 1. استعادة البيانات المحلية من أي نسخة سابقة لضمان عدم ضياع أي بيانات
+            const possibleKeys = [
+                STORAGE_KEY,
+                "workshops_accounting_secure_data_v4",
+                "workshops_accounting_secure_data_v3",
+                "workshops_accounting_secure_data_v2",
+                "workshops_accounting_secure_data"
+            ];
             for (let k of possibleKeys) {
                 const val = localStorage.getItem(k);
                 if (val) {
@@ -306,21 +363,174 @@
                     } catch(e) {}
                 }
             }
-            if (!dbData.users.some(u => u.username === "anas")) {
+
+            if (!dbData.users || !dbData.users.some(u => u.username === "anas")) {
+                if (!dbData.users) dbData.users = [];
                 dbData.users.push({ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] });
             }
-            saveDb();
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
+
+            // 2. التحقق من وجود إعدادات السحابة والاتصال بها
+            await initCloudConnection();
+
+            // 3. التحقق من جلسة الدخول الحالية
             const loggedUserJson = sessionStorage.getItem("current_session_user");
             if (loggedUserJson) {
-                try { currentUser = JSON.parse(loggedUserJson); showMainApp(); } catch(e) {}
+                try {
+                    currentUser = JSON.parse(loggedUserJson);
+                    showMainApp();
+                } catch(e) {}
             }
         }
 
-        function saveDb() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
-            updateGlobalBoxes();
+        // دالة الاتصال بالسحابة (Firebase)
+        async function initCloudConnection() {
+            let config = HARDCODED_FIREBASE_CONFIG;
+            if (!config) {
+                const savedConfigStr = localStorage.getItem(CLOUD_CONFIG_KEY);
+                if (savedConfigStr) {
+                    try { config = JSON.parse(savedConfigStr); } catch(e) {}
+                }
+            }
+
+            if (!config || !config.apiKey || !config.projectId) {
+                updateCloudUI(false, "تخزين محلي فقط (اضغط للربط السحابي)");
+                return;
+            }
+
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(config);
+                }
+                await firebase.auth().signInAnonymously();
+                firestoreDb = firebase.firestore();
+                
+                const docRef = firestoreDb.collection("workshops_system").doc("main_database");
+                
+                // الاستماع الفوري للتحديثات من السحابة (مزامنة حية بين جميع الأجهزة)
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                unsubscribeSnapshot = docRef.onSnapshot((docSnap) => {
+                    isCloudConnected = true;
+                    updateCloudUI(true, "متصل بالسحابة (مزامنة فورية)");
+                    
+                    if (docSnap.exists) {
+                        const cloudData = docSnap.data();
+                        if (cloudData && Array.isArray(cloudData.workshops)) {
+                            // إذا كانت السحابة فارغة والمحلي فيه بيانات، نرفع المحلي للسحابة فوراً
+                            if (cloudData.workshops.length === 0 && dbData.workshops.length > 0) {
+                                saveDb(true);
+                            } else {
+                                dbData = cloudData;
+                                if (!dbData.users.some(u => u.username === "anas")) {
+                                    dbData.users.push({ username: "anas", pass: "789456123147", role: "admin", allowedWorkshops: ["all"] });
+                                }
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
+                                if (currentUser) {
+                                    updateGlobalBoxes();
+                                    renderWorkshopsList();
+                                    if (currentWorkshopId) selectWorkshop(currentWorkshopId);
+                                }
+                            }
+                        }
+                    } else {
+                        // أول مرة: رفع البيانات المحلية إلى السحابة
+                        saveDb(true);
+                    }
+                }, (error) => {
+                    console.error("Firestore Sync Error:", error);
+                    isCloudConnected = false;
+                    updateCloudUI(false, "تعذر الاتصال بالسحابة (يعمل محلياً)");
+                });
+
+            } catch (err) {
+                console.error("Firebase Init Error:", err);
+                isCloudConnected = false;
+                updateCloudUI(false, "خطأ في إعدادات السحابة");
+            }
         }
 
+        function updateCloudUI(connected, text) {
+            const badge = document.getElementById("cloud-status-badge");
+            const dot = document.getElementById("cloud-status-dot");
+            const label = document.getElementById("cloud-status-text");
+            const loginStatus = document.getElementById("login-cloud-status");
+            const modalBadge = document.getElementById("modal-cloud-badge");
+
+            if (label) label.textContent = text;
+            if (loginStatus) loginStatus.textContent = "حالة السحابة: " + text;
+            if (modalBadge) {
+                modalBadge.textContent = connected ? "متصل بالسحابة بنجاح" : "غير متصل بالسحابة";
+                modalBadge.className = connected
+                    ? "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800"
+                    : "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800";
+            }
+
+            if (badge && dot) {
+                if (connected) {
+                    badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:opacity-90 transition cursor-pointer";
+                    dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                } else {
+                    badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/60 hover:opacity-90 transition cursor-pointer";
+                    dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                }
+            }
+        }
+
+        // حفظ البيانات محلياً وسحابياً في نفس الوقت
+        function saveDb(forceCloudUpload = false) {
+            dbData.lastUpdated = Date.now();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbData));
+            updateGlobalBoxes();
+
+            if (firestoreDb && (isCloudConnected || forceCloudUpload)) {
+                firestoreDb.collection("workshops_system").doc("main_database").set(dbData)
+                    .catch(err => console.error("Error saving to cloud:", err));
+            }
+        }
+
+        // إدارة نافذة إعدادات السحابة
+        function openCloudConfigModal() {
+            const saved = localStorage.getItem(CLOUD_CONFIG_KEY) || "";
+            document.getElementById("firebase-config-input").value = saved;
+            document.getElementById("cloud-config-modal").classList.remove("hidden");
+            document.getElementById("cloud-config-modal").classList.add("flex");
+        }
+        function closeCloudConfigModal() {
+            document.getElementById("cloud-config-modal").classList.add("hidden");
+            document.getElementById("cloud-config-modal").classList.remove("flex");
+        }
+        function saveCloudConfig() {
+            let raw = document.getElementById("firebase-config-input").value.trim();
+            if (!raw) return;
+            try {
+                // تنظيف النص في حال قام المستخدم بلصق "const firebaseConfig = {...};"
+                const startIdx = raw.indexOf("{");
+                const endIdx = raw.lastIndexOf("}");
+                if (startIdx !== -1 && endIdx !== -1) {
+                    raw = raw.substring(startIdx, endIdx + 1);
+                }
+                // تحويل المفاتيح غير المحاطة بعلامات تنصيص إلى JSON صالح
+                const jsonCompatible = raw.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
+                const parsed = JSON.parse(jsonCompatible);
+                if (!parsed.apiKey || !parsed.projectId) throw new Error("بيانات ناقصة");
+                
+                localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(parsed, null, 2));
+                closeCloudConfigModal();
+                alert("تم حفظ إعدادات السحابة بنجاح! سيتم إعادة تحميل الصفحة لتفعيل المزامنة.");
+                location.reload();
+            } catch (e) {
+                alert("صيغة كود Firebase غير صحيحة، يرجى التأكد من نسخ الكود كاملاً بين القوسين { ... }");
+            }
+        }
+        function disconnectCloud() {
+            if (confirm("هل تريد فصل الربط السحابي والعودة للتخزين المحلي فقط؟ (لن تُحذف بياناتك المحلية)")) {
+                localStorage.removeItem(CLOUD_CONFIG_KEY);
+                location.reload();
+            }
+        }
+
+        // تسجيل الدخول والخروج
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById("login-user").value.trim();
@@ -340,15 +550,20 @@
 
         function logout() {
             sessionStorage.removeItem("current_session_user");
-            currentUser = null; currentWorkshopId = null;
+            currentUser = null;
+            currentWorkshopId = null;
             document.getElementById("app-content").classList.add("hidden");
             document.getElementById("login-screen").classList.remove("hidden");
+        }
+
+        function isOwner() {
+            return currentUser && (currentUser.role === "admin" || currentUser.username === "anas");
         }
 
         function showMainApp() {
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("app-content").classList.remove("hidden");
-            if (currentUser.role === "admin" || currentUser.username === "anas") {
+            if (isOwner()) {
                 document.getElementById("users-btn").classList.remove("hidden");
                 document.getElementById("btn-new-ws").classList.remove("hidden");
             } else {
@@ -359,6 +574,7 @@
             renderWorkshopsList();
         }
 
+        // تحديث الصناديق الكبرى العامة
         function updateGlobalBoxes() {
             let totalSYP = 0, totalUSD = 0;
             (dbData.workshops || []).forEach(w => {
@@ -379,16 +595,17 @@
             const sypEl = document.getElementById("global-box-SYP");
             const usdEl = document.getElementById("global-box-USD");
             sypEl.textContent = totalSYP.toLocaleString();
-            sypEl.className = totalSYP < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/60 px-1 rounded" : "font-bold text-emerald-400 mr-1";
+            sypEl.className = totalSYP < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-emerald-400 mr-1";
             usdEl.textContent = totalUSD.toLocaleString();
-            usdEl.className = totalUSD < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/60 px-1 rounded" : "font-bold text-cyan-400 mr-1";
+            usdEl.className = totalUSD < 0 ? "font-bold text-rose-400 mr-1 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-cyan-400 mr-1";
         }
 
+        // عرض قائمة الورشات
         function renderWorkshopsList() {
             const container = document.getElementById("workshops-list");
             container.innerHTML = "";
-            let list = dbData.workshops;
-            if (currentUser.role !== "admin" && currentUser.username !== "anas") {
+            let list = dbData.workshops || [];
+            if (!isOwner()) {
                 list = list.filter(w => currentUser.allowedWorkshops.includes("all") || currentUser.allowedWorkshops.includes(w.id));
             }
             if (list.length === 0) {
@@ -397,32 +614,57 @@
             }
             list.forEach(w => {
                 const isActive = w.active !== false;
+                const isSelected = w.id === currentWorkshopId;
                 const card = document.createElement("div");
-                card.className = `p-3.5 rounded-lg border transition flex flex-col justify-between gap-3 ${isActive ? 'bg-slate-900 border-slate-800' : 'bg-slate-800/40 border-slate-700/50 text-slate-400 grayscale-[40%]'}`;
+                card.className = `p-3.5 rounded-lg border transition flex flex-col justify-between gap-3 ${
+                    isActive 
+                        ? (isSelected ? 'bg-slate-800 border-slate-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:border-slate-700') 
+                        : 'bg-slate-800/30 border-slate-700/50 text-slate-400 grayscale'
+                }`;
                 card.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start">
+                        <div class="flex justify-between items-start gap-2">
                             <h4 class="font-bold text-white text-xs">${w.name}</h4>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300'}">${isActive ? 'نشطة' : 'غير نشطة'}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300'}">${isActive ? 'نشطة' : 'غير نشطة'}</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1">الحركات: ${(w.transactions || []).length}</p>
+                        <p class="text-[11px] text-slate-500 mt-1">عدد الحركات: ${(w.transactions || []).length}</p>
                     </div>
-                    <button onclick="selectWorkshop('${w.id}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-xs font-semibold border border-slate-700">فتح الورشة</button>
+                    <button onclick="selectWorkshop('${w.id}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-xs font-semibold border border-slate-700 transition">فتح الورشة</button>
                 `;
                 container.appendChild(card);
             });
         }
 
+        // فتح ورشة محددة
         function selectWorkshop(id) {
             currentWorkshopId = id;
             const w = dbData.workshops.find(x => x.id === id);
             if (!w) return;
-            document.getElementById("active-workshop-container").classList.remove("hidden");
+            renderWorkshopsList();
+
+            const container = document.getElementById("active-workshop-container");
+            const banner = document.getElementById("workshop-header-banner");
+            const txCard = document.getElementById("transactions-card");
+            const actionsBar = document.getElementById("workshop-actions-bar");
+
+            container.classList.remove("hidden");
             document.getElementById("current-workshop-title").textContent = w.name;
+            
             const isActive = w.active !== false;
             const badge = document.getElementById("current-workshop-status-badge");
-            badge.textContent = isActive ? "نشطة" : "غير نشطة";
-            badge.className = `px-2 py-0.5 rounded text-xs font-bold ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-800 text-slate-400 border border-slate-700'}`;
+            badge.textContent = isActive ? "نشطة" : "غير نشطة (مؤرشفة)";
+            badge.className = `px-2.5 py-0.5 rounded text-[11px] font-bold ${isActive ? 'bg-emerald-950 text-emerald-300 border border-emerald-900' : 'bg-slate-700 text-slate-300 border border-slate-600'}`;
+
+            // تدرج الرمادي للورشة غير النشطة في الشاشة، وتعود لألوانها في الطباعة
+            if (!isActive) {
+                banner.classList.add("grayscale", "grayscale-inactive");
+                txCard.classList.add("grayscale", "grayscale-inactive");
+                actionsBar.classList.add("opacity-50", "pointer-events-none");
+            } else {
+                banner.classList.remove("grayscale", "grayscale-inactive");
+                txCard.classList.remove("grayscale", "grayscale-inactive");
+                actionsBar.classList.remove("opacity-50", "pointer-events-none");
+            }
 
             let balSYP = 0, balUSD = 0;
             (w.transactions || []).forEach(tx => {
@@ -438,44 +680,65 @@
                     else { balUSD -= usdVal; balSYP += sypVal; }
                 }
             });
+
             const wsSYPEl = document.getElementById("ws-box-SYP");
             const wsUSDEl = document.getElementById("ws-box-USD");
             wsSYPEl.textContent = balSYP.toLocaleString();
-            wsSYPEl.className = balSYP < 0 ? "font-bold text-rose-400 bg-rose-950/60 px-1 rounded" : "font-bold text-emerald-400";
+            wsSYPEl.className = balSYP < 0 ? "font-bold text-rose-400 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-emerald-400";
             wsUSDEl.textContent = balUSD.toLocaleString();
-            wsUSDEl.className = balUSD < 0 ? "font-bold text-rose-400 bg-rose-950/60 px-1 rounded" : "font-bold text-cyan-400";
+            wsUSDEl.className = balUSD < 0 ? "font-bold text-rose-400 bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 rounded" : "font-bold text-cyan-400";
+
             renderTransactions();
         }
 
+        // إضافة ورشة جديدة
         function openNewWorkshopModal() {
-            if (currentUser.role !== "admin" && currentUser.username !== "anas") return;
+            if (!isOwner()) { alert("إنشاء الورشات مخصص للمدير الأساسي فقط."); return; }
             document.getElementById("new-ws-name").value = "";
             document.getElementById("new-workshop-modal").classList.remove("hidden");
             document.getElementById("new-workshop-modal").classList.add("flex");
         }
-        function closeNewWorkshopModal() { document.getElementById("new-workshop-modal").classList.add("hidden"); document.getElementById("new-workshop-modal").classList.remove("flex"); }
+        function closeNewWorkshopModal() {
+            document.getElementById("new-workshop-modal").classList.add("hidden");
+            document.getElementById("new-workshop-modal").classList.remove("flex");
+        }
         function saveNewWorkshop() {
             const name = document.getElementById("new-ws-name").value.trim();
             if (!name) return;
             const newW = { id: 'ws_' + Date.now(), name: name, active: true, transactions: [] };
             dbData.workshops.push(newW);
-            saveDb(); closeNewWorkshopModal(); renderWorkshopsList(); selectWorkshop(newW.id);
+            saveDb();
+            closeNewWorkshopModal();
+            renderWorkshopsList();
+            selectWorkshop(newW.id);
         }
 
+        // إجراءات الورشة
         function handleWorkshopSettingAction(selectEl) {
-            const val = selectEl.value; selectEl.value = "";
+            const val = selectEl.value;
+            selectEl.value = "";
             if (!currentWorkshopId) return;
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
-            if (val === "toggle-status") { w.active = !w.active; saveDb(); renderWorkshopsList(); selectWorkshop(w.id); }
-            else if (val === "export-excel") { exportWorkshopExcel(w); }
-            else if (val === "print-sheet") { window.print(); }
-            else if (val === "delete-workshop") {
-                if (currentUser.role !== "admin" && currentUser.username !== "anas") { alert("الحذف مخصص للمدير"); return; }
-                if (confirm(`هل أنت متأكد من حذف ورشة "${w.name}"؟`)) {
+
+            if (val === "toggle-status") {
+                if (!isOwner()) { alert("تغيير حالة الورشة مخصص للمدير الأساسي."); return; }
+                w.active = (w.active === false) ? true : false;
+                saveDb();
+                renderWorkshopsList();
+                selectWorkshop(w.id);
+            } else if (val === "export-excel") {
+                exportWorkshopExcel(w);
+            } else if (val === "print-sheet") {
+                window.print();
+            } else if (val === "delete-workshop") {
+                if (!isOwner()) { alert("حذف الورشات مخصص للمدير الأساسي فقط."); return; }
+                if (confirm(`هل أنت متأكد من حذف ورشة "${w.name}" نهائياً؟`)) {
                     dbData.workshops = dbData.workshops.filter(x => x.id !== w.id);
-                    saveDb(); document.getElementById("active-workshop-container").classList.add("hidden");
-                    currentWorkshopId = null; renderWorkshopsList();
+                    saveDb();
+                    document.getElementById("active-workshop-container").classList.add("hidden");
+                    currentWorkshopId = null;
+                    renderWorkshopsList();
                 }
             }
         }
@@ -489,9 +752,14 @@
         function downloadJsonFile(dataObj, filename) {
             const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
+        // استيراد ورشة مفردة ومعاينتها بالرمادي
         function importSingleWorkshop(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -502,67 +770,100 @@
                     if (!parsed.name || !Array.isArray(parsed.transactions)) throw new Error();
                     importedWorkshopTemp = parsed;
                     document.getElementById("imported-preview-box").classList.remove("hidden");
-                    document.getElementById("imported-preview-name").textContent = `الورشة: ${parsed.name} (${parsed.transactions.length} حركات)`;
-                } catch(err) { alert("ملف غير صالح"); }
+                    document.getElementById("imported-preview-name").textContent = `ورشة مستوردة: ${parsed.name} (تحتوي على ${parsed.transactions.length} حركة مالية)`;
+                } catch(err) {
+                    alert("ملف الورشة غير صالح.");
+                }
             };
-            reader.readAsText(file); event.target.value = "";
+            reader.readAsText(file);
+            event.target.value = "";
         }
 
         function confirmImportedWorkshop() {
             if (!importedWorkshopTemp) return;
             importedWorkshopTemp.id = 'ws_' + Date.now();
             dbData.workshops.push(importedWorkshopTemp);
-            saveDb(); document.getElementById("imported-preview-box").classList.add("hidden");
-            importedWorkshopTemp = null; renderWorkshopsList(); alert("تم اعتماد الورشة بنجاح");
+            saveDb();
+            document.getElementById("imported-preview-box").classList.add("hidden");
+            const addedId = importedWorkshopTemp.id;
+            importedWorkshopTemp = null;
+            renderWorkshopsList();
+            selectWorkshop(addedId);
         }
-        function cancelImportedWorkshop() { importedWorkshopTemp = null; document.getElementById("imported-preview-box").classList.add("hidden"); }
 
+        function cancelImportedWorkshop() {
+            importedWorkshopTemp = null;
+            document.getElementById("imported-preview-box").classList.add("hidden");
+        }
+
+        // عرض الحركات المالية في الجدول
         function renderTransactions() {
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
             const tbody = document.getElementById("transactions-table-body");
             tbody.innerHTML = "";
             let runningSYP = 0, runningUSD = 0;
-            (w.transactions || []).forEach((tx, idx) => {
+
+            if (!w.transactions || w.transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد حركات مالية مسجلة في هذه الورشة بعد</td></tr>`;
+                return;
+            }
+
+            w.transactions.forEach((tx, idx) => {
                 let amt = parseFloat(tx.amount) || 0, curDescText = "";
-                let badgeClass = '';
+                let badgeClass = '', typeLabel = '';
+
                 if (tx.type === 'income') {
                     if (tx.currency === 'USD') { runningUSD += amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP += amt; curDescText = `${amt.toLocaleString()} ل.س`; }
-                    badgeClass = 'bg-emerald-950 text-emerald-300';
+                    badgeClass = 'bg-emerald-950 text-emerald-300 border border-emerald-800/60';
+                    typeLabel = 'إيراد';
                 } else if (tx.type === 'expense') {
                     if (tx.currency === 'USD') { runningUSD -= amt; curDescText = `${amt.toLocaleString()} $`; }
                     else { runningSYP -= amt; curDescText = `${amt.toLocaleString()} ل.س`; }
-                    badgeClass = 'bg-rose-950 text-rose-300';
+                    badgeClass = 'bg-rose-950 text-rose-300 border border-rose-800/60';
+                    typeLabel = 'مصروف';
                 } else if (tx.type === 'exchange') {
                     let usdVal = parseFloat(tx.usdAmount) || 0, sypVal = parseFloat(tx.sypAmount) || 0;
-                    if (tx.direction === 'buy') { runningSYP -= sypVal; runningUSD += usdVal; curDescText = `شراء ${usdVal}$ بسعر ${tx.rate}`; }
-                    else { runningUSD -= usdVal; runningSYP += sypVal; curDescText = `بيع ${usdVal}$ بسعر ${tx.rate}`; }
-                    badgeClass = 'bg-amber-950 text-amber-300';
+                    if (tx.direction === 'buy') {
+                        runningSYP -= sypVal; runningUSD += usdVal;
+                        curDescText = `شراء ${usdVal.toLocaleString()} $ بسعر ${Number(tx.rate).toLocaleString()} ل.س`;
+                    } else {
+                        runningUSD -= usdVal; runningSYP += sypVal;
+                        curDescText = `بيع ${usdVal.toLocaleString()} $ بسعر ${Number(tx.rate).toLocaleString()} ل.س`;
+                    }
+                    badgeClass = 'bg-amber-950 text-amber-300 border border-amber-800/60';
+                    typeLabel = 'تحويل / صرافة';
                 }
+
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800";
                 tr.innerHTML = `
-                    <td class="p-3 text-slate-300">${tx.date}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${tx.type==='income'?'إيراد':tx.type==='expense'?'مصروف':'تحويل/صرافة'}</span></td>
+                    <td class="p-3 text-slate-300 whitespace-nowrap">${tx.date}</td>
+                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-0.5 rounded text-[11px] font-bold ${badgeClass}">${typeLabel}</span></td>
                     <td class="p-3 text-white">${tx.desc}</td>
-                    <td class="p-3 font-semibold text-slate-200">${curDescText}</td>
-                    <td class="p-3 font-bold ${runningSYP < 0 ? 'text-rose-400 bg-rose-950/60 px-1 rounded' : 'text-emerald-400'}">${runningSYP.toLocaleString()} ل.س</td>
-                    <td class="p-3 font-bold ${runningUSD < 0 ? 'text-rose-400 bg-rose-950/60 px-1 rounded' : 'text-cyan-400'}">${runningUSD.toLocaleString()} $</td>
+                    <td class="p-3 font-semibold text-slate-200 whitespace-nowrap">${curDescText}</td>
+                    <td class="p-3 font-bold whitespace-nowrap ${runningSYP < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-emerald-400'}">${runningSYP.toLocaleString()} ل.س</td>
+                    <td class="p-3 font-bold whitespace-nowrap ${runningUSD < 0 ? 'text-rose-400 bg-rose-950/70' : 'text-cyan-400'}">${runningUSD.toLocaleString()} $</td>
                     <td class="p-3 text-center no-print">
-                        <button onclick="deleteTransaction(${idx})" class="text-rose-400 text-[11px] bg-rose-950/60 border border-rose-900 px-2 py-0.5 rounded">حذف</button>
+                        ${isOwner() ? `<button onclick="deleteTransaction(${idx})" class="text-rose-400 hover:bg-rose-900/60 text-[11px] bg-rose-950/60 border border-rose-900 px-2.5 py-1 rounded transition">حذف</button>` : '<span class="text-slate-600 text-[10px]">محمي</span>'}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
+        // إضافة حركة مالية
         function openTransactionModal(type) {
+            const w = dbData.workshops.find(x => x.id === currentWorkshopId);
+            if (!w || w.active === false) { alert("هذه الورشة غير نشطة ومقفلة حالياً."); return; }
+
             document.getElementById("tx-type").value = type;
             document.getElementById("tx-desc").value = "";
             document.getElementById("tx-amount").value = "";
             document.getElementById("ex-usd").value = "";
             document.getElementById("ex-rate").value = "";
+
             const amtContainer = document.getElementById("tx-amount-container");
             const curContainer = document.getElementById("tx-currency-container");
             const exContainer = document.getElementById("tx-exchange-container");
@@ -570,15 +871,23 @@
 
             if (type === 'exchange') {
                 title.textContent = "حركة تحويل وصرافة عملات";
-                amtContainer.classList.add("hidden"); curContainer.classList.add("hidden"); exContainer.classList.remove("hidden");
+                amtContainer.classList.add("hidden");
+                curContainer.classList.add("hidden");
+                exContainer.classList.remove("hidden");
             } else {
-                title.textContent = type === 'income' ? "سند إيراد جديد" : "سند مصروف جديد";
-                amtContainer.classList.remove("hidden"); curContainer.classList.remove("hidden"); exContainer.classList.add("hidden");
+                title.textContent = type === 'income' ? "إضافة إيراد جديد للورشة" : "إضافة مصروف جديد للورشة";
+                amtContainer.classList.remove("hidden");
+                curContainer.classList.remove("hidden");
+                exContainer.classList.add("hidden");
             }
             document.getElementById("transaction-modal").classList.remove("hidden");
             document.getElementById("transaction-modal").classList.add("flex");
         }
-        function closeTransactionModal() { document.getElementById("transaction-modal").classList.add("hidden"); document.getElementById("transaction-modal").classList.remove("flex"); }
+
+        function closeTransactionModal() {
+            document.getElementById("transaction-modal").classList.add("hidden");
+            document.getElementById("transaction-modal").classList.remove("flex");
+        }
 
         function saveTransaction(e) {
             e.preventDefault();
@@ -586,31 +895,47 @@
             const desc = document.getElementById("tx-desc").value.trim();
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
+
             let newTx = { date: new Date().toISOString().split('T')[0], type: type, desc: desc };
             if (type === 'exchange') {
                 const dir = document.getElementById("ex-direction").value;
                 const usd = parseFloat(document.getElementById("ex-usd").value) || 0;
                 const rate = parseFloat(document.getElementById("ex-rate").value) || 0;
-                newTx.direction = dir; newTx.usdAmount = usd; newTx.sypAmount = usd * rate; newTx.rate = rate;
+                if (usd <= 0 || rate <= 0) { alert("يرجى إدخال المبلغ وسعر الصرف بشكل صحيح."); return; }
+                newTx.direction = dir;
+                newTx.usdAmount = usd;
+                newTx.sypAmount = usd * rate;
+                newTx.rate = rate;
             } else {
+                const amt = parseFloat(document.getElementById("tx-amount").value) || 0;
+                if (amt <= 0) { alert("يرجى إدخال مبلغ صحيح أكبر من الصفر."); return; }
                 newTx.currency = document.getElementById("tx-currency").value;
-                newTx.amount = parseFloat(document.getElementById("tx-amount").value) || 0;
+                newTx.amount = amt;
             }
+
             if (!w.transactions) w.transactions = [];
             w.transactions.push(newTx);
-            saveDb(); closeTransactionModal(); selectWorkshop(w.id); renderWorkshopsList();
+            saveDb();
+            closeTransactionModal();
+            selectWorkshop(w.id);
         }
 
         function deleteTransaction(idx) {
+            if (!isOwner()) { alert("حذف الحركات مخصص للمدير الأساسي فقط."); return; }
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
-            if (!w) return;
-            if (confirm("هل أنت متأكد من حذف هذه الحركة؟")) {
+            if (!w || w.active === false) return;
+            if (confirm("هل أنت متأكد من حذف هذه الحركة المالية؟")) {
                 w.transactions.splice(idx, 1);
-                saveDb(); selectWorkshop(w.id); renderWorkshopsList();
+                saveDb();
+                selectWorkshop(w.id);
             }
         }
 
-        function exportFullBackup() { downloadJsonFile(dbData, `full_backup_${Date.now()}.json`); }
+        // النسخ الاحتياطي الكامل والاستعادة
+        function exportFullBackup() {
+            downloadJsonFile(dbData, `full_workshops_backup_${new Date().toISOString().split('T')[0]}.json`);
+        }
+
         function importFullBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -619,87 +944,174 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (!Array.isArray(parsed.workshops)) throw new Error();
-                    dbData = parsed; saveDb(); showMainApp(); alert("تم الاستعادة بنجاح");
-                } catch(err) { alert("ملف غير صالح"); }
+                    if (confirm("سيتم استبدال البيانات الحالية ببيانات النسخة الاحتياطية المستعادة، هل أنت متأكد؟")) {
+                        dbData = parsed;
+                        saveDb();
+                        showMainApp();
+                        alert("تمت الاستعادة الكاملة بنجاح!");
+                    }
+                } catch(err) {
+                    alert("ملف النسخة الاحتياطية غير صالح.");
+                }
             };
-            reader.readAsText(file); event.target.value = "";
+            reader.readAsText(file);
+            event.target.value = "";
         }
 
+        // الأرشيف والتنبيهات
         function openArchiveModal() {
             const modal = document.getElementById("archive-modal");
             const quotaDiv = document.getElementById("storage-quota-info");
             const listDiv = document.getElementById("inactive-workshops-list");
+
             let totalBytes = new Blob([JSON.stringify(dbData)]).size;
             let kbSize = (totalBytes / 1024).toFixed(2);
-            quotaDiv.innerHTML = kbSize > 4000 ? `<span class="text-rose-400 font-bold">تحذير: التخزين اقترب من الامتلاء (${kbSize} KB)!</span>` : `<span class="text-emerald-400">التخزين ممتاز (${kbSize} KB).</span>`;
+            if (kbSize > 4000) {
+                quotaDiv.innerHTML = `<span class="text-rose-400 font-bold">تنبيه هام: مساحة التخزين اقتربت من الامتلاء (${kbSize} KB / 5000 KB)! يرجى تصدير وحذف الورشات غير النشطة.</span>`;
+            } else {
+                quotaDiv.innerHTML = `<span class="text-emerald-400">حالة مساحة التخزين ممتازة (${kbSize} KB مستخدمة).</span>`;
+            }
+
             listDiv.innerHTML = "";
             const inactiveList = dbData.workshops.filter(w => w.active === false);
-            if (inactiveList.length === 0) listDiv.innerHTML = `<p class="text-slate-500 text-xs">لا توجد ورشات غير نشطة.</p>`;
-            else {
+            if (inactiveList.length === 0) {
+                listDiv.innerHTML = `<p class="text-slate-500 text-xs py-2">لا توجد ورشات غير نشطة حالياً.</p>`;
+            } else {
                 inactiveList.forEach(w => {
-                    listDiv.innerHTML += `
-                        <div class="flex justify-between items-center bg-slate-800 p-2.5 rounded border border-slate-700 text-xs">
-                            <span class="font-bold text-white">${w.name}</span>
-                            <div class="flex gap-2">
-                                <button onclick="downloadJsonFile(null, '${w.name}.json')" class="bg-slate-700 text-slate-200 px-2 py-1 rounded">تنزيل</button>
-                                <button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-950 text-rose-300 px-2 py-1 rounded">حذف</button>
-                            </div>
-                        </div>`;
+                    const item = document.createElement("div");
+                    item.className = "flex justify-between items-center bg-slate-800 p-2.5 rounded border border-slate-700 text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <span class="font-bold text-white block">${w.name}</span>
+                            <span class="text-[10px] text-slate-400">الحركات: ${(w.transactions || []).length}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="exportSingleInactive('${w.id}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded">نسخ كملف</button>
+                            ${isOwner() ? `<button onclick="deleteInactiveWorkshop('${w.id}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2.5 py-1 rounded">حذف لتفريغ المساحة</button>` : ''}
+                        </div>
+                    `;
+                    listDiv.appendChild(item);
                 });
             }
-            modal.classList.remove("hidden"); modal.classList.add("flex");
-        }
-        function closeArchiveModal() { document.getElementById("archive-modal").classList.add("hidden"); document.getElementById("archive-modal").classList.remove("flex"); }
-        function deleteInactiveWorkshop(id) {
-            if (confirm("هل تريد الحذف لتفريغ المساحة؟")) { dbData.workshops = dbData.workshops.filter(x => x.id !== id); saveDb(); openArchiveModal(); renderWorkshopsList(); }
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
         }
 
+        function closeArchiveModal() {
+            document.getElementById("archive-modal").classList.add("hidden");
+            document.getElementById("archive-modal").classList.remove("flex");
+        }
+
+        function exportSingleInactive(id) {
+            const w = dbData.workshops.find(x => x.id === id);
+            if (w) downloadJsonFile(w, `archive_${w.name}.json`);
+        }
+
+        function exportAllInactiveWorkshops() {
+            const inactiveList = dbData.workshops.filter(w => w.active === false);
+            if (inactiveList.length === 0) { alert("لا توجد ورشات غير نشطة لتصديرها."); return; }
+            downloadJsonFile({ archivedWorkshops: inactiveList, exportedAt: new Date().toISOString() }, `all_inactive_workshops_${Date.now()}.json`);
+        }
+
+        function deleteInactiveWorkshop(id) {
+            if (!isOwner()) return;
+            if (confirm("هل قمت بنسخ الورشة وتريد حذفها الآن لتفريغ المساحة؟")) {
+                dbData.workshops = dbData.workshops.filter(x => x.id !== id);
+                if (currentWorkshopId === id) {
+                    currentWorkshopId = null;
+                    document.getElementById("active-workshop-container").classList.add("hidden");
+                }
+                saveDb();
+                openArchiveModal();
+                renderWorkshopsList();
+            }
+        }
+
+        // إدارة المستخدمين والصلاحيات
         function openUsersModal() {
-            if (currentUser.role !== "admin" && currentUser.username !== "anas") return;
+            if (!isOwner()) return;
             renderUsersModalContent();
             document.getElementById("users-modal").classList.remove("hidden");
             document.getElementById("users-modal").classList.add("flex");
         }
-        function closeUsersModal() { document.getElementById("users-modal").classList.add("hidden"); document.getElementById("users-modal").classList.remove("flex"); }
+        function closeUsersModal() {
+            document.getElementById("users-modal").classList.add("hidden");
+            document.getElementById("users-modal").classList.remove("flex");
+        }
         function renderUsersModalContent() {
             const cbContainer = document.getElementById("permissions-workshops-checkboxes");
-            cbContainer.innerHTML = `<label class="flex items-center gap-2 text-xs text-slate-200"><input type="checkbox" value="all" class="new-user-ws-cb" checked> كافة الورشات</label>`;
-            dbData.workshops.forEach(w => { cbContainer.innerHTML += `<label class="flex items-center gap-2 text-xs text-slate-200"><input type="checkbox" value="${w.id}" class="new-user-ws-cb"> ${w.name}</label>`; });
+            cbContainer.innerHTML = `<label class="flex items-center gap-1.5 text-xs text-emerald-300 font-semibold"><input type="checkbox" value="all" class="new-user-ws-cb"> كافة الورشات</label>`;
+            dbData.workshops.forEach(w => {
+                cbContainer.innerHTML += `<label class="flex items-center gap-1.5 text-xs text-slate-200"><input type="checkbox" value="${w.id}" class="new-user-ws-cb"> ${w.name}</label>`;
+            });
+
             const listContainer = document.getElementById("users-list-container");
             listContainer.innerHTML = "";
             dbData.users.forEach((u, idx) => {
+                const isMainOwner = u.username === "anas";
+                let permsText = isMainOwner ? "صلاحيات المالك الكاملة" : (u.allowedWorkshops.includes("all") ? "كافة الورشات (بدون حذف)" : `${u.allowedWorkshops.length} ورشات محددة`);
                 listContainer.innerHTML += `
                     <div class="flex justify-between items-center bg-slate-800 p-2.5 rounded border border-slate-700 text-xs">
-                        <span class="font-bold text-white">${u.username}</span>
-                        ${u.username !== 'anas' ? `<button onclick="deleteUser(${idx})" class="text-rose-400">حذف</button>` : ''}
+                        <div>
+                            <span class="font-bold text-white">${u.username}</span>
+                            <span class="text-[10px] text-slate-400 mr-2">(${permsText})</span>
+                        </div>
+                        ${!isMainOwner ? `<button onclick="deleteUser(${idx})" class="text-rose-400 hover:underline">حذف</button>` : '<span class="text-[10px] text-emerald-400 font-bold">المالك الأساسي</span>'}
                     </div>`;
             });
         }
+
         function addNewUser() {
             const uName = document.getElementById("new-user-name").value.trim();
             const uPass = document.getElementById("new-user-pass").value.trim();
-            if (!uName || !uPass) return;
+            if (!uName || !uPass) { alert("يرجى إدخال اسم المستخدم وكلمة المرور."); return; }
+            if (dbData.users.some(u => u.username === uName)) { alert("اسم المستخدم موجود مسبقاً."); return; }
+
             let allowed = [];
             document.querySelectorAll(".new-user-ws-cb:checked").forEach(cb => allowed.push(cb.value));
-            dbData.users.push({ username: uName, pass: uPass, role: "user", allowedWorkshops: allowed });
-            saveDb(); document.getElementById("new-user-name").value = ""; document.getElementById("new-user-pass").value = "";
-            renderUsersModalContent(); alert("تم إضافة المستخدم");
-        }
-        function deleteUser(idx) { if (confirm("حذف المستخدم؟")) { dbData.users.splice(idx, 1); saveDb(); renderUsersModalContent(); } }
+            if (allowed.length === 0) { alert("يرجى تحديد ورشة واحدة على الأقل لهذا المستخدم."); return; }
 
+            dbData.users.push({ username: uName, pass: uPass, role: "user", allowedWorkshops: allowed });
+            saveDb();
+            document.getElementById("new-user-name").value = "";
+            document.getElementById("new-user-pass").value = "";
+            renderUsersModalContent();
+        }
+
+        function deleteUser(idx) {
+            if (confirm("هل تريد حذف هذا المستخدم؟")) {
+                dbData.users.splice(idx, 1);
+                saveDb();
+                renderUsersModalContent();
+            }
+        }
+
+        // تصدير Excel (.csv)
         function exportWorkshopExcel(w) {
-            let csv = "\uFEFFالتاريخ,النوع,البيان,التفاصيل,الرصيد السوري,الرصيد دولار\n";
+            let csv = "\uFEFFالتاريخ,نوع الحركة,البيان,التفاصيل,الرصيد التراكمي (سوري),الرصيد التراكمي (دولار)\n";
             let syp = 0, usd = 0;
             (w.transactions || []).forEach(tx => {
-                let cur = "";
-                if (tx.type === 'income') { if (tx.currency === 'USD') { usd += tx.amount; cur = `${tx.amount} USD`; } else { syp += tx.amount; cur = `${tx.amount} SYP`; } }
-                else if (tx.type === 'expense') { if (tx.currency === 'USD') { usd -= tx.amount; cur = `${tx.amount} USD`; } else { syp -= tx.amount; cur = `${tx.amount} SYP`; } }
-                else if (tx.type === 'exchange') { if (tx.direction === 'buy') { syp -= tx.sypAmount; usd += tx.usdAmount; } else { usd -= tx.usdAmount; syp += tx.sypAmount; } cur = `صرافة ${tx.usdAmount}$`; }
-                csv += `"${tx.date}","${tx.type}","${tx.desc}","${cur}",${syp},${usd}\n`;
+                let cur = "", typeName = "";
+                if (tx.type === 'income') {
+                    typeName = "إيراد";
+                    if (tx.currency === 'USD') { usd += tx.amount; cur = `${tx.amount} USD`; } else { syp += tx.amount; cur = `${tx.amount} SYP`; }
+                } else if (tx.type === 'expense') {
+                    typeName = "مصروف";
+                    if (tx.currency === 'USD') { usd -= tx.amount; cur = `${tx.amount} USD`; } else { syp -= tx.amount; cur = `${tx.amount} SYP`; }
+                } else if (tx.type === 'exchange') {
+                    typeName = "تحويل/صرافة";
+                    if (tx.direction === 'buy') { syp -= tx.sypAmount; usd += tx.usdAmount; cur = `شراء ${tx.usdAmount}$ بسعر ${tx.rate}`; }
+                    else { usd -= tx.usdAmount; syp += tx.sypAmount; cur = `بيع ${tx.usdAmount}$ بسعر ${tx.rate}`; }
+                }
+                csv += `"${tx.date}","${typeName}","${tx.desc}","${cur}",${syp},${usd}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `${w.name}.csv`; a.click(); URL.revokeObjectURL(url);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${w.name}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         window.onload = initApp;
