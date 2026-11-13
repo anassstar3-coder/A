@@ -144,24 +144,25 @@
                     <button type="button" id="backupBtn" onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="النسخ الاحتياطي وتفريغ المساحة">
                         <svg class="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>النسخ الاحتياطي والأرشفة</span>
+                        <span id="headerStoragePill" class="hidden sm:inline-block bg-slate-700 text-sky-300 text-[10px] px-1.5 py-0.5 rounded-md" dir="ltr">0%</span>
                     </button>
 
                     <div id="cloudStatusBadge" class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold text-amber-400">
                         <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                         <span id="cloudStatusText" class="hidden sm:inline">جاري الاتصال...</span>
-                    </div>
-
-                    <button type="button" onclick="logoutUser()" title="تسجيل الخروج" class="bg-rose-950/80 hover:bg-rose-900 border border-rose-800/60 text-rose-300 px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span class="hidden md:inline">خروج</span>
-                    </button>
+        <!-- شريط تنبيه امتلاء السيرفر (يظهر تلقائياً عند الامتلاء أو الاقتراب من الحد الأقصى) -->
+        <div id="serverFullBanner" class="hidden bg-rose-600 text-white rounded-2xl p-4 mb-5 shadow-lg border-2 border-rose-800 flex flex-col sm:flex-row justify-between items-center gap-3 no-print">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-white/20 rounded-xl shrink-0 text-xl">⚠️</div>
+                <div>
+                    <h4 class="font-extrabold text-sm sm:text-base">تنبيه: مساحة السيرفر السحابي ممتلئة أو على وشك الامتلاء!</h4>
+                    <p class="text-xs text-rose-100 mt-0.5">يرجى تنزيل نسخة احتياطية للورشات غير النشطة وحذفها من السيرفر لتفريغ المساحة ومتابعة الإضافة.</p>
                 </div>
             </div>
+            <button type="button" onclick="openBackupModal()" class="w-full sm:w-auto bg-white text-rose-700 hover:bg-rose-50 font-extrabold px-4 py-2.5 rounded-xl text-xs transition shrink-0 shadow-sm">
+                📦 نسخ احتياطي وتفريغ غير النشطة الآن
+            </button>
         </div>
-    </header>
-
-    <!-- المحتوى الرئيسي -->
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-4 sm:mt-6">
 
         <!-- ملخص الأرصدة الإجمالية لجميع الورشات -->
         <section id="globalSummarySection" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-5 no-print">
@@ -232,10 +233,15 @@
             <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 mb-5">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 sm:pb-5 border-b border-slate-100">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span class="bg-blue-100 text-blue-800 text-[11px] font-bold px-2.5 py-0.5 rounded-md">الورشة النشطة</span>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span id="currentWorkshopStatusBadge" class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ورشة نشطة
+                            </span>
+                            <button type="button" id="toggleWsStatusBtn" onclick="toggleCurrentWorkshopActiveStatus()" class="bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print">
+                                <span>🔄 تحويل إلى غير نشطة</span>
+                            </button>
                         </div>
-                        <h2 id="currentWorkshopName" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">اسم الورشة</h2>
+                        <h2 id="currentWorkshopName" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1.5">اسم الورشة</h2>
                         <p id="currentWorkshopDesc" class="text-xs sm:text-sm text-slate-500 mt-0.5">وصف الورشة</p>
                     </div>
 
@@ -801,6 +807,18 @@
 
             <div class="mt-4 space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed max-h-[75vh] overflow-y-auto pl-1">
                 
+                <!-- مؤشر استهلاك مساحة السيرفر السحابي -->
+                <div class="bg-slate-900 text-white rounded-2xl p-4 space-y-2">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <span>مساحة السيرفر السحابي المستخدمة:</span>
+                        <span id="modalStorageText" class="text-sky-400" dir="ltr">0 MB / 1024 MB (0%)</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                        <div id="modalStorageBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 1%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-400">عند امتلاء المساحة، سيتم تنبيهك تلقائياً لأرشفة وتنزيل الورشات غير النشطة.</p>
+                </div>
+
                 <!-- القسم الذكي: أرشفة وتفريغ الورشات غير النشطة -->
                 <div id="smartArchiveSection" class="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 space-y-3">
                     <div class="flex items-start gap-2.5">
@@ -808,8 +826,8 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                         </div>
                         <div>
-                            <h4 class="font-extrabold text-amber-950 text-sm">أرشفة وتفريغ الورشات غير النشطة (لتوفير المساحة)</h4>
-                            <p class="text-xs text-amber-800 mt-0.5">ضع علامة صح <strong>(✔)</strong> بجانب <strong>الورشات النشطة</strong> التي تريد بقاءها على الموقع. أما الورشات غير المحددة فسيتم تنزيلها في ملف أرشيف على جهازك ثم حذفها تلقائياً من السحابة لتفريغ المساحة!</p>
+                            <h4 class="font-extrabold text-amber-950 text-sm">نسخ احتياطي وتفريغ للورشات غير النشطة</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">الورشات التي حولت حالتها إلى <strong>"غير نشطة"</strong> تظهر محددة تلقائياً للأرشفة والتنزيل. يمكنك أيضاً تعديل الاختيار يدوياً أدناه:</p>
                         </div>
                     </div>
 
@@ -821,7 +839,7 @@
                     <div id="archiveSummaryBar" class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-1">
                         <span id="archiveStatsText" class="text-xs font-bold text-slate-700">سيتم أرشفة وحذف: 0 ورشة</span>
                         <button type="button" id="runSmartArchiveBtn" onclick="archiveAndCleanInactiveWorkshops()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5">
-                            <span>📦 تنزيل أرشيف غير النشطة وحذفها من الموقع</span>
+                            <span>📦 نسخ احتياطي للورشات غير النشطة وحذفها</span>
                         </button>
                     </div>
                 </div>
@@ -1346,43 +1364,24 @@
 
         function updateAllUI() {
             applyUserPermissionsUI();
+            updateCloudStorageUsage();
             populateCategoryDropdowns();
             renderWorkshopTabs();
             renderGlobalSummary();
-
-            const workspaceContainer = document.getElementById('workspaceContainer');
-            const noWorkshopsState = document.getElementById('noWorkshopsState');
-
-            if (state.workshops.length === 0) {
-                workspaceContainer.classList.add('hidden');
-                noWorkshopsState.classList.remove('hidden');
-                return;
-            } else {
-                workspaceContainer.classList.remove('hidden');
-                noWorkshopsState.classList.add('hidden');
-            }
-
-            if (!state.workshops.some(w => w.id === state.activeWorkshopId)) {
-                state.activeWorkshopId = state.workshops[0].id;
-            }
-
-            renderActiveWorkshopDetails();
-            renderCategorySummaryGrid();
-            renderTransactions();
-        }
-
+// ... existing code ... -->
         function renderWorkshopTabs() {
             const container = document.getElementById('workshopsTabs');
             container.innerHTML = '';
 
             state.workshops.forEach(ws => {
                 const isActive = ws.id === state.activeWorkshopId;
+                const isInactiveWs = ws.isActive === false;
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = `px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 flex items-center gap-2 ${
                     isActive 
                     ? 'bg-slate-900 text-white shadow-sm' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : (isInactiveWs ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }`;
                 btn.onclick = () => {
                     state.activeWorkshopId = ws.id;
@@ -1390,14 +1389,51 @@
                     document.getElementById('filterType').value = 'all';
                     updateAllUI();
                 };
-                btn.innerHTML = `<span>${ws.name}</span>`;
+                const statusDot = isInactiveWs
+                    ? `<span class="w-2 h-2 rounded-full bg-amber-500" title="غير نشطة"></span>`
+                    : `<span class="w-2 h-2 rounded-full bg-emerald-500" title="نشطة"></span>`;
+                btn.innerHTML = `${statusDot}<span>${ws.name}</span>${isInactiveWs ? '<span class="text-[10px] opacity-75">(غير نشطة)</span>' : ''}`;
                 container.appendChild(btn);
             });
+        }
+
+        function toggleCurrentWorkshopActiveStatus() {
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+
+            const currentlyActive = ws.isActive !== false;
+            ws.isActive = !currentlyActive;
+            saveWorkshopToCloud(ws);
+            updateAllUI();
+
+            if (ws.isActive) {
+                showToast(`تم تفعيل ورشة "${ws.name}" كـ (ورشة نشطة) 🟢`);
+            } else {
+                showToast(`تم تحويل ورشة "${ws.name}" إلى (غير نشطة / منتهية) 🟠`);
+            }
         }
 
         function renderActiveWorkshopDetails() {
             const ws = state.workshops.find(w => w.id === state.activeWorkshopId);
             if (!ws) return;
+
+            const isWsActive = ws.isActive !== false;
+            const statusBadge = document.getElementById('currentWorkshopStatusBadge');
+            const toggleBtn = document.getElementById('toggleWsStatusBtn');
+
+            if (statusBadge && toggleBtn) {
+                if (isWsActive) {
+                    statusBadge.className = 'bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1.5';
+                    statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> ورشة نشطة';
+                    toggleBtn.className = 'bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print';
+                    toggleBtn.innerHTML = '<span>🔄 تحويل إلى غير نشطة</span>';
+                } else {
+                    statusBadge.className = 'bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-extrabold px-2.5 py-1 rounded-lg flex items-center gap-1.5';
+                    statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> ورشة غير نشطة (منتهية)';
+                    toggleBtn.className = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1 no-print';
+                    toggleBtn.innerHTML = '<span>🟢 إعادة تفعيل كنشطة</span>';
+                }
+            }
 
             document.getElementById('currentWorkshopName').textContent = ws.name;
             document.getElementById('currentWorkshopDesc').textContent = ws.description || 'لا يوجد وصف إضافي';
@@ -1735,6 +1771,11 @@
 
         function submitTransaction(e) {
             e.preventDefault();
+            if (isServerStorageFull()) {
+                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
+                openBackupModal();
+                return;
+            }
             const txId = document.getElementById('txId').value;
             const type = document.getElementById('txType').value;
             const category = document.getElementById('txCategory').value;
@@ -1825,6 +1866,11 @@
 
         function submitExchange(e) {
             e.preventDefault();
+            if (isServerStorageFull()) {
+                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
+                openBackupModal();
+                return;
+            }
             const direction = document.querySelector('input[name="exDirection"]:checked').value;
             const rate = parseFloat(document.getElementById('exRateInput').value);
             const sourceAmount = parseFloat(document.getElementById('exSourceAmount').value);
@@ -1871,6 +1917,11 @@
 
         function submitNewWorkshop(e) {
             e.preventDefault();
+            if (isServerStorageFull()) {
+                showToast('⚠️ السيرفر ممتلئ! خذ نسخة احتياطية للورشات غير النشطة واحذفها لتفريغ المساحة أولاً', true);
+                openBackupModal();
+                return;
+            }
             const name = document.getElementById('wsName').value.trim();
             const desc = document.getElementById('wsDesc').value.trim();
             const initUsd = parseFloat(document.getElementById('wsInitUsd').value) || 0;
@@ -1883,6 +1934,7 @@
                 id: newId,
                 name: name,
                 description: desc,
+                isActive: true,
                 categories: [...DEFAULT_WORKSHOP_CATEGORIES]
             };
             state.workshops.push(newWs);
@@ -2279,11 +2331,39 @@
                     id: ws.id,
                     name: ws.name,
                     description: ws.description || '',
+                    isActive: ws.isActive !== false,
                     categories: ws.categories || [...DEFAULT_WORKSHOP_CATEGORIES]
                 });
                 updateCloudBadge('connected', 'محفوظ سحابياً');
             } catch (err) {
                 console.error('Error saving workshop:', err);
+                if (err && (err.code === 'resource-exhausted' || String(err).includes('quota'))) {
+                    showToast('⚠️ السيرفر ممتلئ! يرجى عمل نسخ احتياطي للورشات غير النشطة لتفريغ المساحة', true);
+                    openBackupModal();
+                }
+                updateCloudBadge('error', 'خطأ في الحفظ');
+            }
+        }
+
+        async function saveTransactionToCloud(tx) {
+            if (!cloudReady || !db) return;
+            try {
+                updateCloudBadge('saving', 'جاري الحفظ...');
+                const { doc, setDoc } = cloudFns;
+                const ref = doc(db, 'artifacts', appId, 'transactions', tx.id);
+                const payload = { ...tx };
+                if (Array.isArray(payload.images)) {
+                    payload.imagesJson = JSON.stringify(payload.images);
+                    delete payload.images;
+                }
+                await setDoc(ref, payload);
+                updateCloudBadge('connected', 'محفوظ سحابياً');
+            } catch (err) {
+                console.error('Error saving transaction:', err);
+                if (err && (err.code === 'resource-exhausted' || String(err).includes('quota'))) {
+                    showToast('⚠️ السيرفر ممتلئ! يرجى عمل نسخ احتياطي للورشات غير النشطة لتفريغ المساحة', true);
+                    openBackupModal();
+                }
                 updateCloudBadge('error', 'خطأ في الحفظ');
             }
         }
@@ -2416,8 +2496,8 @@
             document.getElementById('addWorkshopBtn').classList.toggle('hidden', !canWorkshops);
             document.getElementById('btnDeleteWorkshop').classList.toggle('hidden', !canWorkshops);
             document.getElementById('btnManageCategories').classList.toggle('hidden', !canWorkshops);
-
-            const canAddTx = hasPermission('addTx');
+            const toggleWsBtn = document.getElementById('toggleWsStatusBtn');
+            if (toggleWsBtn) toggleWsBtn.classList.toggle('hidden', !canWorkshops);
             document.getElementById('btnAddIncome').classList.toggle('hidden', !canAddTx);
             document.getElementById('btnAddExpense').classList.toggle('hidden', !canAddTx);
             document.getElementById('btnAddExchange').classList.toggle('hidden', !canAddTx);
@@ -2529,69 +2609,69 @@
                 document.getElementById('permManageWorkshops').checked = Boolean(u.permissions?.manageWorkshops);
                 document.getElementById('permViewGlobal').checked = Boolean(u.permissions?.viewGlobal);
                 document.getElementById('permPrint').checked = Boolean(u.permissions?.print);
+        // ================= مراقبة مساحة السيرفر السحابي والأرشفة الذكية =================
+        const MAX_CLOUD_BYTES = 950 * 1024 * 1024; // 950 MB حد الأمان قبل 1 GB
+
+        function getEstimatedCloudUsageBytes() {
+            try {
+                const payload = JSON.stringify({
+                    workshops: state.workshops,
+                    transactions: state.transactions,
+                    users: state.users
+                });
+                return new Blob([payload]).size;
+            } catch (e) {
+                return 0;
             }
         }
 
-        function deleteUserAccount(userId) {
-            const u = state.users.find(item => item.id === userId);
-            if (!u || u.isAdmin) return;
-
-            state.users = state.users.filter(item => item.id !== userId);
-            syncUsersCache();
-            deleteUserFromCloud(userId);
-            renderUsersList();
-            showToast(`تم حذف حساب "${u.username}"`);
+        function isServerStorageFull() {
+            return getEstimatedCloudUsageBytes() >= MAX_CLOUD_BYTES;
         }
 
-        function renderUsersList() {
-            const container = document.getElementById('usersListContainer');
-            if (!container) return;
-            container.innerHTML = '';
+        function updateCloudStorageUsage() {
+            const usedBytes = getEstimatedCloudUsageBytes();
+            const usedMB = (usedBytes / (1024 * 1024)).toFixed(2);
+            const maxMB = 1024;
+            const percent = Math.min(100, Math.round((usedBytes / (1024 * 1024 * maxMB)) * 100));
 
-            state.users.forEach(u => {
-                const permsLabels = [];
-                if (u.isAdmin) {
-                    permsLabels.push('صلاحيات كاملة (مدير عام)');
+            const headerPill = document.getElementById('headerStoragePill');
+            if (headerPill) {
+                headerPill.textContent = `${percent}%`;
+                if (percent >= 85) {
+                    headerPill.className = 'hidden sm:inline-block bg-rose-600 text-white text-[10px] px-1.5 py-0.5 rounded-md animate-pulse';
                 } else {
-                    if (u.permissions?.addTx) permsLabels.push('إضافة حركات');
-                    if (u.permissions?.editDeleteTx) permsLabels.push('تعديل/حذف');
-                    if (u.permissions?.manageWorkshops) permsLabels.push('إدارة ورشات');
-                    if (u.permissions?.viewGlobal) permsLabels.push('رؤية الإجمالي');
-                    if (u.permissions?.print) permsLabels.push('طباعة');
-                    if (permsLabels.length === 0) permsLabels.push('مشاهدة فقط');
+                    headerPill.className = 'hidden sm:inline-block bg-slate-700 text-sky-300 text-[10px] px-1.5 py-0.5 rounded-md';
                 }
+            }
 
-                const div = document.createElement('div');
-                div.className = 'flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white border border-slate-200 p-3 rounded-xl';
-                div.innerHTML = `
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-sm text-slate-800">${u.username}</span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${u.isAdmin ? 'bg-amber-100 text-amber-800' : 'bg-indigo-50 text-indigo-700'}">
-                                ${u.isAdmin ? 'مدير' : 'مستخدم'}
-                            </span>
-                            <span class="text-[11px] text-slate-400" dir="ltr">(${u.password})</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 mt-1">${permsLabels.join(' • ')}</p>
-                    </div>
-                    <div class="flex items-center gap-1.5 self-end sm:self-center">
-                        <button type="button" onclick="editUserAccount('${u.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
-                            تعديل
-                        </button>
-                        ${!u.isAdmin ? `
-                        <button type="button" onclick="deleteUserAccount('${u.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
-                            حذف
-                        </button>
-                        ` : ''}
-                    </div>
-                `;
-                container.appendChild(div);
-            });
+            const modalText = document.getElementById('modalStorageText');
+            const modalBar = document.getElementById('modalStorageBar');
+            if (modalText && modalBar) {
+                modalText.textContent = `${usedMB} MB / ${maxMB} MB (${percent}%)`;
+                modalBar.style.width = `${Math.max(2, percent)}%`;
+                if (percent >= 85) {
+                    modalBar.className = 'bg-rose-500 h-2.5 rounded-full transition-all duration-500';
+                } else if (percent >= 65) {
+                    modalBar.className = 'bg-amber-500 h-2.5 rounded-full transition-all duration-500';
+                } else {
+                    modalBar.className = 'bg-emerald-500 h-2.5 rounded-full transition-all duration-500';
+                }
+            }
+
+            const banner = document.getElementById('serverFullBanner');
+            if (banner) {
+                if (percent >= 85) {
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
         }
 
-        // ================= ميزة النسخ الاحتياطي والأرشفة الذكية لتفريغ المساحة =================
         function openBackupModal() {
             applyUserPermissionsUI();
+            updateCloudStorageUsage();
             renderActiveWorkshopsChecklist();
             openModal('backupModal');
         }
@@ -2609,20 +2689,20 @@
             listEl.innerHTML = '';
             state.workshops.forEach(ws => {
                 const txCount = state.transactions.filter(t => t.workshopId === ws.id).length;
-                const isCurrentlySelected = ws.id === state.activeWorkshopId;
+                const isWsActive = ws.isActive !== false;
 
                 const label = document.createElement('label');
                 label.className = 'flex items-center justify-between p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition';
                 label.innerHTML = `
                     <div class="flex items-center gap-2.5">
-                        <input type="checkbox" class="active-ws-checkbox w-4 h-4 accent-emerald-600" value="${ws.id}" ${isCurrentlySelected ? 'checked' : ''} onchange="updateArchiveSummaryCount()">
+                        <input type="checkbox" class="active-ws-checkbox w-4 h-4 accent-emerald-600" value="${ws.id}" ${isWsActive ? 'checked' : ''} onchange="updateArchiveSummaryCount()">
                         <div>
                             <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">${ws.name}</span>
                             <span class="text-[11px] text-slate-500">${txCount} حركة/فاتورة مسجلة</span>
                         </div>
                     </div>
-                    <span class="ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isCurrentlySelected ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                        ${isCurrentlySelected ? 'نشطة (ستبقى)' : 'غير نشطة (ستؤرشف وتحذف)'}
+                    <span class="ws-status-pill text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isWsActive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                        ${isWsActive ? 'نشطة (ستبقى)' : 'غير نشطة (ستؤرشف وتحذف)'}
                     </span>
                 `;
                 listEl.appendChild(label);
@@ -2922,6 +3002,7 @@
                             id: 'ws-' + Date.now(),
                             name: 'ورشة العمل الرئيسية',
                             description: 'ورشة افتراضية جاهزة للعمل',
+                            isActive: true,
                             categories: [...DEFAULT_WORKSHOP_CATEGORIES]
                         };
                         saveWorkshopToCloud(starterWs);
