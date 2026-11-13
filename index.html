@@ -77,7 +77,7 @@
 </head>
 <body class="text-slate-800 antialiased pb-16">
 
-    <!-- شاشة تسجيل الدخول / إعداد حساب المدير العام -->
+    <!-- شاشة تسجيل الدخول -->
     <div id="authScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl my-auto">
             <div class="text-center mb-6">
@@ -86,15 +86,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                     </svg>
                 </div>
-                <h2 id="authScreenTitle" class="text-2xl font-extrabold text-slate-900">إعداد حساب المدير العام</h2>
-                <p id="authScreenSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">أنشئ حسابك الرئيسي لحماية البرنامج وإدارة الصلاحيات</p>
+                <h2 id="authScreenTitle" class="text-2xl font-extrabold text-slate-900">تسجيل الدخول للنظام</h2>
+                <p id="authScreenSubtitle" class="text-xs sm:text-sm text-slate-500 mt-1">أدخل اسم المستخدم وكلمة المرور للمتابعة</p>
             </div>
 
             <!-- رسالة خطأ في الدخول -->
             <div id="authErrorBox" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3 rounded-xl mb-4 text-center"></div>
 
             <!-- نموذج تسجيل الدخول -->
-            <form id="loginForm" onsubmit="handleLogin(event)" class="hidden space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">اسم المستخدم:</label>
                     <input type="text" id="loginUsername" required autocomplete="username" placeholder="أدخل اسم المستخدم..."
@@ -107,26 +107,6 @@
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl transition shadow-md text-sm">
                     دخول إلى النظام
-                </button>
-            </form>
-
-            <!-- نموذج إنشاء المدير العام (يظهر عند استخدام البرنامج لأول مرة) -->
-            <form id="setupAdminForm" onsubmit="handleSetupAdmin(event)" class="space-y-4">
-                <div class="bg-blue-50 border border-blue-200 text-blue-800 text-xs p-3 rounded-xl leading-relaxed">
-                    مرحباً بك! هذه هي المرة الأولى لتشغيل النظام. قم بإنشاء <strong>حساب المدير العام</strong> الخاص بك لحماية حساباتك والتحكم بصلاحيات أي مستخدم تضيفه لاحقاً.
-                </div>
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">اسم المدير العام:</label>
-                    <input type="text" id="setupAdminName" required placeholder="مثال: أبو أحمد"
-                        class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600">
-                </div>
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">كلمة المرور الجديدة:</label>
-                    <input type="password" id="setupAdminPass" required minlength="4" placeholder="اختر كلمة مرور قوية..."
-                        class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600" dir="ltr">
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-xl transition shadow-md text-sm">
-                    حفظ حساب المدير والدخول
                 </button>
             </form>
         </div>
@@ -849,7 +829,7 @@
     </div>
 
     <script>
-        // ================= حالة التطبيق والبيانات الافتراضية =================
+        // ================= حالة التطبيق والحساب الرئيسي المثبت مسبقاً =================
         const DEFAULT_WORKSHOP_CATEGORIES = [
             'عام / دفعات زبون',
             'كهرباء (كهربجي)',
@@ -860,25 +840,42 @@
             'أجور عمال ونقل'
         ];
 
+        // حساب المدير العام الافتراضي المثبت مسبقاً للوصول الفوري من أي مكان
+        const DEFAULT_MASTER_ADMIN = {
+            id: 'user-admin-master-anas',
+            username: 'anas',
+            password: '789456123147',
+            isAdmin: true,
+            permissions: {
+                addTx: true,
+                editDeleteTx: true,
+                manageWorkshops: true,
+                viewGlobal: true,
+                print: true
+            }
+        };
+
         let state = {
             lastUsedRate: '',
             activeWorkshopId: null,
             workshops: [],
             transactions: [],
-            users: [],
+            users: [DEFAULT_MASTER_ADMIN],
             loggedInUser: null
         };
 
         try {
             const localUsersStr = localStorage.getItem('ws_app_users_cache');
             if (localUsersStr) {
-                state.users = JSON.parse(localUsersStr);
+                const parsed = JSON.parse(localUsersStr);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    state.users = parsed;
+                }
             }
         } catch (e) {}
 
         let db = null;
         let auth = null;
-        let currentUser = null;
         let appId = 'central-workshops-master-key'; // مفتاح مركزي موحد لكل متصفحاتك
         let cloudReady = false;
         let currentAttachedImages = [];
@@ -2315,71 +2312,11 @@
 
         function refreshAuthScreenState() {
             const authScreen = document.getElementById('authScreen');
-            const loginForm = document.getElementById('loginForm');
-            const setupForm = document.getElementById('setupAdminForm');
-            const title = document.getElementById('authScreenTitle');
-            const subtitle = document.getElementById('authScreenSubtitle');
-
             if (state.loggedInUser) {
                 authScreen.classList.add('hidden');
-                return;
-            }
-
-            authScreen.classList.remove('hidden');
-            if (state.users.length === 0) {
-                title.textContent = 'إعداد حساب المدير العام';
-                subtitle.textContent = 'أنشئ حسابك الرئيسي لحماية البرنامج وإدارة الصلاحيات';
-                loginForm.classList.add('hidden');
-                setupForm.classList.remove('hidden');
             } else {
-                title.textContent = 'تسجيل الدخول للنظام';
-                subtitle.textContent = 'أدخل اسم المستخدم وكلمة المرور للمتابعة';
-                setupForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
+                authScreen.classList.remove('hidden');
             }
-        }
-
-        function handleSetupAdmin(e) {
-            e.preventDefault();
-            const username = document.getElementById('setupAdminName').value.trim();
-            const password = document.getElementById('setupAdminPass').value;
-            if (!username || !password) return;
-
-            const adminUser = {
-                id: 'user-admin-' + Date.now(),
-                username: username,
-                password: password,
-                isAdmin: true,
-                permissions: {
-                    addTx: true,
-                    editDeleteTx: true,
-                    manageWorkshops: true,
-                    viewGlobal: true,
-                    print: true
-                }
-            };
-
-            state.users.push(adminUser);
-            syncUsersCache();
-            state.loggedInUser = adminUser;
-            sessionStorage.setItem('ws_logged_user_id', adminUser.id);
-            saveUserToCloud(adminUser);
-
-            if (state.workshops.length === 0) {
-                const starterWs = {
-                    id: 'ws-' + Date.now(),
-                    name: 'ورشة العمل الرئيسية',
-                    description: 'ورشة افتراضية جاهزة للعمل',
-                    categories: [...DEFAULT_WORKSHOP_CATEGORIES]
-                };
-                state.workshops.push(starterWs);
-                state.activeWorkshopId = starterWs.id;
-                saveWorkshopToCloud(starterWs);
-            }
-
-            refreshAuthScreenState();
-            updateAllUI();
-            showToast(`مرحباً بك يا ${username}! تم تفعيل حساب المدير العام`);
         }
 
         function handleLogin(e) {
@@ -2740,18 +2677,22 @@
 
                 let initialWsLoaded = false;
 
-                // مزامنة المستخدمين مركزياً
+                // مزامنة المستخدمين مركزياً مع ضمان وجود حساب المدير الرئيسي دائماً
                 const usersCol = collection(db, 'artifacts', appId, 'app_users');
                 onSnapshot(usersCol, (snapshot) => {
                     const loadedUsers = [];
                     snapshot.forEach(docSnap => {
                         loadedUsers.push(docSnap.data());
                     });
+
                     if (loadedUsers.length > 0) {
                         state.users = loadedUsers;
                         syncUsersCache();
-                    } else if (state.users.length > 0) {
-                        state.users.forEach(u => saveUserToCloud(u));
+                    } else {
+                        // إذا كانت قاعدة البيانات السحابية خالية من المستخدمين بعد، ارفع الحساب المثبت مسبقاً فوراً
+                        state.users = [DEFAULT_MASTER_ADMIN];
+                        syncUsersCache();
+                        saveUserToCloud(DEFAULT_MASTER_ADMIN);
                     }
 
                     const savedSessionId = sessionStorage.getItem('ws_logged_user_id');
