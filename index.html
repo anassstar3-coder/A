@@ -59,7 +59,6 @@
         .print-only-header {
             display: none;
         }
-        /* تخصيص شريط التمرير */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #e2e8f0; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
@@ -79,7 +78,7 @@
             <h1 class="text-2xl font-black text-slate-900 mb-1">تسجيل الدخول للنظام</h1>
             <p class="text-sm text-slate-500 mb-6">أدخل اسم المستخدم وكلمة المرور للمتابعة</p>
 
-            <!-- مؤشر حالة السحابة في شاشة الدخول (بدون أزرار تعديل لحماية الإعدادات) -->
+            <!-- مؤشر حالة السحابة في شاشة الدخول -->
             <div id="login-cloud-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 mb-6">
                 <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                 <span id="login-cloud-text">جاري الاتصال بالسحابة...</span>
@@ -124,7 +123,7 @@
                     </div>
                 </div>
 
-                <!-- أدوات الشريط العلوي (النسخ، الأرشيف والتخزين، المستخدمين، الخروج) -->
+                <!-- أدوات الشريط العلوي -->
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- حالة السحابة -->
                     <div id="header-cloud-status" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/90 border border-slate-700 text-[11px] font-bold">
@@ -147,12 +146,12 @@
                         <input type="file" accept=".json" onchange="importFullBackup(event)" class="hidden">
                     </label>
 
-                    <!-- زر الأرشيف وسعة التخزين -->
+                    <!-- زر الأرشيف وسعة التخزين (1 جيجابايت) -->
                     <button onclick="openArchiveAndStorageModal()"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                        <span>الأرشيف والتخزين</span>
-                        <span id="header-storage-badge" class="bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded text-[10px] font-black">0%</span>
+                        <span>الأرشيف والتخزين (1GB)</span>
+                        <span id="header-storage-badge" class="bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded text-[10px] font-black">0%</span>
                     </button>
 
                     <!-- زر إدارة المستخدمين (للمالك فقط) -->
@@ -176,7 +175,7 @@
                 </div>
             </div>
 
-            <!-- شريط تنبيه سعة التخزين السحابي (يظهر تلقائياً عند اقتراب الامتلاء أو الامتلاء) -->
+            <!-- شريط تنبيه سعة التخزين السحابي -->
             <div id="storage-warning-banner" class="hidden bg-rose-600 text-white px-4 py-2 text-xs font-bold text-center">
                 <span id="storage-warning-text">تنبيه: سعة التخزين السحابي أوشكت على الامتلاء!</span>
                 <button onclick="openArchiveAndStorageModal()" class="underline mr-2 bg-white text-rose-700 px-2 py-0.5 rounded font-black">إدارة الأرشيف وتفريغ مساحة</button>
@@ -293,7 +292,6 @@
 
                     <!-- أزرار الحركات المالية + أزرار الطباعة/PDF/Excel/تصدير/حذف -->
                     <div class="flex flex-wrap items-center gap-2 no-print">
-                        <!-- أزرار الحركات -->
                         <button id="btn-add-income" onclick="openTransactionModal('income')"
                             class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm px-4 py-2.5 rounded-xl shadow-sm transition">
                             <span>+ إيراد</span>
@@ -310,7 +308,7 @@
                         <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
                         <!-- زر إدارة بنود/تصنيفات الورشة -->
-                        <button onclick="openCategoriesModal()"
+                        <button id="btn-manage-categories" onclick="openCategoriesModal()"
                             class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3 py-2.5 rounded-xl transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                             <span>بنود الورشة</span>
@@ -410,6 +408,7 @@
                                 <th class="py-3 px-3">المبلغ</th>
                                 <th class="py-3 px-3">الرصيد التراكمي ($)</th>
                                 <th class="py-3 px-3">الرصيد التراكمي (ل.س)</th>
+                                <th class="py-3 px-3 text-center no-print">المرفقات</th>
                                 <th class="py-3 px-3 text-center no-print">إجراءات</th>
                             </tr>
                         </thead>
@@ -423,7 +422,7 @@
             <!-- رسالة في حال عدم وجود ورشات -->
             <div id="no-workshops-empty" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
                 <p class="text-slate-500 font-bold mb-4">لا توجد ورشات مضافة حالياً أو متاحة لحسابك.</p>
-                <button onclick="openNewWorkshopModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl">
+                <button id="btn-empty-new-ws" onclick="openNewWorkshopModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl">
                     + إنشاء أول ورشة الآن
                 </button>
             </div>
@@ -456,15 +455,14 @@
         </div>
     </div>
 
-    <!-- 2. نافذة إضافة أو تعديل حركة مالية (إيراد أو مصروف) -->
+    <!-- 2. نافذة إضافة أو تعديل حركة مالية (مع صورتين للفواتير) -->
     <div id="modal-transaction" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
             <h3 id="tx-modal-title" class="text-lg font-black text-slate-900 mb-4">إضافة حركة مالية</h3>
             <form id="form-transaction" class="space-y-4">
                 <input type="hidden" id="tx-edit-id" value="">
                 <input type="hidden" id="tx-type" value="income">
 
-                <!-- اختيار نوع الحركة عند التعديل -->
                 <div id="tx-type-selector-div" class="hidden">
                     <label class="block text-xs font-bold text-slate-700 mb-1">نوع الحركة</label>
                     <select id="tx-type-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold outline-none">
@@ -473,7 +471,6 @@
                     </select>
                 </div>
 
-                <!-- اختيار العملة (سوري أو دولار حصراً) -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">العملة (سوري حصراً أو دولار حصراً) *</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -492,11 +489,10 @@
                     </div>
                 </div>
 
-                <!-- اختيار البند / التصنيف الخاص بالورشة -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="text-xs font-bold text-slate-700">البند / التصنيف *</label>
-                        <button type="button" onclick="openCategoriesModal()" class="text-[11px] font-bold text-blue-600 hover:underline">+ إدارة بنود الورشة</button>
+                        <button type="button" id="btn-tx-manage-cats" onclick="openCategoriesModal()" class="text-[11px] font-bold text-blue-600 hover:underline">+ إدارة بنود الورشة</button>
                     </div>
                     <select id="tx-category" required
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 outline-none focus:border-blue-600">
@@ -521,6 +517,31 @@
                         class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold outline-none focus:border-blue-600">
                 </div>
 
+                <!-- قسم إرفاق صورتين للفواتير -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">صور الفواتير للتوثيق (حد أقصى صورتين):</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- الصورة 1 -->
+                        <div class="border border-dashed border-slate-300 rounded-xl p-2 text-center bg-white">
+                            <label class="cursor-pointer block">
+                                <span class="text-[11px] font-bold text-blue-600 block mb-1">📷 صورة الفاتورة 1</span>
+                                <input type="file" accept="image/*" onchange="handleInvoiceImageUpload(event, 0)" class="hidden">
+                                <div id="tx-img-preview-0" class="text-[10px] text-slate-400 py-2">اضغط للاختيار</div>
+                            </label>
+                            <button type="button" id="tx-img-clear-0" onclick="clearInvoiceImage(0)" class="hidden text-[10px] text-rose-600 font-bold mt-1">حذف الصورة</button>
+                        </div>
+                        <!-- الصورة 2 -->
+                        <div class="border border-dashed border-slate-300 rounded-xl p-2 text-center bg-white">
+                            <label class="cursor-pointer block">
+                                <span class="text-[11px] font-bold text-blue-600 block mb-1">📷 صورة الفاتورة 2</span>
+                                <input type="file" accept="image/*" onchange="handleInvoiceImageUpload(event, 1)" class="hidden">
+                                <div id="tx-img-preview-1" class="text-[10px] text-slate-400 py-2">اضغط للاختيار</div>
+                            </label>
+                            <button type="button" id="tx-img-clear-1" onclick="clearInvoiceImage(1)" class="hidden text-[10px] text-rose-600 font-bold mt-1">حذف الصورة</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('modal-transaction')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">إلغاء</button>
                     <button type="submit" id="tx-submit-btn" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">حفظ الحركة</button>
@@ -529,12 +550,14 @@
         </div>
     </div>
 
-    <!-- 3. نافذة الصرافة / التحويل بين الصندوقين مع سعر الصرف -->
+    <!-- 3. نافذة الصرافة / التحويل (إضافة وتعديل) -->
     <div id="modal-exchange" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-t-4 border-amber-500">
-            <h3 class="text-lg font-black text-slate-900 mb-1">عملية صرافة / تحويل بين الصناديق</h3>
+            <h3 id="ex-modal-title" class="text-lg font-black text-slate-900 mb-1">عملية صرافة / تحويل بين الصناديق</h3>
             <p class="text-xs text-slate-500 mb-4">تحويل الأموال بين صندوق الدولار وصندوق السوري للورشة الحالية</p>
             <form id="form-exchange" class="space-y-4">
+                <input type="hidden" id="ex-edit-id" value="">
+
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">اتجاه التحويل</label>
                     <select id="ex-direction" onchange="calculateExchangePreview()"
@@ -576,7 +599,7 @@
 
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeModal('modal-exchange')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">إلغاء</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black">تنفيذ التحويل</button>
+                    <button type="submit" id="ex-submit-btn" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black">تنفيذ التحويل</button>
                 </div>
             </form>
         </div>
@@ -599,9 +622,7 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl">إضافة</button>
             </form>
 
-            <div id="categories-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                <!-- قائمة بنود الورشة -->
-            </div>
+            <div id="categories-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
         </div>
     </div>
 
@@ -617,14 +638,9 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- العمود الأيمن: تعديل الحساب الأساسي + نموذج إضافة/تعديل مستخدم -->
                 <div class="lg:col-span-5 space-y-5">
-                    
-                    <!-- بطاقة تعديل الحساب الأساسي (المالك) -->
                     <div class="bg-blue-50/80 border border-blue-200 rounded-2xl p-4">
-                        <h4 class="text-sm font-black text-blue-950 mb-3 flex items-center gap-1.5">
-                            <span>👑 بيانات الحساب الأساسي (المدير العام)</span>
-                        </h4>
+                        <h4 class="text-sm font-black text-blue-950 mb-3">👑 بيانات الحساب الأساسي (المدير العام)</h4>
                         <form id="form-owner-credentials" class="space-y-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-700 mb-1">اسم المستخدم الأساسي</label>
@@ -642,7 +658,6 @@
                         </form>
                     </div>
 
-                    <!-- نموذج إضافة أو تعديل مستخدم فرعي -->
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
                         <div class="flex items-center justify-between mb-3">
                             <h4 id="user-form-title" class="text-sm font-black text-slate-800">+ إضافة مستخدم جديد</h4>
@@ -663,7 +678,6 @@
                                 </div>
                             </div>
 
-                            <!-- الصلاحيات التفصيلية -->
                             <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
                                 <p class="text-[11px] font-black text-slate-700 mb-1">الصلاحيات الممنوحة:</p>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
@@ -687,23 +701,24 @@
                                     <span>السماح بحذف الحركات من الجدول</span>
                                 </label>
                                 <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="perm-manage-cats" class="rounded text-indigo-600">
+                                    <span>السماح بإضافة وحذف تصنيفات/بنود الورشة</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
                                     <input type="checkbox" id="perm-toggle-ws" class="rounded text-blue-600">
                                     <span>السماح بتغيير حالة الورشة (نشطة/غير نشطة)</span>
                                 </label>
                             </div>
 
-                            <!-- تحديد الورشات المسموح للمستخدم مشاهدتها -->
-                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                            <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-200">
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <p class="text-[11px] font-black text-slate-700">الورشات المسموح له برؤيتها:</p>
-                                    <label class="flex items-center gap-1 text-[11px] font-bold text-blue-600 cursor-pointer">
+                                    <p class="text-[11px] font-black text-blue-950">الورشات التي تظهر لهذا المستخدم:</p>
+                                    <label class="flex items-center gap-1 text-[11px] font-bold text-blue-700 cursor-pointer">
                                         <input type="checkbox" id="perm-all-ws" onchange="toggleAllowedWorkshopsList()">
-                                        <span>كل الورشات</span>
+                                        <span>إظهار كل الورشات</span>
                                     </label>
                                 </div>
-                                <div id="sub-allowed-workshops" class="space-y-1.5 max-h-32 overflow-y-auto pt-1 border-t border-slate-100">
-                                    <!-- قائمة الورشات -->
-                                </div>
+                                <div id="sub-allowed-workshops" class="space-y-1.5 max-h-36 overflow-y-auto pt-1.5 border-t border-blue-200/70"></div>
                             </div>
 
                             <button type="submit" id="btn-save-user" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition">
@@ -713,36 +728,33 @@
                     </div>
                 </div>
 
-                <!-- العمود الأيسر: قائمة المستخدمين الحاليين -->
                 <div class="lg:col-span-7">
                     <h4 class="text-sm font-black text-slate-800 mb-3">قائمة المستخدمين المسجلين في النظام:</h4>
-                    <div id="users-list-container" class="space-y-3">
-                        <!-- يتم تعبئتها برمجياً -->
-                    </div>
+                    <div id="users-list-container" class="space-y-3"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 6. نافذة الأرشيف وسعة التخزين السحابي -->
+    <!-- 6. نافذة الأرشيف وسعة التخزين السحابي (1 جيجابايت كاملة) -->
     <div id="modal-archive-storage" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
                 <div>
-                    <h3 class="text-lg font-black text-slate-900">الأرشيف وسعة التخزين السحابي</h3>
-                    <p class="text-xs text-slate-500">مراقبة المساحة المتبقية في السحابة وتنظيف الورشات غير المفعلة</p>
+                    <h3 class="text-lg font-black text-slate-900">الأرشيف وسعة التخزين السحابي (1 GB مجانية دائمة)</h3>
+                    <p class="text-xs text-slate-500">بياناتك محفوظة بشكل دائم في السحابة مقسمة على وثائق مستقلة لكل ورشة</p>
                 </div>
                 <button onclick="closeModal('modal-archive-storage')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
             </div>
 
-            <!-- بطاقة عداد التخزين السحابي -->
+            <!-- بطاقة عداد التخزين السحابي 1 GB -->
             <div class="bg-slate-900 text-white rounded-2xl p-5 mb-5">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <span class="text-xs font-bold text-slate-300">حالة سعة التخزين السحابي (الحد الأقصى للوثيقة 1024 KB):</span>
+                    <span class="text-xs font-bold text-slate-300">حالة سعة التخزين السحابي (السعة الكلية 1,024 MB = 1 GB):</span>
                     <span id="storage-percent-label" class="text-sm font-black text-emerald-400">0% مستخدم</span>
                 </div>
                 <div class="w-full bg-slate-700 rounded-full h-3.5 overflow-hidden mb-3">
-                    <div id="storage-progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 5%"></div>
+                    <div id="storage-progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 2%"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 text-xs">
                     <div class="bg-slate-800 p-2.5 rounded-xl">
@@ -750,10 +762,13 @@
                         <strong id="storage-used-kb" class="text-white text-sm">0 KB</strong>
                     </div>
                     <div class="bg-slate-800 p-2.5 rounded-xl">
-                        <span class="text-slate-400 block">المساحة المتبقية للامتلاء:</span>
-                        <strong id="storage-remaining-kb" class="text-emerald-400 text-sm">1024 KB</strong>
+                        <span class="text-slate-400 block">المساحة المتبقية من الـ 1 جيجا:</span>
+                        <strong id="storage-remaining-kb" class="text-emerald-400 text-sm">1,024.00 MB</strong>
                     </div>
                 </div>
+                <p class="mt-3 text-[11px] text-emerald-300 font-bold text-center">
+                    ✅ تم تفعيل نظام التقسيم الذكي للوثائق: بياناتك محمية ولن تُحذف أبداً مع مرور الأيام.
+                </p>
                 <p id="storage-full-alert" class="hidden mt-3 bg-rose-600/90 text-white text-xs font-bold p-2.5 rounded-xl text-center">
                     ⛔ السحابة ممتلئة! تم إيقاف إضافة حركات أو ورشات جديدة لحين تفريغ مساحة.
                 </p>
@@ -764,7 +779,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                     <div>
                         <h4 class="text-sm font-black text-slate-900">الورشات غير المفعلة (المؤرشفة)</h4>
-                        <p class="text-[11px] text-slate-600">يمكنك تحميل نسخة احتياطية من الورشات غير المفعلة ثم حذفها لتفريغ مساحة السحابة</p>
+                        <p class="text-[11px] text-slate-600">يمكنك تحميل نسخة احتياطية من الورشات غير المفعلة وحذفها لتنظيم القائمة</p>
                     </div>
                     <button onclick="backupAndDeleteInactiveWorkshops()"
                         class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
@@ -772,9 +787,7 @@
                     </button>
                 </div>
 
-                <div id="inactive-workshops-list" class="space-y-2 max-h-56 overflow-y-auto">
-                    <!-- قائمة الورشات غير المفعلة -->
-                </div>
+                <div id="inactive-workshops-list" class="space-y-2 max-h-56 overflow-y-auto"></div>
             </div>
         </div>
     </div>
@@ -786,7 +799,7 @@
             <p class="text-xs text-slate-500 mb-4">هذا القسم محمي ومخصص للمدير الأساسي فقط.</p>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">كود firebaseConfig (JSON أو Object):</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">كود firebaseConfig (JSON):</label>
                     <textarea id="cloud-config-textarea" rows="6" dir="ltr"
                         class="w-full p-3 rounded-xl border border-slate-300 text-xs font-mono outline-none focus:border-blue-600"></textarea>
                 </div>
@@ -803,9 +816,20 @@
         </div>
     </div>
 
+    <!-- 8. نافذة معاينة صور الفاتورة بالحجم الكامل -->
+    <div id="modal-image-viewer" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4" onclick="closeModal('modal-image-viewer')">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-4 shadow-2xl text-center" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <h4 id="viewer-img-title" class="text-sm font-black text-slate-800">صورة الفاتورة المرفقة</h4>
+                <button onclick="closeModal('modal-image-viewer')" class="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold">إغلاق ✕</button>
+            </div>
+            <img id="viewer-img-src" src="" alt="صورة الفاتورة" class="max-h-[75vh] mx-auto rounded-xl object-contain border border-slate-200">
+        </div>
+    </div>
+
     <script>
         // =========================================================================
-        // 1. الإعدادات السحابية المثبتة لمشروعك (anas-alasfar) + ثوابت النظام
+        // 1. الإعدادات السحابية لمشروعك (anas-alasfar) + سعة 1 جيجابايت كاملة
         // =========================================================================
         const HARDCODED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
@@ -826,28 +850,31 @@
             'workshops_system_data'
         ];
         const DEFAULT_CATEGORIES = ['عام', 'أجور عمال', 'كهرباء وتمديدات', 'مواد بناء', 'نقل ومواصلات', 'صيانة ومعدات'];
-        const MAX_CLOUD_BYTES = 1048576; // 1 MB الحد الأقصى لوثيقة Firestore
+        
+        const MAX_CLOUD_TOTAL_BYTES = 1073741824; // 1 GB
+        const MAX_SINGLE_DOC_BYTES = 1000000;
 
-        // الحالة المركزية للنظام
         let appState = {
             owner: {
                 username: 'anas',
                 password: '789456123147'
             },
-            users: [], // المستخدمون الفرعيون
+            users: [],
             workshops: [],
             lastUpdated: 0
         };
 
-        let currentUser = null; // { username, isOwner, permissions, allowedWorkshops }
+        let currentUser = null;
         let selectedWorkshopId = null;
         let pendingImportedWorkshop = null;
+        let currentTxImages = [null, null];
         let db = null;
         let isCloudConnected = false;
         let isStorageFull = false;
+        let isSyncingFromCloud = false;
 
         // =========================================================================
-        // 2. حماية البيانات والدمج الآمن (Local + Legacy + Cloud)
+        // 2. حماية البيانات والدمج الآمن (Local + Legacy + Cloud Multi-Doc)
         // =========================================================================
         function loadAndMergeLocalData() {
             let mergedWorkshops = [];
@@ -881,7 +908,6 @@
                             if (existingIdx === -1) {
                                 mergedWorkshops.push(normalizedWs);
                             } else {
-                                // الاحتفاظ بالنسخة التي تحوي حركات أكثر أو الأحدث
                                 if ((normalizedWs.transactions?.length || 0) >= (mergedWorkshops[existingIdx].transactions?.length || 0)) {
                                     mergedWorkshops[existingIdx] = normalizedWs;
                                 }
@@ -892,7 +918,7 @@
                         latestTime = parsed.lastUpdated;
                     }
                 } catch (e) {
-                    console.warn('تخطي مفتاح تالف:', key);
+                    console.warn('تخطي مفتاح محلي:', key);
                 }
             });
 
@@ -913,13 +939,13 @@
                 categories: Array.isArray(ws.categories) && ws.categories.length > 0 ? ws.categories : [...DEFAULT_CATEGORIES],
                 transactions: Array.isArray(ws.transactions) ? ws.transactions.map(t => ({
                     id: t.id || ('tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
-                    type: t.type || 'income', // income | expense | exchange
-                    currency: t.currency || 'USD', // USD | SYP
+                    type: t.type || 'income',
+                    currency: t.currency || 'USD',
                     category: t.category || 'عام',
                     amount: Number(t.amount) || 0,
                     date: t.date || new Date().toISOString().split('T')[0],
                     description: t.description || t.note || '',
-                    // حقول خاصة بالصرافة
+                    images: Array.isArray(t.images) ? t.images.slice(0, 2) : [],
                     exchangeDirection: t.exchangeDirection || null,
                     usdAmount: Number(t.usdAmount) || 0,
                     sypAmount: Number(t.sypAmount) || 0,
@@ -937,22 +963,38 @@
             updateStorageQuotaUI();
         }
 
-        async function saveAllData() {
+        async function saveAllData(deletedWorkshopId = null) {
             appState.lastUpdated = Date.now();
             saveToLocalOnly();
 
-            if (db && isCloudConnected) {
+            if (db && isCloudConnected && !isSyncingFromCloud) {
                 try {
-                    const payloadStr = JSON.stringify(appState);
-                    if (new Blob([payloadStr]).size >= MAX_CLOUD_BYTES) {
-                        alert('⛔ السحابة ممتلئة! تم الحفظ محلياً فقط. يرجى تفريغ مساحة من الأرشيف.');
-                        return;
-                    }
-                    await db.collection('workshops_system').doc('master_data').set({
-                        payload: payloadStr,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    const batch = db.batch();
+
+                    const metaRef = db.collection('workshops_system').doc('system_meta');
+                    batch.set(metaRef, {
+                        owner: appState.owner,
+                        users: appState.users,
                         lastUpdated: appState.lastUpdated
                     });
+
+                    appState.workshops.forEach(ws => {
+                        const wsStr = JSON.stringify(ws);
+                        if (new Blob([wsStr]).size < MAX_SINGLE_DOC_BYTES) {
+                            const wsRef = db.collection('workshops_docs').doc(ws.id);
+                            batch.set(wsRef, {
+                                payload: wsStr,
+                                lastUpdated: appState.lastUpdated
+                            });
+                        }
+                    });
+
+                    if (deletedWorkshopId) {
+                        const delRef = db.collection('workshops_docs').doc(deletedWorkshopId);
+                        batch.delete(delRef);
+                    }
+
+                    await batch.commit();
                 } catch (err) {
                     console.error('فشل المزامنة السحابية:', err);
                 }
@@ -960,7 +1002,7 @@
         }
 
         // =========================================================================
-        // 3. الاتصال السحابي التلقائي (Firebase)
+        // 3. الاتصال السحابي التلقائي + دمج البيانات
         // =========================================================================
         async function initCloudConnection() {
             let configToUse = HARDCODED_FIREBASE_CONFIG;
@@ -981,31 +1023,68 @@
                 await firebase.auth().signInAnonymously();
                 db = firebase.firestore();
 
-                // الاستماع الفوري للتحديثات من السحابة
-                db.collection('workshops_system').doc('master_data').onSnapshot((doc) => {
-                    isCloudConnected = true;
-                    setCloudUIStatus(true, 'متصل بالسحابة (مزامنة فورية)');
-
-                    if (doc.exists && doc.data().payload) {
-                        try {
-                            const cloudState = JSON.parse(doc.data().payload);
-                            // دمج ذكي يحمي البيانات المحلية والسحابية معاً
-                            if (cloudState.lastUpdated && cloudState.lastUpdated >= appState.lastUpdated) {
-                                if (cloudState.owner) appState.owner = cloudState.owner;
-                                if (Array.isArray(cloudState.users)) appState.users = cloudState.users;
-                                if (Array.isArray(cloudState.workshops)) {
-                                    appState.workshops = cloudState.workshops.map(normalizeWorkshop);
-                                }
-                                appState.lastUpdated = cloudState.lastUpdated;
-                                saveToLocalOnly();
-                                if (currentUser) refreshFullUI();
-                            } else if (appState.workshops.length > 0 && (!cloudState.workshops || cloudState.workshops.length === 0)) {
-                                // رفع البيانات المحلية للسحابة إذا كانت السحابة فارغة
-                                saveAllData();
-                            }
-                        } catch (e) {
-                            console.error('خطأ في قراءة بيانات السحابة:', e);
+                try {
+                    const legacyDoc = await db.collection('workshops_system').doc('master_data').get();
+                    if (legacyDoc.exists && legacyDoc.data().payload) {
+                        const oldCloud = JSON.parse(legacyDoc.data().payload);
+                        if (oldCloud.owner) appState.owner = oldCloud.owner;
+                        if (Array.isArray(oldCloud.users)) {
+                            oldCloud.users.forEach(u => {
+                                if (!appState.users.some(eu => eu.username === u.username)) appState.users.push(u);
+                            });
                         }
+                        if (Array.isArray(oldCloud.workshops)) {
+                            oldCloud.workshops.forEach(ws => {
+                                const norm = normalizeWorkshop(ws);
+                                if (!appState.workshops.some(ew => ew.id === norm.id)) {
+                                    appState.workshops.push(norm);
+                                }
+                            });
+                        }
+                        saveToLocalOnly();
+                    }
+                } catch (e) { console.warn('تخطي فحص الترحيل:', e); }
+
+                db.collection('workshops_system').doc('system_meta').onSnapshot((doc) => {
+                    isCloudConnected = true;
+                    setCloudUIStatus(true, 'متصل بالسحابة (1GB دائمة)');
+
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.lastUpdated && data.lastUpdated >= appState.lastUpdated) {
+                            isSyncingFromCloud = true;
+                            if (data.owner) appState.owner = data.owner;
+                            if (Array.isArray(data.users)) appState.users = data.users;
+                            saveToLocalOnly();
+                            if (currentUser) refreshFullUI();
+                            isSyncingFromCloud = false;
+                        }
+                    } else if (appState.workshops.length > 0 || appState.users.length > 0) {
+                        saveAllData();
+                    }
+                });
+
+                db.collection('workshops_docs').onSnapshot((snapshot) => {
+                    isCloudConnected = true;
+                    setCloudUIStatus(true, 'متصل بالسحابة (1GB دائمة)');
+
+                    if (!snapshot.empty) {
+                        isSyncingFromCloud = true;
+                        const cloudWorkshops = [];
+                        snapshot.forEach(doc => {
+                            const d = doc.data();
+                            if (d && d.payload) {
+                                try {
+                                    cloudWorkshops.push(normalizeWorkshop(JSON.parse(d.payload)));
+                                } catch (e) {}
+                            }
+                        });
+                        if (cloudWorkshops.length > 0) {
+                            appState.workshops = cloudWorkshops;
+                            saveToLocalOnly();
+                            if (currentUser) refreshFullUI();
+                        }
+                        isSyncingFromCloud = false;
                     } else if (appState.workshops.length > 0) {
                         saveAllData();
                     }
@@ -1014,6 +1093,7 @@
                     isCloudConnected = false;
                     setCloudUIStatus(false, 'يعمل محلياً (تعذر الاتصال بالسحابة)');
                 });
+
             } catch (e) {
                 console.warn('خطأ تهيئة Firebase:', e);
                 setCloudUIStatus(false, 'يعمل محلياً');
@@ -1040,35 +1120,35 @@
         }
 
         // =========================================================================
-        // 4. مراقبة سعة التخزين السحابي ومنع الإضافة عند الامتلاء
+        // 4. مراقبة سعة التخزين السحابي (1 جيجابايت مجانية دائمة)
         // =========================================================================
         function updateStorageQuotaUI() {
             const jsonStr = JSON.stringify(appState);
             const usedBytes = new Blob([jsonStr]).size;
-            const usedKB = (usedBytes / 1024).toFixed(1);
-            const maxKB = (MAX_CLOUD_BYTES / 1024).toFixed(0);
-            const remainingKB = Math.max(0, (MAX_CLOUD_BYTES - usedBytes) / 1024).toFixed(1);
-            const percent = Math.min(100, Math.round((usedBytes / MAX_CLOUD_BYTES) * 100));
+            const usedKB = (usedBytes / 1024).toFixed(2);
+            const usedMB = (usedBytes / (1024 * 1024)).toFixed(3);
+            const remainingMB = Math.max(0, (MAX_CLOUD_TOTAL_BYTES - usedBytes) / (1024 * 1024)).toFixed(2);
+            const percent = Math.min(100, ((usedBytes / MAX_CLOUD_TOTAL_BYTES) * 100));
+            const displayPercent = percent < 1 && usedBytes > 0 ? percent.toFixed(2) : Math.round(percent);
 
             isStorageFull = percent >= 98;
 
             const badge = document.getElementById('header-storage-badge');
-            if (badge) badge.textContent = percent + '%';
+            if (badge) badge.textContent = displayPercent + '%';
 
             const banner = document.getElementById('storage-warning-banner');
             const bannerText = document.getElementById('storage-warning-text');
             if (banner) {
-                if (percent >= 80) {
+                if (percent >= 85) {
                     banner.classList.remove('hidden');
                     bannerText.textContent = isStorageFull
-                        ? '⛔ تنبيه هام: سعة التخزين السحابي ممتلئة بالكامل (100%)! لا يمكن إضافة بيانات جديدة قبل حذف الورشات غير المفعلة.'
-                        : `⚠️ تنبيه: تم استهلاك ${percent}% من سعة السحابة (المتبقي ${remainingKB} KB فقط).`;
+                        ? '⛔ تنبيه هام: سعة التخزين السحابي (1 GB) ممتلئة! يرجى حذف الورشات غير المفعلة لتفريغ مساحة.'
+                        : `⚠️ تنبيه: تم استهلاك ${displayPercent}% من سعة السحابة (المتبقي ${remainingMB} MB).`;
                 } else {
                     banner.classList.add('hidden');
                 }
             }
 
-            // تحديث عناصر النافذة المنبثقة للتخزين
             const pLabel = document.getElementById('storage-percent-label');
             const pBar = document.getElementById('storage-progress-bar');
             const uKb = document.getElementById('storage-used-kb');
@@ -1076,12 +1156,12 @@
             const fAlert = document.getElementById('storage-full-alert');
 
             if (pLabel) {
-                pLabel.textContent = `${percent}% مستخدم`;
+                pLabel.textContent = `${displayPercent}% مستخدم`;
                 pLabel.className = percent >= 85 ? 'text-sm font-black text-rose-400' : 'text-sm font-black text-emerald-400';
-                pBar.style.width = Math.max(3, percent) + '%';
-                pBar.className = percent >= 85 ? 'bg-rose-500 h-full transition-all' : (percent >= 65 ? 'bg-amber-400 h-full transition-all' : 'bg-emerald-500 h-full transition-all');
-                uKb.textContent = `${usedKB} KB / ${maxKB} KB`;
-                rKb.textContent = `${remainingKB} KB متبقية`;
+                pBar.style.width = Math.max(2, percent) + '%';
+                pBar.className = percent >= 85 ? 'bg-rose-500 h-full transition-all' : 'bg-emerald-500 h-full transition-all';
+                uKb.textContent = `${usedKB} KB (${usedMB} MB)`;
+                rKb.textContent = `${remainingMB} MB متبقية`;
                 if (isStorageFull) fAlert.classList.remove('hidden');
                 else fAlert.classList.add('hidden');
             }
@@ -1090,7 +1170,7 @@
         function checkStorageCanAdd() {
             updateStorageQuotaUI();
             if (isStorageFull) {
-                alert('⛔ عذراً، سعة التخزين السحابي ممتلئة بالكامل! يرجى الذهاب إلى "الأرشيف والتخزين" لأخذ نسخة احتياطية من الورشات غير المفعلة وحذفها لتفريغ مساحة.');
+                alert('⛔ عذراً، سعة التخزين السحابي ممتلئة! يرجى الذهاب إلى "الأرشيف والتخزين" لأخذ نسخة احتياطية من الورشات غير المفعلة وحذفها.');
                 openArchiveAndStorageModal();
                 return false;
             }
@@ -1106,7 +1186,6 @@
             const pInput = document.getElementById('login-password').value.trim();
             const errBox = document.getElementById('login-error');
 
-            // التحقق من الحساب الأساسي (المالك)
             if (uInput === appState.owner.username && pInput === appState.owner.password) {
                 currentUser = {
                     username: appState.owner.username,
@@ -1117,6 +1196,7 @@
                         addTx: true,
                         editTx: true,
                         deleteTx: true,
+                        manageCats: true,
                         toggleWs: true,
                         allWs: true
                     },
@@ -1126,7 +1206,6 @@
                 return;
             }
 
-            // التحقق من المستخدمين الفرعيين
             const foundSub = appState.users.find(u => u.username === uInput && u.password === pInput);
             if (foundSub) {
                 currentUser = {
@@ -1138,6 +1217,7 @@
                         addTx: true,
                         editTx: false,
                         deleteTx: false,
+                        manageCats: false,
                         toggleWs: false,
                         allWs: false
                     },
@@ -1160,7 +1240,6 @@
                 ? `المدير: ${currentUser.username}`
                 : `مستخدم: ${currentUser.username}`;
 
-            // إظهار أزرار الإدارة للمالك فقط
             if (currentUser.isOwner) {
                 document.getElementById('btn-manage-users').classList.remove('hidden');
                 document.getElementById('btn-cloud-settings').classList.remove('hidden');
@@ -1230,7 +1309,6 @@
             updateStorageQuotaUI();
             const visibleWs = getVisibleWorkshops();
 
-            // 1. تحديث الصناديق العامة الكبرى
             let totalGlobalUSD = 0;
             let totalGlobalSYP = 0;
             visibleWs.forEach(ws => {
@@ -1261,11 +1339,11 @@
                 gSypCard.className = 'bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center justify-between transition';
             }
 
-            // 2. تطبيق صلاحيات الأزرار العامة
-            document.getElementById('btn-new-workshop').style.display = (currentUser.isOwner || currentUser.permissions.createWs) ? 'flex' : 'none';
-            document.getElementById('btn-import-workshop').style.display = (currentUser.isOwner || currentUser.permissions.createWs) ? 'flex' : 'none';
+            const canCreateWs = currentUser.isOwner || currentUser.permissions.createWs;
+            document.getElementById('btn-new-workshop').style.display = canCreateWs ? 'flex' : 'none';
+            document.getElementById('btn-import-workshop').style.display = canCreateWs ? 'flex' : 'none';
+            document.getElementById('btn-empty-new-ws').style.display = canCreateWs ? 'inline-block' : 'none';
 
-            // 3. رسم أزرار اختيار الورشات
             const tabsContainer = document.getElementById('workshops-tabs');
             tabsContainer.innerHTML = '';
 
@@ -1297,7 +1375,6 @@
                 tabsContainer.appendChild(btn);
             });
 
-            // 4. عرض تفاصيل الورشة المحددة
             renderSelectedWorkshop();
         }
 
@@ -1310,7 +1387,6 @@
             }
             section.classList.remove('hidden');
 
-            // تلوين رمادي للورشة غير النشطة على الشاشة فقط
             if (!ws.active) {
                 section.classList.add('workshop-inactive-view');
             } else {
@@ -1332,14 +1408,15 @@
                 statusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700 border border-slate-400 hover:bg-slate-300 transition no-print';
             }
 
-            // صلاحيات الأزرار داخل الورشة
             const canAdd = currentUser.isOwner || currentUser.permissions.addTx;
+            const canManageCats = currentUser.isOwner || currentUser.permissions.manageCats;
             document.getElementById('btn-add-income').style.display = canAdd ? 'flex' : 'none';
             document.getElementById('btn-add-expense').style.display = canAdd ? 'flex' : 'none';
             document.getElementById('btn-add-exchange').style.display = canAdd ? 'flex' : 'none';
+            document.getElementById('btn-manage-categories').style.display = canManageCats ? 'flex' : 'none';
+            document.getElementById('btn-tx-manage-cats').style.display = canManageCats ? 'inline-block' : 'none';
             document.getElementById('btn-delete-workshop').style.display = (currentUser.isOwner || currentUser.permissions.deleteWs) ? 'block' : 'none';
 
-            // تحديث صناديق الورشة
             const totals = calculateWorkshopTotals(ws);
 
             const usdBox = document.getElementById('ws-usd-box');
@@ -1370,7 +1447,6 @@
                 sypBalEl.className = 'text-3xl font-black text-blue-700 tracking-tight';
             }
 
-            // تحديث قائمة الفلترة بالبنود الخاصة بهذه الورشة
             const filterCat = document.getElementById('filter-category');
             const prevFilterVal = filterCat.value;
             filterCat.innerHTML = '<option value="all">كل البنود / التصنيفات</option>';
@@ -1394,7 +1470,6 @@
             const tbody = document.getElementById('transactions-tbody');
             tbody.innerHTML = '';
 
-            // ترتيب الحركات زمنياً لحساب الرصيد التراكمي بدقة
             const sortedTxs = [...(ws.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
 
             let runUSD = 0;
@@ -1418,7 +1493,6 @@
                 return { ...tx, runUSD, runSYP };
             });
 
-            // تطبيق الفلاتر
             const searchQ = document.getElementById('filter-search').value.trim().toLowerCase();
             const catFilter = document.getElementById('filter-category').value;
             const currFilter = document.getElementById('filter-currency').value;
@@ -1433,7 +1507,7 @@
             document.getElementById('filtered-summary').textContent = `عدد الحركات المعروضة: ${filtered.length}`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-bold">لا توجد حركات مالية مطابقة للعرض</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400 font-bold">لا توجد حركات مالية مطابقة للعرض</td></tr>`;
                 return;
             }
 
@@ -1466,6 +1540,25 @@
                         : `<div class="text-xs font-black text-amber-900">-${formatSYP(tx.sypAmount)} ➔ <span dir="ltr">+${formatUSD(tx.usdAmount)}</span> <span class="text-[10px] text-slate-500">(سعر: ${tx.rate})</span></div>`;
                 }
 
+                // عرض أيقونات صور الفواتير إن وجدت
+                const validImgs = (tx.images || []).filter(Boolean);
+                let attachmentsHtml = '<span class="text-[11px] text-slate-400">—</span>';
+                if (validImgs.length > 0) {
+                    attachmentsHtml = `<div class="inline-flex items-center gap-1">` +
+                        validImgs.map((imgData, i) => `
+                            <button type="button" onclick="openImageViewer('${tx.id}', ${i})" title="عرض صورة الفاتورة ${i + 1}"
+                                class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 text-[11px] font-bold">
+                                🖼️ فاتورة ${i + 1}
+                            </button>
+                        `).join('') + `</div>`;
+                }
+
+                const editBtnHtml = canEdit
+                    ? (tx.type === 'exchange'
+                        ? `<button onclick="openEditExchangeModal('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition">تعديل</button>`
+                        : `<button onclick="openEditTransactionModal('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition">تعديل</button>`)
+                    : '';
+
                 tr.className = `${rowBg} transition`;
                 tr.innerHTML = `
                     <td class="py-3 px-3 whitespace-nowrap text-slate-700">${tx.date}</td>
@@ -1477,9 +1570,10 @@
                     <td class="py-3 px-3 whitespace-nowrap">${amountDisplay}</td>
                     <td class="py-3 px-3 whitespace-nowrap font-black ${tx.runUSD < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}" dir="ltr">${formatUSD(tx.runUSD)}</td>
                     <td class="py-3 px-3 whitespace-nowrap font-black ${tx.runSYP < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}">${formatSYP(tx.runSYP)}</td>
+                    <td class="py-3 px-3 whitespace-nowrap text-center no-print">${attachmentsHtml}</td>
                     <td class="py-3 px-3 whitespace-nowrap text-center no-print">
                         <div class="inline-flex items-center gap-1.5">
-                            ${(canEdit && tx.type !== 'exchange') ? `<button onclick="openEditTransactionModal('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition">تعديل</button>` : ''}
+                            ${editBtnHtml}
                             ${canDelete ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold transition">حذف</button>` : ''}
                         </div>
                     </td>
@@ -1489,7 +1583,7 @@
         }
 
         // =========================================================================
-        // 7. إدارة الورشات والحركات المالية والتعديل والبنود
+        // 7. إدارة الورشات والحركات المالية والصور والصرافة والبنود
         // =========================================================================
         function openNewWorkshopModal() {
             if (!checkStorageCanAdd()) return;
@@ -1542,13 +1636,13 @@
             if (!ws) return;
             if (!confirm(`هل أنت متأكد من حذف ورشة "${ws.name}" نهائياً؟ يفضل أخذ نسخة احتياطية أولاً.`)) return;
 
-            appState.workshops = appState.workshops.filter(w => w.id !== ws.id);
+            const deletedId = ws.id;
+            appState.workshops = appState.workshops.filter(w => w.id !== deletedId);
             selectedWorkshopId = null;
-            await saveAllData();
+            await saveAllData(deletedId);
             refreshFullUI();
         }
 
-        // تعبئة قائمة بنود الورشة داخل نافذة الحركة
         function populateTxCategoriesSelect(selectedCat = 'عام') {
             const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
             const select = document.getElementById('tx-category');
@@ -1561,6 +1655,69 @@
                 if (c === selectedCat) opt.selected = true;
                 select.appendChild(opt);
             });
+        }
+
+        // معالجة وضغط صور الفواتير المرفقة (صورتين كحد أقصى لكل بند)
+        function handleInvoiceImageUpload(event, slotIndex) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 900;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                        else { w = Math.round(w * maxDim / h); h = maxDim; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
+                    currentTxImages[slotIndex] = compressedDataUrl;
+                    renderTxImageSlots();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function clearInvoiceImage(slotIndex) {
+            currentTxImages[slotIndex] = null;
+            renderTxImageSlots();
+        }
+
+        function renderTxImageSlots() {
+            [0, 1].forEach(idx => {
+                const previewEl = document.getElementById(`tx-img-preview-${idx}`);
+                const clearBtn = document.getElementById(`tx-img-clear-${idx}`);
+                if (currentTxImages[idx]) {
+                    previewEl.innerHTML = `<img src="${currentTxImages[idx]}" class="h-16 mx-auto rounded-lg object-cover border border-slate-200">`;
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    previewEl.innerHTML = `اضغط للاختيار`;
+                    clearBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        function openImageViewer(txId, imgIndex) {
+            const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
+            if (!ws) return;
+            const tx = ws.transactions.find(t => t.id === txId);
+            if (!tx || !tx.images) return;
+            const validImgs = tx.images.filter(Boolean);
+            const targetImg = validImgs[imgIndex];
+            if (!targetImg) return;
+
+            document.getElementById('viewer-img-title').textContent = `صورة الفاتورة (${imgIndex + 1}) - ${tx.description}`;
+            document.getElementById('viewer-img-src').src = targetImg;
+            document.getElementById('modal-image-viewer').classList.remove('hidden');
         }
 
         function openTransactionModal(type) {
@@ -1576,6 +1733,8 @@
             document.getElementById('tx-amount').value = '';
             document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('tx-desc').value = '';
+            currentTxImages = [null, null];
+            renderTxImageSlots();
             populateTxCategoriesSelect('عام');
 
             document.getElementById('modal-transaction').classList.remove('hidden');
@@ -1602,6 +1761,10 @@
             document.getElementById('tx-date').value = tx.date;
             document.getElementById('tx-desc').value = tx.description;
 
+            const imgs = Array.isArray(tx.images) ? tx.images : [];
+            currentTxImages = [imgs[0] || null, imgs[1] || null];
+            renderTxImageSlots();
+
             document.getElementById('modal-transaction').classList.remove('hidden');
         }
 
@@ -1619,6 +1782,7 @@
             const amount = parseFloat(document.getElementById('tx-amount').value);
             const date = document.getElementById('tx-date').value;
             const description = document.getElementById('tx-desc').value.trim();
+            const images = currentTxImages.filter(Boolean);
 
             if (!amount || amount <= 0) return;
 
@@ -1632,7 +1796,8 @@
                         category,
                         amount,
                         date,
-                        description
+                        description,
+                        images
                     };
                 }
             } else {
@@ -1643,7 +1808,8 @@
                     category,
                     amount,
                     date,
-                    description
+                    description,
+                    images
                 });
             }
 
@@ -1666,14 +1832,36 @@
             refreshFullUI();
         }
 
-        // الصرافة / التحويل
+        // الصرافة / التحويل (إضافة وتعديل)
         function openExchangeModal() {
             if (!checkStorageCanAdd()) return;
+            document.getElementById('ex-edit-id').value = '';
+            document.getElementById('ex-modal-title').textContent = 'عملية صرافة / تحويل بين الصناديق';
+            document.getElementById('ex-submit-btn').textContent = 'تنفيذ التحويل';
+            document.getElementById('ex-direction').value = 'USD_TO_SYP';
             document.getElementById('ex-usd-amount').value = '';
             document.getElementById('ex-rate').value = '';
             document.getElementById('ex-syp-preview').textContent = '0 ل.س';
             document.getElementById('ex-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('ex-note').value = '';
+            document.getElementById('modal-exchange').classList.remove('hidden');
+        }
+
+        function openEditExchangeModal(txId) {
+            const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
+            if (!ws) return;
+            const tx = ws.transactions.find(t => t.id === txId);
+            if (!tx || tx.type !== 'exchange') return;
+
+            document.getElementById('ex-edit-id').value = tx.id;
+            document.getElementById('ex-modal-title').textContent = '✏️ تعديل عملية الصرافة / التحويل';
+            document.getElementById('ex-submit-btn').textContent = 'حفظ التعديلات';
+            document.getElementById('ex-direction').value = tx.exchangeDirection || 'USD_TO_SYP';
+            document.getElementById('ex-usd-amount').value = tx.usdAmount;
+            document.getElementById('ex-rate').value = tx.rate;
+            calculateExchangePreview();
+            document.getElementById('ex-date').value = tx.date;
+            document.getElementById('ex-note').value = tx.description || '';
             document.getElementById('modal-exchange').classList.remove('hidden');
         }
 
@@ -1686,7 +1874,9 @@
 
         document.getElementById('form-exchange').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!checkStorageCanAdd()) return;
+            const editId = document.getElementById('ex-edit-id').value;
+            if (!editId && !checkStorageCanAdd()) return;
+
             const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
 
@@ -1699,18 +1889,35 @@
 
             if (!usdAmount || !rate) return;
 
-            ws.transactions.push({
-                id: 'ex_' + Date.now(),
-                type: 'exchange',
-                currency: 'BOTH',
-                category: 'صرافة',
-                exchangeDirection: direction,
-                usdAmount,
-                sypAmount,
-                rate,
-                date,
-                description: note || (direction === 'USD_TO_SYP' ? `تصريف ${usdAmount}$ بسعر ${rate}` : `شراء ${usdAmount}$ بسعر ${rate}`)
-            });
+            const description = note || (direction === 'USD_TO_SYP' ? `تصريف ${usdAmount}$ بسعر ${rate}` : `شراء ${usdAmount}$ بسعر ${rate}`);
+
+            if (editId) {
+                const idx = ws.transactions.findIndex(t => t.id === editId);
+                if (idx !== -1) {
+                    ws.transactions[idx] = {
+                        ...ws.transactions[idx],
+                        exchangeDirection: direction,
+                        usdAmount,
+                        sypAmount,
+                        rate,
+                        date,
+                        description
+                    };
+                }
+            } else {
+                ws.transactions.push({
+                    id: 'ex_' + Date.now(),
+                    type: 'exchange',
+                    currency: 'BOTH',
+                    category: 'صرافة',
+                    exchangeDirection: direction,
+                    usdAmount,
+                    sypAmount,
+                    rate,
+                    date,
+                    description
+                });
+            }
 
             closeModal('modal-exchange');
             await saveAllData();
@@ -1719,6 +1926,10 @@
 
         // إدارة بنود / تصنيفات الورشة
         function openCategoriesModal() {
+            if (!currentUser.isOwner && !currentUser.permissions.manageCats) {
+                alert('ليس لديك صلاحية لإضافة أو تعديل تصنيفات الورشة.');
+                return;
+            }
             const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             if (!ws.categories) ws.categories = [...DEFAULT_CATEGORIES];
@@ -1747,6 +1958,7 @@
 
         document.getElementById('form-add-category').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!currentUser.isOwner && !currentUser.permissions.manageCats) return;
             const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const input = document.getElementById('new-category-name');
@@ -1764,6 +1976,7 @@
         });
 
         async function deleteCategory(index) {
+            if (!currentUser.isOwner && !currentUser.permissions.manageCats) return;
             const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             ws.categories.splice(index, 1);
@@ -1787,7 +2000,7 @@
             const sortedTxs = [...(ws.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
             let runUSD = 0, runSYP = 0;
 
-            let csvContent = '\uFEFF'; // BOM لدعم اللغة العربية في Excel
+            let csvContent = '\uFEFF';
             csvContent += 'التاريخ,النوع,البند/التصنيف,البيان,العملة,المبلغ,الرصيد التراكمي ($),الرصيد التراكمي (ل.س)\n';
 
             sortedTxs.forEach(tx => {
@@ -1880,7 +2093,6 @@
             event.target.value = '';
         }
 
-        // معاينة استيراد ورشة مفردة قبل الاعتماد
         function previewImportedWorkshop(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1914,7 +2126,6 @@
             if (!pendingImportedWorkshop) return;
             if (!checkStorageCanAdd()) return;
 
-            // إنشاء معرف جديد إذا كان مكرراً لتجنب الكتابة فوق ورشة قائمة بالخطأ
             if (appState.workshops.some(w => w.id === pendingImportedWorkshop.id)) {
                 pendingImportedWorkshop.id = 'ws_' + Date.now();
             }
@@ -1963,6 +2174,10 @@
         function renderAllowedWorkshopsCheckboxes(selectedIds = []) {
             const container = document.getElementById('sub-allowed-workshops');
             container.innerHTML = '';
+            if (appState.workshops.length === 0) {
+                container.innerHTML = '<p class="text-[11px] text-slate-400">لا توجد ورشات مضافة بعد.</p>';
+                return;
+            }
             appState.workshops.forEach(ws => {
                 const checked = selectedIds.includes(ws.id) ? 'checked' : '';
                 const label = document.createElement('label');
@@ -1993,6 +2208,7 @@
             document.getElementById('perm-add-tx').checked = true;
             document.getElementById('perm-edit-tx').checked = false;
             document.getElementById('perm-delete-tx').checked = false;
+            document.getElementById('perm-manage-cats').checked = false;
             document.getElementById('perm-toggle-ws').checked = false;
             document.getElementById('perm-all-ws').checked = false;
 
@@ -2017,6 +2233,7 @@
             document.getElementById('perm-add-tx').checked = p.addTx !== false;
             document.getElementById('perm-edit-tx').checked = !!p.editTx;
             document.getElementById('perm-delete-tx').checked = !!p.deleteTx;
+            document.getElementById('perm-manage-cats').checked = !!p.manageCats;
             document.getElementById('perm-toggle-ws').checked = !!p.toggleWs;
             document.getElementById('perm-all-ws').checked = !!p.allWs;
 
@@ -2048,6 +2265,7 @@
                     addTx: document.getElementById('perm-add-tx').checked,
                     editTx: document.getElementById('perm-edit-tx').checked,
                     deleteTx: document.getElementById('perm-delete-tx').checked,
+                    manageCats: document.getElementById('perm-manage-cats').checked,
                     toggleWs: document.getElementById('perm-toggle-ws').checked,
                     allWs: document.getElementById('perm-all-ws').checked
                 },
@@ -2100,13 +2318,14 @@
                             <span class="font-black text-sm text-slate-900">${u.username}</span>
                             <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">كلمة المرور: ${u.password}</span>
                         </div>
-                        <p class="text-[11px] text-blue-700 font-bold">الورشات: ${wsNames}</p>
+                        <p class="text-[11px] text-blue-700 font-bold">الورشات الظاهرة: ${wsNames}</p>
                         <div class="flex flex-wrap gap-1 pt-1">
                             ${p.createWs ? '<span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold">إنشاء ورشات</span>' : ''}
                             ${p.deleteWs ? '<span class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded text-[10px] font-bold">حذف ورشات</span>' : ''}
                             ${p.addTx ? '<span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-bold">إضافة حركات</span>' : ''}
                             ${p.editTx ? '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-[10px] font-bold">تعديل حركات</span>' : ''}
                             ${p.deleteTx ? '<span class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded text-[10px] font-bold">حذف حركات</span>' : ''}
+                            ${p.manageCats ? '<span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold">إدارة التصنيفات</span>' : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -2166,19 +2385,28 @@
 
             if (!confirm(`سيتم تحميل ملف نسخة احتياطية يحتوي على (${inactiveWs.length}) ورشة غير مفعلة ثم حذفها من السحابة لتفريغ المساحة. هل تريد المتابعة؟`)) return;
 
-            // 1. تحميل النسخة الاحتياطية للورشات غير المفعلة
             downloadJSON(inactiveWs, `أرشيف_الورشات_غير_المفعلة_${new Date().toISOString().split('T')[0]}.json`);
 
-            // 2. حذفها من النظام لتفريغ المساحة
+            const idsToDelete = inactiveWs.map(w => w.id);
             appState.workshops = appState.workshops.filter(w => w.active);
             if (!appState.workshops.some(w => w.id === selectedWorkshopId)) {
                 selectedWorkshopId = null;
             }
 
+            if (db && isCloudConnected) {
+                try {
+                    const batch = db.batch();
+                    idsToDelete.forEach(id => {
+                        batch.delete(db.collection('workshops_docs').doc(id));
+                    });
+                    await batch.commit();
+                } catch (e) {}
+            }
+
             await saveAllData();
             openArchiveAndStorageModal();
             refreshFullUI();
-            alert('✅ تم تنزيل النسخة الاحتياطية للورشات غير المفعلة وحذفها لتفريغ مساحة السحابة بنجاح!');
+            alert('✅ تم تنزيل النسخة الاحتياطية للورشات غير المفعلة وحذفها بنجاح!');
         }
 
         function openCloudSettingsModal() {
