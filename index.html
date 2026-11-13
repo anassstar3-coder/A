@@ -69,10 +69,16 @@
         @media (max-width: 768px) {
             .mobile-responsive-table {
                 font-size: 11px !important;
+                width: 100% !important;
             }
             .mobile-responsive-table th,
             .mobile-responsive-table td {
                 padding: 6px 4px !important;
+                white-space: normal !important;
+                word-break: break-word;
+            }
+            .mobile-nowrap {
+                white-space: nowrap !important;
             }
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -148,14 +154,14 @@
                     </div>
 
                     <!-- زر النسخة الاحتياطية الكاملة -->
-                    <button onclick="exportFullBackup()" title="حفظ نسخة احتياطية كاملة للموقع على جهازك"
+                    <button id="btn-header-backup" onclick="exportFullBackup()" title="حفظ نسخة احتياطية كاملة للموقع على جهازك"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>نسخة احتياطية</span>
                     </button>
 
                     <!-- زر استعادة نسخة -->
-                    <label title="استعادة بيانات من ملف نسخة احتياطية"
+                    <label id="btn-header-restore" title="استعادة بيانات من ملف نسخة احتياطية"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold transition cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         <span>استعادة</span>
@@ -163,7 +169,7 @@
                     </label>
 
                     <!-- زر الأرشيف وسعة التخزين (1 جيجابايت) -->
-                    <button onclick="openArchiveAndStorageModal()"
+                    <button id="btn-header-archive" onclick="openArchiveAndStorageModal()"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                         <span>الأرشيف والتخزين (1GB)</span>
@@ -338,14 +344,14 @@
                         </button>
 
                         <!-- زر تصدير Excel -->
-                        <button onclick="exportWorkshopExcel()"
-                            class="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-sm transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Excel</span>
+                        <!-- زر إدارة تصنيفات الورشة مباشرة -->
+                        <button id="btn-manage-categories" onclick="openCategoriesModal()"
+                            class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3 py-2.5 rounded-xl transition">
+                            <span>⚙️ بنود الورشة</span>
                         </button>
 
                         <!-- زر تصدير الورشة كملف JSON -->
-                        <button onclick="exportSingleWorkshopJSON()"
+                        <button id="btn-export-ws-json" onclick="exportSingleWorkshopJSON()"
                             class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs px-3 py-2.5 rounded-xl transition">
                             <span>تصدير الورشة</span>
                         </button>
@@ -739,6 +745,10 @@
                                     <input type="checkbox" id="perm-toggle-ws" class="rounded text-blue-600">
                                     <span>السماح بتغيير حالة الورشة (نشطة/غير نشطة)</span>
                                 </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="perm-backup-cloud" class="rounded text-teal-600">
+                                    <span>السماح بالنسخ الاحتياطي والاستعادة والاطلاع على السحابة</span>
+                                </label>
                             </div>
 
                             <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-200">
@@ -820,28 +830,24 @@
 
                 <div id="inactive-workshops-list" class="space-y-2 max-h-56 overflow-y-auto"></div>
             </div>
-        </div>
-    </div>
 
-    <!-- 7. نافذة إعدادات السحابة (محمية للمالك فقط) -->
-    <div id="modal-cloud-settings" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-lg font-black text-slate-900 mb-1">إعدادات الربط السحابي (Firebase)</h3>
-            <p class="text-xs text-slate-500 mb-4">هذا القسم محمي ومخصص للمدير الأساسي فقط.</p>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">كود firebaseConfig (JSON):</label>
-                    <textarea id="cloud-config-textarea" rows="6" dir="ltr"
-                        class="w-full p-3 rounded-xl border border-slate-300 text-xs font-mono outline-none focus:border-blue-600"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">تأكيد كلمة مرور المدير الأساسي للحفظ:</label>
-                    <input type="password" id="cloud-confirm-owner-pass" placeholder="أدخل كلمة مرور الحساب الأساسي..."
-                        class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold outline-none">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('modal-cloud-settings')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">إلغاء</button>
-                    <button type="button" onclick="saveCustomCloudConfig()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">حفظ وتحديث الاتصال</button>
+            <!-- قسم تصفير / حذف جميع البيانات من النظام (للمالك فقط مع عداد 10 ثواني) -->
+            <div id="danger-wipe-all-section" class="hidden mt-5 bg-rose-50 border-2 border-rose-300 rounded-2xl p-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h4 class="text-sm font-black text-rose-900">⚠️ تصفير وحذف جميع بيانات النظام بالكامل</h4>
+                        <p class="text-[11px] text-rose-700">سيتم مسح كافة الورشات والحركات من السحابة وهذا الجهاز نهائياً وتصفير الصناديق.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btn-arm-wipe-all" onclick="startWipeAllCountdown()"
+                            class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
+                            تفعيل زر الحذف الكلي (10 ثوانٍ)
+                        </button>
+                        <button type="button" id="btn-confirm-wipe-all" disabled onclick="executeWipeAllData()"
+                            class="hidden bg-rose-950 disabled:opacity-50 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition">
+                            انتظر 10 ثوانٍ...
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -903,6 +909,8 @@
         let isCloudConnected = false;
         let isStorageFull = false;
         let isSyncingFromCloud = false;
+        let initialCloudSyncCompleted = false;
+        let wipeCountdownTimer = null;
 
         // =========================================================================
         // 2. حماية البيانات والدمج الآمن (Local + Legacy + Cloud Multi-Doc)
@@ -956,7 +964,7 @@
             appState.owner = savedOwner;
             appState.users = mergedUsers;
             appState.workshops = mergedWorkshops;
-            appState.lastUpdated = latestTime || Date.now();
+            appState.lastUpdated = latestTime || 0;
 
             saveToLocalOnly();
         }
@@ -1033,7 +1041,7 @@
         }
 
         // =========================================================================
-        // 3. الاتصال السحابي التلقائي + دمج البيانات
+        // 3. الاتصال السحابي التلقائي + جلب السحابة أولاً دون مسحها أبداً
         // =========================================================================
         async function initCloudConnection() {
             let configToUse = HARDCODED_FIREBASE_CONFIG;
@@ -1054,33 +1062,62 @@
                 await firebase.auth().signInAnonymously();
                 db = firebase.firestore();
 
+                // 1. جلب البيانات السحابية أولاً بشكل مباشر قبل أي كتابة لمنع استبدال السحابة بجهاز جديد فارغ
                 try {
-                    const legacyDoc = await db.collection('workshops_system').doc('master_data').get();
-                    if (legacyDoc.exists && legacyDoc.data().payload) {
+                    const [metaSnap, docsSnap, legacyDoc] = await Promise.all([
+                        db.collection('workshops_system').doc('system_meta').get(),
+                        db.collection('workshops_docs').get(),
+                        db.collection('workshops_system').doc('master_data').get()
+                    ]);
+
+                    isSyncingFromCloud = true;
+
+                    if (metaSnap.exists) {
+                        const meta = metaSnap.data();
+                        if (meta.owner) appState.owner = meta.owner;
+                        if (Array.isArray(meta.users)) appState.users = meta.users;
+                        if (meta.lastUpdated) appState.lastUpdated = Math.max(appState.lastUpdated, meta.lastUpdated);
+                    }
+
+                    if (!docsSnap.empty) {
+                        const cloudWsMap = new Map();
+                        docsSnap.forEach(doc => {
+                            const d = doc.data();
+                            if (d && d.payload) {
+                                try {
+                                    const norm = normalizeWorkshop(JSON.parse(d.payload));
+                                    cloudWsMap.set(norm.id, norm);
+                                } catch (e) {}
+                            }
+                        });
+                        if (cloudWsMap.size > 0) {
+                            appState.workshops = Array.from(cloudWsMap.values());
+                        }
+                    } else if (legacyDoc.exists && legacyDoc.data().payload) {
                         const oldCloud = JSON.parse(legacyDoc.data().payload);
                         if (oldCloud.owner) appState.owner = oldCloud.owner;
-                        if (Array.isArray(oldCloud.users)) {
-                            oldCloud.users.forEach(u => {
-                                if (!appState.users.some(eu => eu.username === u.username)) appState.users.push(u);
-                            });
+                        if (Array.isArray(oldCloud.users)) appState.users = oldCloud.users;
+                        if (Array.isArray(oldCloud.workshops) && oldCloud.workshops.length > 0) {
+                            appState.workshops = oldCloud.workshops.map(normalizeWorkshop);
                         }
-                        if (Array.isArray(oldCloud.workshops)) {
-                            oldCloud.workshops.forEach(ws => {
-                                const norm = normalizeWorkshop(ws);
-                                if (!appState.workshops.some(ew => ew.id === norm.id)) {
-                                    appState.workshops.push(norm);
-                                }
-                            });
-                        }
-                        saveToLocalOnly();
                     }
-                } catch (e) { console.warn('تخطي فحص الترحيل:', e); }
 
+                    saveToLocalOnly();
+                    initialCloudSyncCompleted = true;
+                    isSyncingFromCloud = false;
+                    if (currentUser) refreshFullUI();
+                } catch (fetchErr) {
+                    console.warn('خطأ في الجلب الأولي من السحابة:', fetchErr);
+                    initialCloudSyncCompleted = true;
+                    isSyncingFromCloud = false;
+                }
+
+                // 2. الاستماع الحي للتحديثات بعد اكتمال الجلب الأولي
                 db.collection('workshops_system').doc('system_meta').onSnapshot((doc) => {
                     isCloudConnected = true;
                     setCloudUIStatus(true, 'متصل بالسحابة (1GB دائمة)');
 
-                    if (doc.exists) {
+                    if (doc.exists && initialCloudSyncCompleted) {
                         const data = doc.data();
                         if (data.lastUpdated && data.lastUpdated >= appState.lastUpdated) {
                             isSyncingFromCloud = true;
@@ -1090,8 +1127,6 @@
                             if (currentUser) refreshFullUI();
                             isSyncingFromCloud = false;
                         }
-                    } else if (appState.workshops.length > 0 || appState.users.length > 0) {
-                        saveAllData();
                     }
                 });
 
@@ -1099,6 +1134,7 @@
                     isCloudConnected = true;
                     setCloudUIStatus(true, 'متصل بالسحابة (1GB دائمة)');
 
+                    if (!initialCloudSyncCompleted) return;
                     if (!snapshot.empty) {
                         isSyncingFromCloud = true;
                         const cloudWorkshops = [];
@@ -1116,8 +1152,6 @@
                             if (currentUser) refreshFullUI();
                         }
                         isSyncingFromCloud = false;
-                    } else if (appState.workshops.length > 0) {
-                        saveAllData();
                     }
                 }, (error) => {
                     console.warn('تعذر الاتصال بالسحابة:', error);
@@ -1151,66 +1185,62 @@
         }
 
         // =========================================================================
-        // 4. مراقبة سعة التخزين السحابي (1 جيجابايت مجانية دائمة)
+        // 5. تسجيل الدخول والصلاحيات (مع حفظ الجلسة عند التحديث أو قلب الشاشة)
         // =========================================================================
-        function updateStorageQuotaUI() {
-            const jsonStr = JSON.stringify(appState);
-            const usedBytes = new Blob([jsonStr]).size;
-            const usedKB = (usedBytes / 1024).toFixed(2);
-            const usedMB = (usedBytes / (1024 * 1024)).toFixed(3);
-            const remainingMB = Math.max(0, (MAX_CLOUD_TOTAL_BYTES - usedBytes) / (1024 * 1024)).toFixed(2);
-            const percent = Math.min(100, ((usedBytes / MAX_CLOUD_TOTAL_BYTES) * 100));
-            const displayPercent = percent < 1 && usedBytes > 0 ? percent.toFixed(2) : Math.round(percent);
+        function saveSessionState() {
+            if (currentUser) {
+                sessionStorage.setItem('active_workshop_session', JSON.stringify({
+                    username: currentUser.username,
+                    isOwner: currentUser.isOwner,
+                    selectedWorkshopId: selectedWorkshopId
+                }));
+            } else {
+                sessionStorage.removeItem('active_workshop_session');
+            }
+        }
 
-            isStorageFull = percent >= 98;
+        function tryRestoreSession() {
+            try {
+                const raw = sessionStorage.getItem('active_workshop_session');
+                if (!raw) return false;
+                const sess = JSON.parse(raw);
+                if (!sess || !sess.username) return false;
 
-            const badge = document.getElementById('header-storage-badge');
-            if (badge) badge.textContent = displayPercent + '%';
-
-            const banner = document.getElementById('storage-warning-banner');
-            const bannerText = document.getElementById('storage-warning-text');
-            if (banner) {
-                if (percent >= 85) {
-                    banner.classList.remove('hidden');
-                    bannerText.textContent = isStorageFull
-                        ? '⛔ تنبيه هام: سعة التخزين السحابي (1 GB) ممتلئة! يرجى حذف الورشات غير المفعلة لتفريغ مساحة.'
-                        : `⚠️ تنبيه: تم استهلاك ${displayPercent}% من سعة السحابة (المتبقي ${remainingMB} MB).`;
-                } else {
-                    banner.classList.add('hidden');
+                if (sess.isOwner && sess.username === appState.owner.username) {
+                    currentUser = {
+                        username: appState.owner.username,
+                        isOwner: true,
+                        permissions: {
+                            createWs: true, deleteWs: true, addTx: true, editTx: true,
+                            deleteTx: true, manageCats: true, toggleWs: true, allWs: true, backupCloud: true
+                        },
+                        allowedWorkshops: []
+                    };
+                    selectedWorkshopId = sess.selectedWorkshopId || null;
+                    enterApp(true);
+                    return true;
                 }
-            }
 
-            const pLabel = document.getElementById('storage-percent-label');
-            const pBar = document.getElementById('storage-progress-bar');
-            const uKb = document.getElementById('storage-used-kb');
-            const rKb = document.getElementById('storage-remaining-kb');
-            const fAlert = document.getElementById('storage-full-alert');
-
-            if (pLabel) {
-                pLabel.textContent = `${displayPercent}% مستخدم`;
-                pLabel.className = percent >= 85 ? 'text-sm font-black text-rose-400' : 'text-sm font-black text-emerald-400';
-                pBar.style.width = Math.max(2, percent) + '%';
-                pBar.className = percent >= 85 ? 'bg-rose-500 h-full transition-all' : 'bg-emerald-500 h-full transition-all';
-                uKb.textContent = `${usedKB} KB (${usedMB} MB)`;
-                rKb.textContent = `${remainingMB} MB متبقية`;
-                if (isStorageFull) fAlert.classList.remove('hidden');
-                else fAlert.classList.add('hidden');
-            }
+                const foundSub = appState.users.find(u => u.username === sess.username);
+                if (foundSub) {
+                    currentUser = {
+                        username: foundSub.username,
+                        isOwner: false,
+                        permissions: {
+                            createWs: false, deleteWs: false, addTx: true, editTx: false,
+                            deleteTx: false, manageCats: false, toggleWs: false, allWs: false, backupCloud: false,
+                            ...(foundSub.permissions || {})
+                        },
+                        allowedWorkshops: foundSub.allowedWorkshops || []
+                    };
+                    selectedWorkshopId = sess.selectedWorkshopId || null;
+                    enterApp(true);
+                    return true;
+                }
+            } catch (e) {}
+            return false;
         }
 
-        function checkStorageCanAdd() {
-            updateStorageQuotaUI();
-            if (isStorageFull) {
-                alert('⛔ عذراً، سعة التخزين السحابي ممتلئة! يرجى الذهاب إلى "الأرشيف والتخزين" لأخذ نسخة احتياطية من الورشات غير المفعلة وحذفها.');
-                openArchiveAndStorageModal();
-                return false;
-            }
-            return true;
-        }
-
-        // =========================================================================
-        // 5. تسجيل الدخول والصلاحيات
-        // =========================================================================
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const uInput = document.getElementById('login-username').value.trim();
@@ -1229,7 +1259,8 @@
                         deleteTx: true,
                         manageCats: true,
                         toggleWs: true,
-                        allWs: true
+                        allWs: true,
+                        backupCloud: true
                     },
                     allowedWorkshops: []
                 };
@@ -1242,7 +1273,7 @@
                 currentUser = {
                     username: foundSub.username,
                     isOwner: false,
-                    permissions: foundSub.permissions || {
+                    permissions: {
                         createWs: false,
                         deleteWs: false,
                         addTx: true,
@@ -1250,7 +1281,9 @@
                         deleteTx: false,
                         manageCats: false,
                         toggleWs: false,
-                        allWs: false
+                        allWs: false,
+                        backupCloud: false,
+                        ...(foundSub.permissions || {})
                     },
                     allowedWorkshops: foundSub.allowedWorkshops || []
                 };
@@ -1262,7 +1295,7 @@
             errBox.classList.remove('hidden');
         });
 
-        function enterApp() {
+        function enterApp(isRestored = false) {
             document.getElementById('login-error').classList.add('hidden');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
@@ -1270,6 +1303,12 @@
             document.getElementById('current-user-display').textContent = currentUser.isOwner
                 ? `المدير: ${currentUser.username}`
                 : `مستخدم: ${currentUser.username}`;
+
+            const canBackupCloud = currentUser.isOwner || currentUser.permissions.backupCloud;
+            document.getElementById('header-cloud-status').style.display = canBackupCloud ? 'flex' : 'none';
+            document.getElementById('btn-header-backup').style.display = canBackupCloud ? 'flex' : 'none';
+            document.getElementById('btn-header-restore').style.display = canBackupCloud ? 'flex' : 'none';
+            document.getElementById('btn-header-archive').style.display = canBackupCloud ? 'flex' : 'none';
 
             if (currentUser.isOwner) {
                 document.getElementById('btn-manage-users').classList.remove('hidden');
@@ -1279,11 +1318,14 @@
                 document.getElementById('btn-cloud-settings').classList.add('hidden');
             }
 
+            if (!isRestored) saveSessionState();
             refreshFullUI();
         }
 
         function logout() {
             currentUser = null;
+            selectedWorkshopId = null;
+            sessionStorage.removeItem('active_workshop_session');
             document.getElementById('login-password').value = '';
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
@@ -1398,7 +1440,7 @@
             visibleWs.forEach(ws => {
                 const isSelected = ws.id === selectedWorkshopId;
                 const btn = document.createElement('button');
-                btn.onclick = () => { selectedWorkshopId = ws.id; refreshFullUI(); };
+                btn.onclick = () => { selectedWorkshopId = ws.id; saveSessionState(); refreshFullUI(); };
                 btn.className = `px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 border ${
                     isSelected
                         ? 'bg-[#0b132b] text-white border-[#0b132b] shadow-md'
@@ -1412,6 +1454,7 @@
                 tabsContainer.appendChild(btn);
             });
 
+            saveSessionState();
             renderSelectedWorkshop();
         }
 
@@ -1447,27 +1490,23 @@
 
             const canAdd = currentUser.isOwner || currentUser.permissions.addTx;
             const canManageCats = currentUser.isOwner || currentUser.permissions.manageCats;
+            const canToggleWs = currentUser.isOwner || currentUser.permissions.toggleWs;
+            const canBackupCloud = currentUser.isOwner || currentUser.permissions.backupCloud;
+
             document.getElementById('btn-add-income').style.display = canAdd ? 'flex' : 'none';
             document.getElementById('btn-add-expense').style.display = canAdd ? 'flex' : 'none';
             document.getElementById('btn-add-exchange').style.display = canAdd ? 'flex' : 'none';
             document.getElementById('btn-manage-categories').style.display = canManageCats ? 'flex' : 'none';
             document.getElementById('btn-tx-manage-cats').style.display = canManageCats ? 'inline-block' : 'none';
+            document.getElementById('btn-export-ws-json').style.display = canBackupCloud ? 'flex' : 'none';
             document.getElementById('btn-delete-workshop').style.display = (currentUser.isOwner || currentUser.permissions.deleteWs) ? 'block' : 'none';
 
-            const totals = calculateWorkshopTotals(ws);
-
-            const usdBox = document.getElementById('ws-usd-box');
-            const usdBalEl = document.getElementById('ws-usd-balance');
-            usdBalEl.textContent = formatUSD(totals.usdBal);
-            document.getElementById('ws-usd-income').textContent = formatUSD(totals.usdInc);
-            document.getElementById('ws-usd-expense').textContent = formatUSD(totals.usdExp);
-
-            if (totals.usdBal < 0) {
-                usdBox.className = 'bg-rose-50 border-2 border-rose-400 rounded-2xl p-5 flex items-center justify-between transition';
-                usdBalEl.className = 'text-3xl font-black text-rose-600 tracking-tight';
+            if (canToggleWs) {
+                statusBadge.style.pointerEvents = 'auto';
+                statusBadge.style.cursor = 'pointer';
             } else {
-                usdBox.className = 'bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 flex items-center justify-between transition';
-                usdBalEl.className = 'text-3xl font-black text-emerald-700 tracking-tight';
+                statusBadge.style.pointerEvents = 'none';
+                statusBadge.style.cursor = 'default';
             }
 
             const sypBox = document.getElementById('ws-syp-box');
@@ -1598,20 +1637,20 @@
 
                 tr.className = `${rowBg} transition`;
                 tr.innerHTML = `
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-slate-700">${tx.date}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap">${typeBadge}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap hidden sm:table-cell">
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap text-slate-700">${tx.date}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap">${typeBadge}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap hidden sm:table-cell">
                         <span class="px-2 py-0.5 rounded bg-slate-200/80 text-slate-800 text-[11px] font-bold">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</span>
                     </td>
-                    <td class="py-2.5 px-2 md:px-3 text-slate-800 min-w-[110px]">
+                    <td class="py-2.5 px-2 md:px-3 text-slate-800">
                         <div>${tx.description}</div>
                         <span class="sm:hidden inline-block mt-0.5 px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 text-[10px]">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</span>
                     </td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap">${amountDisplay}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap font-black ${tx.runUSD < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}" dir="ltr">${formatUSD(tx.runUSD)}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap font-black ${tx.runSYP < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}">${formatSYP(tx.runSYP)}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-center no-print">${attachmentsHtml}</td>
-                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-center no-print">
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap">${amountDisplay}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap font-black ${tx.runUSD < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}" dir="ltr">${formatUSD(tx.runUSD)}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap font-black ${tx.runSYP < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}">${formatSYP(tx.runSYP)}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap text-center no-print">${attachmentsHtml}</td>
+                    <td class="py-2.5 px-2 md:px-3 mobile-nowrap text-center no-print">
                         <div class="inline-flex items-center gap-1">
                             ${editBtnHtml}
                             ${canDelete ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-[11px] font-bold transition">حذف</button>` : ''}
@@ -1817,7 +1856,8 @@
             if (!editId && !checkStorageCanAdd()) return;
 
             const type = editId ? document.getElementById('tx-type-select').value : document.getElementById('tx-type').value;
-            const currency = document.querySelector('input[name="tx-currency"]:checked').value;
+            const checkedRadio = document.querySelector('input[name="tx-currency"]:checked');
+            const currency = checkedRadio ? checkedRadio.value : 'USD';
             const category = document.getElementById('tx-category').value || 'عام';
             const amount = parseFloat(document.getElementById('tx-amount').value);
             const date = document.getElementById('tx-date').value;
@@ -1852,6 +1892,11 @@
                     images
                 });
             }
+
+            // إعادة ضبط الفلاتر ليظهر البند المضاف فوراً بشكل افتراضي دون الحاجة لاختيار التصنيف
+            document.getElementById('filter-search').value = '';
+            document.getElementById('filter-category').value = 'all';
+            document.getElementById('filter-currency').value = 'all';
 
             closeModal('modal-transaction');
             await saveAllData();
@@ -2366,6 +2411,7 @@
             document.getElementById('perm-delete-tx').checked = false;
             document.getElementById('perm-manage-cats').checked = false;
             document.getElementById('perm-toggle-ws').checked = false;
+            document.getElementById('perm-backup-cloud').checked = false;
             document.getElementById('perm-all-ws').checked = false;
 
             renderAllowedWorkshopsCheckboxes([]);
@@ -2391,6 +2437,7 @@
             document.getElementById('perm-delete-tx').checked = !!p.deleteTx;
             document.getElementById('perm-manage-cats').checked = !!p.manageCats;
             document.getElementById('perm-toggle-ws').checked = !!p.toggleWs;
+            document.getElementById('perm-backup-cloud').checked = !!p.backupCloud;
             document.getElementById('perm-all-ws').checked = !!p.allWs;
 
             renderAllowedWorkshopsCheckboxes(user.allowedWorkshops || []);
@@ -2423,6 +2470,7 @@
                     deleteTx: document.getElementById('perm-delete-tx').checked,
                     manageCats: document.getElementById('perm-manage-cats').checked,
                     toggleWs: document.getElementById('perm-toggle-ws').checked,
+                    backupCloud: document.getElementById('perm-backup-cloud').checked,
                     allWs: document.getElementById('perm-all-ws').checked
                 },
                 allowedWorkshops
@@ -2482,6 +2530,7 @@
                             ${p.editTx ? '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-[10px] font-bold">تعديل حركات</span>' : ''}
                             ${p.deleteTx ? '<span class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded text-[10px] font-bold">حذف حركات</span>' : ''}
                             ${p.manageCats ? '<span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold">إدارة التصنيفات</span>' : ''}
+                            ${p.backupCloud ? '<span class="px-2 py-0.5 bg-teal-50 text-teal-700 rounded text-[10px] font-bold">نسخ احتياطي وسحابة</span>' : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -2494,30 +2543,26 @@
         }
 
         // =========================================================================
-        // 10. الأرشيف وتنظيف الورشات غير المفعلة + إعدادات السحابة
+        // 10. الأرشيف وتنظيف الورشات غير المفعلة + تصفير النظام بعداد 10 ثوانٍ + السحابة
         // =========================================================================
         function openArchiveAndStorageModal() {
+            if (!currentUser.isOwner && !currentUser.permissions.backupCloud) return;
             updateStorageQuotaUI();
             const list = document.getElementById('inactive-workshops-list');
             list.innerHTML = '';
 
-            const inactiveWs = appState.workshops.filter(w => !w.active);
-            if (inactiveWs.length === 0) {
-                list.innerHTML = '<p class="text-xs text-slate-500 font-bold text-center py-4">لا توجد ورشات غير مفعلة حالياً.</p>';
+            // إعادة ضبط زر التصفير الكلي وإظهاره للمالك فقط
+            if (wipeCountdownTimer) clearInterval(wipeCountdownTimer);
+            const wipeSec = document.getElementById('danger-wipe-all-section');
+            const armBtn = document.getElementById('btn-arm-wipe-all');
+            const confBtn = document.getElementById('btn-confirm-wipe-all');
+            if (currentUser.isOwner) {
+                wipeSec.classList.remove('hidden');
+                armBtn.classList.remove('hidden');
+                confBtn.classList.add('hidden');
+                confBtn.disabled = true;
             } else {
-                inactiveWs.forEach(ws => {
-                    const sizeKB = (new Blob([JSON.stringify(ws)]).size / 1024).toFixed(1);
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center justify-between bg-white p-3 rounded-xl border border-amber-200 text-xs font-bold';
-                    div.innerHTML = `
-                        <div>
-                            <span class="text-slate-800">${ws.name}</span>
-                            <span class="text-[11px] text-slate-500 mr-2">(${ws.transactions.length} حركة - ${sizeKB} KB)</span>
-                        </div>
-                        <button onclick="reactivateWorkshop('${ws.id}')" class="text-blue-600 hover:underline">إعادة تفعيل</button>
-                    `;
-                    list.appendChild(div);
-                });
+                wipeSec.classList.add('hidden');
             }
 
             document.getElementById('modal-archive-storage').classList.remove('hidden');
@@ -2565,11 +2610,56 @@
             alert('✅ تم تنزيل النسخة الاحتياطية للورشات غير المفعلة وحذفها بنجاح!');
         }
 
-        function openCloudSettingsModal() {
+        function startWipeAllCountdown() {
             if (!currentUser || !currentUser.isOwner) return;
-            document.getElementById('cloud-config-textarea').value = JSON.stringify(HARDCODED_FIREBASE_CONFIG, null, 2);
-            document.getElementById('cloud-confirm-owner-pass').value = '';
-            document.getElementById('modal-cloud-settings').classList.remove('hidden');
+            if (!confirm('⚠️ تحذير أول: هل أنت متأكد من أنك تريد تصفير وحذف جميع الورشات والبيانات من الموقع والسحابة؟')) return;
+
+            const armBtn = document.getElementById('btn-arm-wipe-all');
+            const confBtn = document.getElementById('btn-confirm-wipe-all');
+            armBtn.classList.add('hidden');
+            confBtn.classList.remove('hidden');
+            confBtn.disabled = true;
+
+            let secondsLeft = 10;
+            confBtn.textContent = `انتظر ${secondsLeft} ثوانٍ للتفعيل...`;
+
+            if (wipeCountdownTimer) clearInterval(wipeCountdownTimer);
+            wipeCountdownTimer = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft > 0) {
+                    confBtn.textContent = `انتظر ${secondsLeft} ثوانٍ للتفعيل...`;
+                } else {
+                    clearInterval(wipeCountdownTimer);
+                    confBtn.disabled = false;
+                    confBtn.className = 'bg-rose-700 hover:bg-rose-800 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer';
+                    confBtn.textContent = '🔥 تأكيد حذف وتصفير جميع البيانات الآن';
+                }
+            }, 1000);
+        }
+
+        async function executeWipeAllData() {
+            if (!currentUser || !currentUser.isOwner) return;
+            if (!confirm('🚨 تحذير أخير ونهائي: سيتم الآن مسح جميع الورشات والحركات المالية وتصفير الصناديق بشكل لا رجعة فيه. هل تؤكد الحذف؟')) return;
+
+            const oldIds = appState.workshops.map(w => w.id);
+            appState.workshops = [];
+            selectedWorkshopId = null;
+
+            if (db && isCloudConnected) {
+                try {
+                    const batch = db.batch();
+                    oldIds.forEach(id => {
+                        batch.delete(db.collection('workshops_docs').doc(id));
+                    });
+                    batch.delete(db.collection('workshops_system').doc('master_data'));
+                    await batch.commit();
+                } catch (e) {}
+            }
+
+            await saveAllData();
+            closeModal('modal-archive-storage');
+            refreshFullUI();
+            alert('✅ تم حذف وتصفير جميع البيانات والصناديق بنجاح.');
         }
 
         function saveCustomCloudConfig() {
@@ -2598,6 +2688,7 @@
         // =========================================================================
         window.addEventListener('DOMContentLoaded', () => {
             loadAndMergeLocalData();
+            tryRestoreSession();
             initCloudConnection();
         });
     </script>
