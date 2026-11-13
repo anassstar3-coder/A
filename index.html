@@ -14,16 +14,16 @@
         .swap-btn-anim { transition: transform 0.25s ease; }
         .swap-btn-anim:active { transform: rotate(180deg) scale(0.95); }
         @media (max-width: 768px) {
-            .mobile-compact-table th, .mobile-compact-table td { padding: 6px 4px !important; font-size: 11px !important; }
-        }
-        @media print {
-            body { background: #fff !important; color: #000 !important; }
+            body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; }
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             .inactive-workshop-theme { filter: none !important; opacity: 1 !important; background-color: #fff !important; }
             .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: none !important; }
-            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
-            th, td { border: 1px solid #cbd5e1 !important; padding: 6px !important; text-align: right !important; }
+            #workshop-workspace { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            th, td { border: 1px solid #94a3b8 !important; padding: 6px 8px !important; text-align: right !important; }
         }
     </style>
 </head>
@@ -111,7 +111,7 @@
         <main class="max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-5">
 
             <!-- الصندوق العام (إجمالي صناديق جميع الورشات النشطة) -->
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 no-print">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-sm sm:text-base font-extrabold text-slate-700 flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
@@ -195,7 +195,7 @@
                 </div>
 
                 <!-- صناديق الورشة -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="ws-boxes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- صندوق الدولار -->
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
                         <div>
@@ -570,31 +570,10 @@
     <!-- رسائل التنبيه العائمة (Toast) -->
     <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2 no-print"></div>
 
-    <!-- Firebase SDK للمزامنة السحابية الآمنة -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDummyKeyForAnasAlasfarProject",
-            authDomain: "anas-alasfar.firebaseapp.com",
-            projectId: "anas-alasfar",
-            storageBucket: "anas-alasfar.appspot.com",
-            messagingSenderId: "100000000000",
-            appId: "1:100000000000:web:abcdef123456"
-        };
-
-        let db = null;
+    <!-- اتصال سحابي مباشر موحّد لكافة المتصفحات والأجهزة (Firestore REST Sync) -->
+    <script>
+        const FIRESTORE_BASE_URL = "https://firestore.googleapis.com/v1/projects/anas-alasfar/databases/(default)/documents";
         window.cloudReady = false;
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            initCloudSync();
-        } catch (err) {
-            console.error("Firebase init error:", err);
-            setCloudStatusUI(false);
-        }
 
         function setCloudStatusUI(connected) {
             window.cloudReady = connected;
@@ -606,7 +585,7 @@
 
             if (connected) {
                 if (lDot) lDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                if (lText) lText.textContent = "متصل بالسحابة (1GB دائمة)";
+                if (lText) lText.textContent = "متصل بالسحابة الموحدة (1GB دائمة)";
                 if (lBadge) lBadge.className = "mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800";
                 if (hDot) hDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
                 if (hText) hText.textContent = "متصل بالسحابة";
@@ -618,51 +597,75 @@
             }
         }
 
-        async function initCloudSync() {
-            if (!db) return;
+        function toFirestoreVal(val) {
+            if (val === null || val === undefined) return { nullValue: null };
+            if (typeof val === 'boolean') return { booleanValue: val };
+            if (typeof val === 'number') return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+            if (typeof val === 'string') return { stringValue: val };
+            if (Array.isArray(val)) return { arrayValue: { values: val.map(toFirestoreVal) } };
+            if (typeof val === 'object') {
+                const fields = {};
+                for (const k of Object.keys(val)) {
+                    if (val[k] !== undefined) fields[k] = toFirestoreVal(val[k]);
+                }
+                return { mapValue: { fields } };
+            }
+            return { stringValue: String(val) };
+        }
+
+        function fromFirestoreVal(obj) {
+            if (!obj) return null;
+            if ('nullValue' in obj) return null;
+            if ('booleanValue' in obj) return obj.booleanValue;
+            if ('integerValue' in obj) return Number(obj.integerValue);
+            if ('doubleValue' in obj) return Number(obj.doubleValue);
+            if ('stringValue' in obj) return obj.stringValue;
+            if ('arrayValue' in obj) return (obj.arrayValue.values || []).map(fromFirestoreVal);
+            if ('mapValue' in obj) {
+                const res = {};
+                const fields = obj.mapValue.fields || {};
+                for (const k of Object.keys(fields)) res[k] = fromFirestoreVal(fields[k]);
+                return res;
+            }
+            return null;
+        }
+
+        async function fetchCloudState(isInitial = false) {
             try {
-                // 1. جلب إعدادات الحسابات والمستخدمين أولاً
-                const metaSnap = await getDoc(doc(db, "workshops_system", "meta_config"));
-                if (metaSnap.exists()) {
-                    const meta = metaSnap.data();
-                    if (meta.owner) window.appData.owner = meta.owner;
-                    if (Array.isArray(meta.subUsers)) window.appData.subUsers = meta.subUsers;
+                // 1. جلب بيانات الحسابات والصلاحيات
+                const metaRes = await fetch(`${FIRESTORE_BASE_URL}/workshops_system/meta_config`);
+                if (metaRes.ok) {
+                    const metaDoc = await metaRes.json();
+                    const meta = fromFirestoreVal({ mapValue: { fields: metaDoc.fields || {} } });
+                    if (meta && meta.owner) window.appData.owner = meta.owner;
+                    if (meta && Array.isArray(meta.subUsers)) window.appData.subUsers = meta.subUsers;
                 }
 
-                // 2. جلب الورشات من المجموعة المقسمة (1GB)
-                const itemsSnap = await getDocs(collection(db, "workshops_system_items"));
+                // 2. جلب كافة الورشات الموحدة من السحابة
+                const itemsRes = await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items?pageSize=300`);
+                if (!itemsRes.ok) throw new Error("Cloud fetch failed");
+                const itemsJson = await itemsRes.json();
                 const cloudWorkshops = [];
-                itemsSnap.forEach(d => {
-                    const data = d.data();
-                    if (data && data.id) cloudWorkshops.push(data);
-                });
-
-                // 3. التحقق من أي بيانات قديمة في master_data لدمجها دون فقدان
-                const legacySnap = await getDoc(doc(db, "workshops_system", "master_data"));
-                if (legacySnap.exists()) {
-                    const leg = legacySnap.data();
-                    if (Array.isArray(leg.workshops)) {
-                        leg.workshops.forEach(lw => {
-                            if (!cloudWorkshops.some(cw => cw.id === lw.id)) {
-                                cloudWorkshops.push(lw);
-                            }
-                        });
-                    }
-                    if (!metaSnap.exists() && leg.owner) window.appData.owner = leg.owner;
-                    if (!metaSnap.exists() && Array.isArray(leg.subUsers)) window.appData.subUsers = leg.subUsers;
+                if (Array.isArray(itemsJson.documents)) {
+                    itemsJson.documents.forEach(d => {
+                        const ws = fromFirestoreVal({ mapValue: { fields: d.fields || {} } });
+                        if (ws && ws.id) {
+                            if (!Array.isArray(ws.transactions)) ws.transactions = [];
+                            if (!Array.isArray(ws.categories) || ws.categories.length === 0) ws.categories = ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'];
+                            if (typeof ws.active !== 'boolean') ws.active = true;
+                            cloudWorkshops.push(ws);
+                        }
+                    });
                 }
 
-                // دمج ذكي بين السحابة والمحلي
                 if (cloudWorkshops.length > 0) {
-                    const map = new Map();
-                    window.appData.workshops.forEach(w => map.set(w.id, w));
-                    cloudWorkshops.forEach(cw => map.set(cw.id, cw));
-                    window.appData.workshops = Array.from(map.values());
-                } else if (window.appData.workshops.length > 0) {
-                    // رفع الورشات المحلية إلى السحابة إذا كانت السحابة فارغة لأول مرة
+                    window.appData.workshops = cloudWorkshops;
+                } else if (isInitial && window.appData.workshops.length > 0) {
+                    // رفع البيانات المحلية إذا كانت السحابة فارغة تماماً
                     for (const w of window.appData.workshops) {
-                        await setDoc(doc(db, "workshops_system_items", w.id), w);
+                        await window.syncWorkshopToCloud(w);
                     }
+                    await window.syncMetaToCloud();
                 }
 
                 window.saveLocalOnly();
@@ -676,20 +679,29 @@
         }
 
         window.syncWorkshopToCloud = async function(ws) {
-            if (!db || !ws) return;
+            if (!ws || !ws.id) return;
             try {
-                await setDoc(doc(db, "workshops_system_items", ws.id), ws);
-                setCloudStatusUI(true);
-                window.updateStorageQuotaUI();
+                const payload = toFirestoreVal(ws).mapValue;
+                const res = await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items/${encodeURIComponent(ws.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    setCloudStatusUI(true);
+                    window.updateStorageQuotaUI();
+                }
             } catch (e) {
                 console.error("Sync ws failed:", e);
             }
         };
 
         window.deleteWorkshopFromCloud = async function(wsId) {
-            if (!db || !wsId) return;
+            if (!wsId) return;
             try {
-                await deleteDoc(doc(db, "workshops_system_items", wsId));
+                await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items/${encodeURIComponent(wsId)}`, {
+                    method: 'DELETE'
+                });
                 window.updateStorageQuotaUI();
             } catch (e) {
                 console.error("Delete ws cloud failed:", e);
@@ -697,18 +709,27 @@
         };
 
         window.syncMetaToCloud = async function() {
-            if (!db) return;
             try {
-                await setDoc(doc(db, "workshops_system", "meta_config"), {
+                const payload = toFirestoreVal({
                     owner: window.appData.owner,
                     subUsers: window.appData.subUsers,
                     updatedAt: Date.now()
+                }).mapValue;
+                const res = await fetch(`${FIRESTORE_BASE_URL}/workshops_system/meta_config`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                setCloudStatusUI(true);
+                if (res.ok) setCloudStatusUI(true);
             } catch (e) {
                 console.error("Sync meta failed:", e);
             }
         };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchCloudState(true);
+            setInterval(() => fetchCloudState(false), 6000);
+        });
     </script>
 
     <!-- منطق التطبيق الكامل -->
@@ -1851,16 +1872,91 @@
         function exportWorkshopPDF() {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
-            const el = document.getElementById('workshop-workspace');
+
+            const typeQ = document.getElementById('filter-type').value;
+            const catQ = document.getElementById('filter-category').value;
+            const currQ = document.getElementById('filter-currency').value;
+            const searchQ = document.getElementById('filter-search').value.trim().toLowerCase();
+
+            const stats = calcWorkshopStats(ws);
+            const sorted = [...(ws.transactions || [])].sort((a, b) => new Date(b.date) - new Date(a.date) || (b.createdAt || 0) - (a.createdAt || 0));
+            const filtered = sorted.filter(tx => {
+                if (typeQ !== 'ALL' && tx.type !== typeQ) return false;
+                if (catQ !== 'ALL' && (tx.category || 'عام') !== catQ) return false;
+                if (currQ !== 'ALL' && tx.type !== 'exchange' && tx.currency !== currQ) return false;
+                if (searchQ && !`${tx.desc || ''} ${tx.note || ''} ${tx.category || ''}`.toLowerCase().includes(searchQ)) return false;
+                return true;
+            });
+
+            const rowsHtml = filtered.map(tx => {
+                let typeAr = tx.type === 'income' ? 'إيراد' : (tx.type === 'expense' ? 'مصروف' : 'صرافة');
+                let amtStr = '';
+                if (tx.type === 'income') amtStr = tx.currency === 'USD' ? `+ ${formatUSD(tx.amount)}` : `+ ${formatSYP(tx.amount)}`;
+                else if (tx.type === 'expense') amtStr = tx.currency === 'USD' ? `- ${formatUSD(tx.amount)}` : `- ${formatSYP(tx.amount)}`;
+                else amtStr = tx.direction === 'USD_TO_SYP'
+                    ? `-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)}`
+                    : `-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$`;
+
+                return `
+                    <tr style="page-break-inside: avoid;">
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;" dir="ltr">${tx.date}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${typeAr}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${tx.desc || tx.note || '—'}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:left; font-weight:bold;" dir="ltr">${amtStr}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.dir = 'rtl';
+            pdfContainer.style.cssText = 'font-family: Cairo, sans-serif; padding: 12px; background: #fff; color: #0f172a; width: 100%;';
+            pdfContainer.innerHTML = `
+                <div style="border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #0f172a;">كشف حساب ورشة: ${ws.name}</h2>
+                        <p style="margin: 4px 0 0; font-size: 12px; color: #475569;">${ws.desc || ''}</p>
+                    </div>
+                    <div style="text-align: left; font-size: 11px; color: #475569;">تاريخ التقرير: ${getTodayStr()}</div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                    <div style="flex: 1; border: 1px solid #10b981; background: #ecfdf5; border-radius: 10px; padding: 10px;">
+                        <div style="font-size: 11px; font-weight: bold; color: #065f46;">صندوق الدولار الأمريكي المتبقي</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #064e3b; margin-top: 4px;" dir="ltr">${formatUSD(stats.usdBalance)}</div>
+                        <div style="font-size: 10px; color: #047857; margin-top: 2px;">إيرادات: ${formatNumberClean(stats.usdIn)}$ | مصروفات: ${formatNumberClean(stats.usdOut)}$</div>
+                    </div>
+                    <div style="flex: 1; border: 1px solid #3b82f6; background: #eff6ff; border-radius: 10px; padding: 10px;">
+                        <div style="font-size: 11px; font-weight: bold; color: #1e40af;">صندوق الليرة السورية المتبقي</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 4px;" dir="ltr">${formatSYP(stats.sypBalance)}</div>
+                        <div style="font-size: 10px; color: #1d4ed8; margin-top: 2px;">إيرادات: ${formatSYP(stats.sypIn)} | مصروفات: ${formatSYP(stats.sypOut)}</div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr style="background: #0f172a; color: #fff;">
+                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">التاريخ</th>
+                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">النوع</th>
+                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">البند</th>
+                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">البيان / الوصف</th>
+                            <th style="border:1px solid #0f172a; padding:7px; text-align:left;">المبلغ والعملة</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml || '<tr><td colspan="5" style="padding:12px; text-align:center;">لا توجد حركات</td></tr>'}</tbody>
+                </table>
+            `;
+
             const opt = {
-                margin: 8,
+                margin: [8, 8, 8, 8],
                 filename: `${ws.name}_${getTodayStr()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
             };
-            showToast('جاري تجهيز ملف PDF بمقاس A4...');
-            html2pdf().set(opt).from(el).save();
+            showToast('جاري إنشاء ملف PDF منسق A4...');
+            html2pdf().set(opt).from(pdfContainer).save();
         }
 
         function exportWorkshopExcel() {
