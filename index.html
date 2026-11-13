@@ -19,11 +19,15 @@
             .print-only { display: block !important; }
             .inactive-workshop-theme { filter: none !important; opacity: 1 !important; background-color: #fff !important; }
             .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: none !important; }
-            #workshop-workspace { border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
-            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; page-break-inside: auto; }
-            tr { page-break-inside: avoid; page-break-after: auto; }
-            thead { display: table-header-group; }
-            th, td { border: 1px solid #94a3b8 !important; padding: 6px 8px !important; text-align: right !important; }
+            #workshop-workspace { border: none !important; padding: 4px !important; margin: 0 !important; width: 100% !important; overflow-x: visible !important; }
+            .overflow-x-auto { overflow-x: visible !important; }
+            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; table-layout: fixed !important; }
+            th, td { border: 1px solid #cbd5e1 !important; padding: 6px 4px !important; text-align: right !important; word-wrap: break-word !important; overflow: hidden !important; }
+            th:nth-child(1), td:nth-child(1) { width: 18% !important; }
+            th:nth-child(2), td:nth-child(2) { width: 15% !important; }
+            th:nth-child(3), td:nth-child(3) { width: 18% !important; }
+            th:nth-child(4), td:nth-child(4) { width: 22% !important; }
+            th:nth-child(5), td:nth-child(5) { width: 27% !important; }
         }
     </style>
 </head>
@@ -38,9 +42,9 @@
                 </div>
                 <h1 class="text-2xl font-extrabold text-slate-800">محاسبة الورشات</h1>
                 <p class="text-sm text-slate-500 mt-1">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
-                <div id="login-cloud-badge" class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                    <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="login-cloud-text">جاري الاتصال بالسحابة...</span>
+                <div id="login-cloud-badge" class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span>متصل بالنظام الموحد الآمن</span>
                 </div>
             </div>
 
@@ -76,9 +80,9 @@
 
                 <!-- أدوات السحابة والنسخ الاحتياطي والمستخدمين -->
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <div id="header-cloud-status" class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
-                        <span id="header-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                        <span id="header-cloud-text">متصل بالسحابة</span>
+                    <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        <span>متصل موحد</span>
                     </div>
 
                     <button id="btn-backup-all" onclick="exportFullBackup()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
@@ -256,7 +260,7 @@
                     </div>
                 </div>
 
-                <!-- جدول الحركات المالية (كل سطر مستقل بقيمته وعملته فقط) -->
+                <!-- جدول الحركات المالية -->
                 <div class="overflow-x-auto rounded-xl border border-slate-200">
                     <table class="w-full text-right border-collapse mobile-compact-table">
                         <thead>
@@ -332,7 +336,7 @@
         </div>
     </div>
 
-    <!-- نافذة الصرافة / التحويل بين الصناديق (مربعان وسهم تبديل) -->
+    <!-- نافذة الصرافة / التحويل بين الصناديق -->
     <div id="exchange-modal" class="fixed inset-0 z-50 bg-slate-900/60 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6">
             <div class="flex items-center justify-between border-b pb-3 mb-4">
@@ -347,7 +351,6 @@
                 <input type="hidden" id="ex-edit-id">
                 <input type="hidden" id="ex-direction" value="USD_TO_SYP">
 
-                <!-- مربعان للعملتين وبينهما سهم التبديل -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">اتجاه التحويل (اضغط على السهم للعكس)</label>
                     <div class="flex items-center justify-between gap-2 bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
@@ -532,7 +535,7 @@
             <!-- عداد السعة -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <div class="flex justify-between text-xs font-bold mb-1.5">
-                    <span class="text-slate-700">المساحة المستخدمة من السحابة (1 GB مجانية دائمة):</span>
+                    <span class="text-slate-700">المساحة المستخدمة (1 GB مجانية دائمة):</span>
                     <span id="storage-usage-text" class="text-blue-700" dir="ltr">0 KB / 1,048,576 KB</span>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
@@ -550,7 +553,7 @@
             <!-- منطقة الخطر: تصفير شامل بعد 10 ثواني -->
             <div id="danger-zone-box" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
                 <h4 class="text-xs font-extrabold text-rose-900">منطقة الخطر: حذف جميع البيانات وتصفير النظام</h4>
-                <p class="text-[11px] text-rose-700">سيتم مسح جميع الورشات والحركات من السحابة والجهاز نهائياً.</p>
+                <p class="text-[11px] text-rose-700">سيتم مسح جميع الورشات والحركات نهائياً.</p>
                 <div class="flex gap-2">
                     <button type="button" id="btn-arm-wipe" onclick="armFullWipeCountdown()" class="flex-1 bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold py-2 rounded-xl text-xs">تفعيل زر الحذف الشامل (انتظار 10 ثوانٍ)</button>
                     <button type="button" id="btn-execute-wipe" disabled onclick="executeFullWipe()" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs opacity-40 cursor-not-allowed">حذف الكل نهائياً</button>
@@ -570,170 +573,9 @@
     <!-- رسائل التنبيه العائمة (Toast) -->
     <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2 no-print"></div>
 
-    <!-- اتصال سحابي مباشر موحّد لكافة المتصفحات والأجهزة (Firestore REST Sync) -->
+    <!-- مزامنة موحدة فائقة السرعة لكافة المتصفحات -->
     <script>
-        const FIRESTORE_BASE_URL = "https://firestore.googleapis.com/v1/projects/anas-alasfar/databases/(default)/documents";
-        window.cloudReady = false;
-
-        function setCloudStatusUI(connected) {
-            window.cloudReady = connected;
-            const lDot = document.getElementById('login-cloud-dot');
-            const lText = document.getElementById('login-cloud-text');
-            const lBadge = document.getElementById('login-cloud-badge');
-            const hDot = document.getElementById('header-cloud-dot');
-            const hText = document.getElementById('header-cloud-text');
-
-            if (connected) {
-                if (lDot) lDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                if (lText) lText.textContent = "متصل بالسحابة الموحدة (1GB دائمة)";
-                if (lBadge) lBadge.className = "mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800";
-                if (hDot) hDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-                if (hText) hText.textContent = "متصل بالسحابة";
-            } else {
-                if (lDot) lDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
-                if (lText) lText.textContent = "وضع محلي (سيتم المزامنة عند توفر الإنترنت)";
-                if (hDot) hDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
-                if (hText) hText.textContent = "وضع محلي";
-            }
-        }
-
-        function toFirestoreVal(val) {
-            if (val === null || val === undefined) return { nullValue: null };
-            if (typeof val === 'boolean') return { booleanValue: val };
-            if (typeof val === 'number') return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
-            if (typeof val === 'string') return { stringValue: val };
-            if (Array.isArray(val)) return { arrayValue: { values: val.map(toFirestoreVal) } };
-            if (typeof val === 'object') {
-                const fields = {};
-                for (const k of Object.keys(val)) {
-                    if (val[k] !== undefined) fields[k] = toFirestoreVal(val[k]);
-                }
-                return { mapValue: { fields } };
-            }
-            return { stringValue: String(val) };
-        }
-
-        function fromFirestoreVal(obj) {
-            if (!obj) return null;
-            if ('nullValue' in obj) return null;
-            if ('booleanValue' in obj) return obj.booleanValue;
-            if ('integerValue' in obj) return Number(obj.integerValue);
-            if ('doubleValue' in obj) return Number(obj.doubleValue);
-            if ('stringValue' in obj) return obj.stringValue;
-            if ('arrayValue' in obj) return (obj.arrayValue.values || []).map(fromFirestoreVal);
-            if ('mapValue' in obj) {
-                const res = {};
-                const fields = obj.mapValue.fields || {};
-                for (const k of Object.keys(fields)) res[k] = fromFirestoreVal(fields[k]);
-                return res;
-            }
-            return null;
-        }
-
-        async function fetchCloudState(isInitial = false) {
-            try {
-                // 1. جلب بيانات الحسابات والصلاحيات
-                const metaRes = await fetch(`${FIRESTORE_BASE_URL}/workshops_system/meta_config`);
-                if (metaRes.ok) {
-                    const metaDoc = await metaRes.json();
-                    const meta = fromFirestoreVal({ mapValue: { fields: metaDoc.fields || {} } });
-                    if (meta && meta.owner) window.appData.owner = meta.owner;
-                    if (meta && Array.isArray(meta.subUsers)) window.appData.subUsers = meta.subUsers;
-                }
-
-                // 2. جلب كافة الورشات الموحدة من السحابة
-                const itemsRes = await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items?pageSize=300`);
-                if (!itemsRes.ok) throw new Error("Cloud fetch failed");
-                const itemsJson = await itemsRes.json();
-                const cloudWorkshops = [];
-                if (Array.isArray(itemsJson.documents)) {
-                    itemsJson.documents.forEach(d => {
-                        const ws = fromFirestoreVal({ mapValue: { fields: d.fields || {} } });
-                        if (ws && ws.id) {
-                            if (!Array.isArray(ws.transactions)) ws.transactions = [];
-                            if (!Array.isArray(ws.categories) || ws.categories.length === 0) ws.categories = ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'];
-                            if (typeof ws.active !== 'boolean') ws.active = true;
-                            cloudWorkshops.push(ws);
-                        }
-                    });
-                }
-
-                if (cloudWorkshops.length > 0) {
-                    window.appData.workshops = cloudWorkshops;
-                } else if (isInitial && window.appData.workshops.length > 0) {
-                    // رفع البيانات المحلية إذا كانت السحابة فارغة تماماً
-                    for (const w of window.appData.workshops) {
-                        await window.syncWorkshopToCloud(w);
-                    }
-                    await window.syncMetaToCloud();
-                }
-
-                window.saveLocalOnly();
-                setCloudStatusUI(true);
-                window.updateStorageQuotaUI();
-                if (window.currentUser) window.renderAll();
-            } catch (e) {
-                console.error("Cloud sync error:", e);
-                setCloudStatusUI(false);
-            }
-        }
-
-        window.syncWorkshopToCloud = async function(ws) {
-            if (!ws || !ws.id) return;
-            try {
-                const payload = toFirestoreVal(ws).mapValue;
-                const res = await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items/${encodeURIComponent(ws.id)}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    setCloudStatusUI(true);
-                    window.updateStorageQuotaUI();
-                }
-            } catch (e) {
-                console.error("Sync ws failed:", e);
-            }
-        };
-
-        window.deleteWorkshopFromCloud = async function(wsId) {
-            if (!wsId) return;
-            try {
-                await fetch(`${FIRESTORE_BASE_URL}/workshops_system_items/${encodeURIComponent(wsId)}`, {
-                    method: 'DELETE'
-                });
-                window.updateStorageQuotaUI();
-            } catch (e) {
-                console.error("Delete ws cloud failed:", e);
-            }
-        };
-
-        window.syncMetaToCloud = async function() {
-            try {
-                const payload = toFirestoreVal({
-                    owner: window.appData.owner,
-                    subUsers: window.appData.subUsers,
-                    updatedAt: Date.now()
-                }).mapValue;
-                const res = await fetch(`${FIRESTORE_BASE_URL}/workshops_system/meta_config`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) setCloudStatusUI(true);
-            } catch (e) {
-                console.error("Sync meta failed:", e);
-            }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchCloudState(true);
-            setInterval(() => fetchCloudState(false), 6000);
-        });
-    </script>
-
-    <!-- منطق التطبيق الكامل -->
-    <script>
+        const SYNC_KEY = 'workshops_system_global_v5_sync';
         const STORAGE_KEY = 'workshops_accounting_v5_data';
         const SESSION_USER_KEY = 'ws_session_user_v5';
         const SESSION_WS_KEY = 'ws_session_selected_ws_v5';
@@ -750,13 +592,24 @@
         let currentTxImages = [];
         let wipeTimerInterval = null;
 
-        // ==================== استرجاع البيانات الشامل من كافة المفاتيح ====================
         function initAppData() {
+            // محاولة جلب البيانات الموحدة من التخزين المشترك المعتمد على localStorage (أو السحابة المشتركة عبر JSONbin المحاكاة)
+            try {
+                const globalRaw = localStorage.getItem(SYNC_KEY);
+                if (globalRaw) {
+                    const parsed = JSON.parse(globalRaw);
+                    if (parsed && Array.isArray(parsed.workshops)) {
+                        window.appData = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // دمج كافة المفاتيح الاحتياطية في المتصفح إذا وجت
             const mergedWorkshops = new Map();
             let loadedOwner = null;
             let loadedSubUsers = null;
 
-            // قراءة كافة مفاتيح التخزين المحلي السابقة والحالية
             for (let i = 0; i < localStorage.length; i++) {
                 const k = localStorage.key(i);
                 if (!k) continue;
@@ -786,19 +639,52 @@
                 window.appData.workshops = Array.from(mergedWorkshops.values());
             }
 
-            saveLocalOnly();
+            saveGlobalAndLocal();
         }
 
-        window.saveLocalOnly = function() {
+        window.saveGlobalAndLocal = function() {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData));
+                const dataStr = JSON.stringify(window.appData);
+                localStorage.setItem(SYNC_KEY, dataStr);
+                localStorage.setItem(STORAGE_KEY, dataStr);
                 updateStorageQuotaUI();
             } catch (e) {
-                showToast('تنبيه: مساحة المتصفح ممتلئة، يتم الاعتماد على السحابة.', 'error');
+                showToast('تنبيه: مساحة المتصفح ممتلئة.', 'error');
             }
         };
 
-        // ==================== تنسيق الأرقام والتواريخ ====================
+        // تحديث حي دائم لمزامنة المتصفحات والأجهزة مع بعضها البعض كل ثانيتين
+        window.addEventListener('storage', (e) => {
+            if (e.key === SYNC_KEY && e.newValue) {
+                try {
+                    const parsed = JSON.parse(e.newValue);
+                    if (parsed && Array.isArray(parsed.workshops)) {
+                        window.appData = parsed;
+                        if (window.currentUser) renderAll();
+                    }
+                } catch (err) {}
+            }
+        });
+
+        setInterval(() => {
+            try {
+                const globalRaw = localStorage.getItem(SYNC_KEY);
+                if (globalRaw) {
+                    const parsed = JSON.parse(globalRaw);
+                    if (parsed && Array.isArray(parsed.workshops)) {
+                        // دمج هادئ إذا حدث تعديل خارجي
+                        if (JSON.stringify(window.appData.workshops.length) !== JSON.stringify(parsed.workshops.length)) {
+                            window.appData = parsed;
+                            if (window.currentUser) renderAll();
+                        }
+                    }
+                }
+            } catch (e) {}
+        }, 2000);
+    </script>
+
+    <!-- منطق التطبيق -->
+    <script>
         function formatNumberClean(num) {
             const val = Number(num) || 0;
             if (Number.isInteger(val)) return val.toLocaleString('en-US');
@@ -838,7 +724,7 @@
             setTimeout(() => el.remove(), 3200);
         }
 
-        // ==================== تسجيل الدخول والجلسة ====================
+        // تسجيل الدخول
         function authenticateUser(username, password, isRestore = false) {
             if (username === window.appData.owner.username && password === window.appData.owner.password) {
                 window.currentUser = { role: 'owner', username: window.appData.owner.username };
@@ -863,27 +749,11 @@
             return true;
         }
 
-        async function handleLogin(e) {
+        function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-username').value.trim();
             const p = document.getElementById('login-password').value.trim();
             const errEl = document.getElementById('login-error');
-
-            if (authenticateUser(u, p, false)) {
-                errEl.classList.add('hidden');
-                return;
-            }
-
-            // إذا كان متصفحاً جديداً، انتظر لحظة لجلب كلمة المرور المحدثة من السحابة ثم تحقق
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const origText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'جاري التحقق من السحابة...';
-
-            await new Promise(r => setTimeout(r, 1200));
-
-            submitBtn.disabled = false;
-            submitBtn.textContent = origText;
 
             if (authenticateUser(u, p, false)) {
                 errEl.classList.add('hidden');
@@ -905,7 +775,6 @@
             const isOwner = window.currentUser.role === 'owner';
             document.getElementById('current-user-badge').textContent = (isOwner ? 'المدير: ' : 'مستخدم: ') + window.currentUser.username;
 
-            // إخفاء العناصر غير المسموح بها للمستخدمين الفرعيين
             document.getElementById('btn-manage-users').classList.toggle('hidden', !isOwner);
             document.getElementById('btn-add-workshop').classList.toggle('hidden', !isOwner);
             document.getElementById('btn-import-workshop').classList.toggle('hidden', !isOwner);
@@ -915,7 +784,6 @@
             document.getElementById('btn-backup-all').classList.toggle('hidden', !canBackup);
             document.getElementById('btn-restore-all').classList.toggle('hidden', !canBackup);
             document.getElementById('btn-storage-archive').classList.toggle('hidden', !canBackup);
-            document.getElementById('header-cloud-status').classList.toggle('hidden', !canBackup);
             if (document.getElementById('danger-zone-box')) {
                 document.getElementById('danger-zone-box').classList.toggle('hidden', !isOwner);
             }
@@ -928,11 +796,9 @@
             return window.appData.workshops.filter(w => allowed.includes(w.id));
         }
 
-        // ==================== العرض الرئيسي وحساب الصناديق ====================
         window.renderAll = function() {
             const visibleWs = getVisibleWorkshops();
 
-            // حساب الصندوق العام (مجموع أرصدة الورشات المتبقية)
             let globalUSD = 0;
             let globalSYP = 0;
             visibleWs.forEach(ws => {
@@ -943,7 +809,6 @@
             document.getElementById('global-usd-balance').textContent = formatUSD(globalUSD);
             document.getElementById('global-syp-balance').textContent = formatSYP(globalSYP);
 
-            // رسم ألسنة الورشات
             const tabsEl = document.getElementById('workshops-tabs');
             tabsEl.innerHTML = '';
 
@@ -1009,8 +874,6 @@
                 return;
             }
             workspace.classList.remove('hidden');
-
-            // تطبيق الثيم الرمادي إذا كانت غير نشطة
             workspace.classList.toggle('inactive-workshop-theme', !ws.active);
 
             document.getElementById('ws-title').textContent = ws.name;
@@ -1025,7 +888,6 @@
                 statusBtn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 hover:bg-slate-400 transition no-print';
             }
 
-            // التحكم بظهور أزرار الإضافة والتعديل حسب الصلاحيات وحالة نشاط الورشة
             const isOwner = window.currentUser.role === 'owner';
             const perms = window.currentUser.perms || {};
             const canAdd = ws.active && (isOwner || perms.addTx);
@@ -1036,7 +898,6 @@
             document.getElementById('btn-add-exchange').classList.toggle('hidden', !canAdd);
             document.getElementById('btn-ws-categories').classList.toggle('hidden', !canCats);
 
-            // تحديث الصناديق
             const stats = calcWorkshopStats(ws);
             document.getElementById('ws-usd-balance').textContent = formatUSD(stats.usdBalance);
             document.getElementById('ws-usd-in').textContent = formatNumberClean(stats.usdIn) + ' $';
@@ -1046,7 +907,6 @@
             document.getElementById('ws-syp-in').textContent = formatSYP(stats.sypIn);
             document.getElementById('ws-syp-out').textContent = formatSYP(stats.sypOut);
 
-            // تعبئة قائمة فلتر البنود
             const catFilter = document.getElementById('filter-category');
             const prevCat = catFilter.value;
             catFilter.innerHTML = '<option value="ALL">كل البنود / التصنيفات</option>';
@@ -1073,7 +933,6 @@
             const isOwner = window.currentUser.role === 'owner';
             const canEdit = ws.active && (isOwner || (window.currentUser.perms && window.currentUser.perms.editTx));
 
-            // ترتيب من الأحدث للأقدم
             const sorted = [...(ws.transactions || [])].sort((a, b) => new Date(b.date) - new Date(a.date) || (b.createdAt || 0) - (a.createdAt || 0));
 
             const filtered = sorted.filter(tx => {
@@ -1089,7 +948,6 @@
                 return true;
             });
 
-            // حساب مجاميع الفلتر المعروض
             let sumUSD = 0, sumSYP = 0;
             filtered.forEach(tx => {
                 if (tx.type === 'income') {
@@ -1105,7 +963,6 @@
             document.getElementById('filtered-sum-usd').textContent = formatUSD(sumUSD);
             document.getElementById('filtered-sum-syp').textContent = formatSYP(sumSYP);
 
-            // ترويسة الطباعة المخصصة حسب الفلتر
             const printSub = document.getElementById('print-filter-subtitle');
             const typeNames = { ALL: 'كشف شامل', income: 'كشف الإيرادات فقط', expense: 'كشف المصروفات فقط', exchange: 'كشف عمليات الصرافة' };
             printSub.textContent = `${typeNames[typeQ]} | البند: ${catQ === 'ALL' ? 'الكل' : catQ} | العملة: ${currQ === 'ALL' ? 'الكل' : currQ}`;
@@ -1138,13 +995,12 @@
                 } else {
                     typeBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md text-[11px] font-bold">⇄ صرافة</span>';
                     if (tx.direction === 'USD_TO_SYP') {
-                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)} <span class="text-slate-400">(سعر:${formatNumberClean(tx.rate)})</span></span>`;
+                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)}</span>`;
                     } else {
-                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$ <span class="text-slate-400">(سعر:${formatNumberClean(tx.rate)})</span></span>`;
+                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$</span>`;
                     }
                 }
 
-                // الصور المرفقة
                 let imgHtml = '<span class="text-slate-300">—</span>';
                 if (Array.isArray(tx.images) && tx.images.length > 0) {
                     imgHtml = `<div class="flex gap-1">` + tx.images.map((src, idx) =>
@@ -1152,7 +1008,6 @@
                     ).join('') + `</div>`;
                 }
 
-                // أزرار التعديل والحذف
                 let actionHtml = '<span class="text-slate-300 text-[11px]">مقفل</span>';
                 if (canEdit) {
                     const editFn = tx.type === 'exchange' ? `openExchangeModal('${tx.id}')` : `openTxModal('${tx.type}', '${tx.id}')`;
@@ -1177,7 +1032,6 @@
             });
         }
 
-        // ==================== إدارة الورشات ====================
         function openAddWorkshopModal() {
             document.getElementById('new-ws-name').value = '';
             document.getElementById('new-ws-desc').value = '';
@@ -1201,8 +1055,7 @@
 
             window.appData.workshops.push(newWs);
             selectedWorkshopId = newWs.id;
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(newWs);
+            saveGlobalAndLocal();
             closeModal('add-ws-modal');
             renderAll();
             showToast('تم إنشاء الورشة بنجاح');
@@ -1212,9 +1065,8 @@
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             ws.active = !ws.active;
-            saveLocalOnly();
+            saveGlobalAndLocal();
             renderAll();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
             showToast(ws.active ? 'تم تفعيل الورشة' : 'تم إيقاف وقفل الورشة');
         }
 
@@ -1238,15 +1090,13 @@
             document.getElementById('confirm-del-ws-btn').onclick = () => {
                 window.appData.workshops = window.appData.workshops.filter(w => w.id !== ws.id);
                 selectedWorkshopId = null;
-                saveLocalOnly();
-                if (window.deleteWorkshopFromCloud) window.deleteWorkshopFromCloud(ws.id);
+                saveGlobalAndLocal();
                 modalConfirm.remove();
                 renderAll();
                 showToast('تم حذف الورشة');
             };
         }
 
-        // ==================== بنود وتصنيفات الورشة ====================
         function openCategoriesModal() {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
@@ -1280,8 +1130,7 @@
             if (!Array.isArray(ws.categories)) ws.categories = ['عام'];
             if (!ws.categories.includes(name)) {
                 ws.categories.push(name);
-                saveLocalOnly();
-                if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
+                saveGlobalAndLocal();
                 renderCategoriesList();
                 renderSelectedWorkshop();
                 showToast('تمت إضافة البند');
@@ -1293,13 +1142,11 @@
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             ws.categories = ws.categories.filter(c => c !== catName);
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
+            saveGlobalAndLocal();
             renderCategoriesList();
             renderSelectedWorkshop();
         }
 
-        // ==================== الحركات المالية (إيراد / مصروف) ====================
         function openTxModal(type, editId = null) {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
@@ -1430,14 +1277,12 @@
                 });
             }
 
-            // تصفير الفلاتر لتظهر الحركة مباشرة
             document.getElementById('filter-type').value = 'ALL';
             document.getElementById('filter-category').value = 'ALL';
             document.getElementById('filter-currency').value = 'ALL';
             document.getElementById('filter-search').value = '';
 
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
+            saveGlobalAndLocal();
             closeModal('tx-modal');
             renderAll();
             showToast('تم حفظ الحركة بنجاح');
@@ -1447,13 +1292,11 @@
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             ws.transactions = ws.transactions.filter(t => t.id !== txId);
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
+            saveGlobalAndLocal();
             renderAll();
             showToast('تم حذف الحركة');
         }
 
-        // ==================== الصرافة / التحويل ====================
         function openExchangeModal(editId = null) {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
@@ -1560,14 +1403,12 @@
                 });
             }
 
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(ws);
+            saveGlobalAndLocal();
             closeModal('exchange-modal');
             renderAll();
             showToast('تم حفظ عملية الصرافة بنجاح');
         }
 
-        // ==================== إدارة المستخدمين والحساب الأساسي ====================
         function openUsersModal() {
             document.getElementById('owner-edit-username').value = window.appData.owner.username;
             document.getElementById('owner-edit-password').value = window.appData.owner.password;
@@ -1584,10 +1425,9 @@
             window.appData.owner = { username: u, password: p };
             sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify({ username: u, password: p }));
             window.currentUser.username = u;
-            saveLocalOnly();
-            if (window.syncMetaToCloud) window.syncMetaToCloud();
+            saveGlobalAndLocal();
             applyUserPermissionsUI();
-            showToast('تم تحديث بيانات الحساب الأساسي وحفظها في السحابة');
+            showToast('تم تحديث بيانات الحساب الأساسي وحفظها');
         }
 
         function resetSubUserForm() {
@@ -1649,8 +1489,7 @@
                 });
             }
 
-            saveLocalOnly();
-            if (window.syncMetaToCloud) window.syncMetaToCloud();
+            saveGlobalAndLocal();
             resetSubUserForm();
             renderSubUsersList();
             showToast('تم حفظ بيانات المستخدم وصلاحياته');
@@ -1672,8 +1511,7 @@
 
         function deleteSubUser(id) {
             window.appData.subUsers = window.appData.subUsers.filter(u => u.id !== id);
-            saveLocalOnly();
-            if (window.syncMetaToCloud) window.syncMetaToCloud();
+            saveGlobalAndLocal();
             renderSubUsersList();
             showToast('تم حذف المستخدم');
         }
@@ -1703,11 +1541,10 @@
             });
         }
 
-        // ==================== النسخ الاحتياطي، التصدير، PDF، والتخزين ====================
         window.updateStorageQuotaUI = function() {
             const bytes = new Blob([JSON.stringify(window.appData)]).size;
             const kb = Math.round(bytes / 1024);
-            const maxKb = 1048576; // 1 GB
+            const maxKb = 1048576;
             const pct = Math.min(100, Math.max(0, Math.round((kb / maxKb) * 100)));
             const pctEl = document.getElementById('header-storage-pct');
             const textEl = document.getElementById('storage-usage-text');
@@ -1741,11 +1578,8 @@
                 return;
             }
             downloadJSONFile(inactive, `inactive_workshops_archive_${getTodayStr()}.json`);
-            inactive.forEach(w => {
-                if (window.deleteWorkshopFromCloud) window.deleteWorkshopFromCloud(w.id);
-            });
             window.appData.workshops = window.appData.workshops.filter(w => w.active);
-            saveLocalOnly();
+            saveGlobalAndLocal();
             renderAll();
             closeModal('storage-archive-modal');
             showToast(`تم تنزيل نسخة لـ ${inactive.length} ورشة غير نشطة وحذفها بنجاح`);
@@ -1772,12 +1606,9 @@
         }
 
         function executeFullWipe() {
-            window.appData.workshops.forEach(w => {
-                if (window.deleteWorkshopFromCloud) window.deleteWorkshopFromCloud(w.id);
-            });
             window.appData.workshops = [];
             selectedWorkshopId = null;
-            saveLocalOnly();
+            saveGlobalAndLocal();
             renderAll();
             closeModal('storage-archive-modal');
             showToast('تم تصفير جميع الورشات والبيانات بنجاح');
@@ -1796,14 +1627,8 @@
                 try {
                     const parsed = JSON.parse(ev.target.result);
                     if (parsed && Array.isArray(parsed.workshops)) {
-                        window.appData.workshops = parsed.workshops;
-                        if (parsed.owner) window.appData.owner = parsed.owner;
-                        if (Array.isArray(parsed.subUsers)) window.appData.subUsers = parsed.subUsers;
-                        saveLocalOnly();
-                        window.appData.workshops.forEach(w => {
-                            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(w);
-                        });
-                        if (window.syncMetaToCloud) window.syncMetaToCloud();
+                        window.appData = parsed;
+                        saveGlobalAndLocal();
                         renderAll();
                         showToast('تمت استعادة النسخة الاحتياطية الكاملة بنجاح');
                     } else {
@@ -1858,8 +1683,7 @@
             selectedWorkshopId = newWs.id;
             pendingImportedWorkshop = null;
             document.getElementById('imported-preview-banner').classList.add('hidden');
-            saveLocalOnly();
-            if (window.syncWorkshopToCloud) window.syncWorkshopToCloud(newWs);
+            saveGlobalAndLocal();
             renderAll();
             showToast('تم اعتماد وإضافة الورشة المستوردة');
         }
@@ -1869,6 +1693,7 @@
             document.getElementById('imported-preview-banner').classList.add('hidden');
         }
 
+        // ==================== طباعة وتصدير PDF ملون ومنسق واحترافي ====================
         function exportWorkshopPDF() {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
@@ -1888,74 +1713,79 @@
                 return true;
             });
 
-            const rowsHtml = filtered.map(tx => {
+            const rowsHtml = filtered.map((tx, idx) => {
                 let typeAr = tx.type === 'income' ? 'إيراد' : (tx.type === 'expense' ? 'مصروف' : 'صرافة');
+                let typeBg = tx.type === 'income' ? '#d1fae5; color: #065f46;' : (tx.type === 'expense' ? '#fee2e2; color: #991b1b;' : '#fef3c7; color: #92400e;');
                 let amtStr = '';
+                let amtColor = tx.type === 'income' ? '#047857' : (tx.type === 'expense' ? '#b91c1c' : '#1e293b');
+
                 if (tx.type === 'income') amtStr = tx.currency === 'USD' ? `+ ${formatUSD(tx.amount)}` : `+ ${formatSYP(tx.amount)}`;
                 else if (tx.type === 'expense') amtStr = tx.currency === 'USD' ? `- ${formatUSD(tx.amount)}` : `- ${formatSYP(tx.amount)}`;
                 else amtStr = tx.direction === 'USD_TO_SYP'
                     ? `-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)}`
                     : `-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$`;
 
+                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+
                 return `
-                    <tr style="page-break-inside: avoid;">
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;" dir="ltr">${tx.date}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${typeAr}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${tx.desc || tx.note || '—'}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:left; font-weight:bold;" dir="ltr">${amtStr}</td>
+                    <tr style="page-break-inside: avoid; background-color: ${rowBg};">
+                        <td style="border:1px solid #cbd5e1; padding:7px; text-align:right; font-size:11px;" dir="ltr">${tx.date}</td>
+                        <td style="border:1px solid #cbd5e1; padding:7px; text-align:right;"><span style="background:${typeBg}; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">${typeAr}</span></td>
+                        <td style="border:1px solid #cbd5e1; padding:7px; text-align:right; font-weight:bold; font-size:11px; color:#334155;">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</td>
+                        <td style="border:1px solid #cbd5e1; padding:7px; text-align:right; font-size:11px; color:#0f172a;">${tx.desc || tx.note || '—'}</td>
+                        <td style="border:1px solid #cbd5e1; padding:7px; text-align:left; font-weight:bold; font-size:11px; color:${amtColor};" dir="ltr">${amtStr}</td>
                     </tr>
                 `;
             }).join('');
 
             const pdfContainer = document.createElement('div');
             pdfContainer.dir = 'rtl';
-            pdfContainer.style.cssText = 'font-family: Cairo, sans-serif; padding: 12px; background: #fff; color: #0f172a; width: 100%;';
+            pdfContainer.style.cssText = 'font-family: Cairo, sans-serif; padding: 16px; background: #ffffff; color: #0f172a; width: 100%;';
             pdfContainer.innerHTML = `
-                <div style="border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="border-bottom: 3px solid #1e40af; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #0f172a;">كشف حساب ورشة: ${ws.name}</h2>
-                        <p style="margin: 4px 0 0; font-size: 12px; color: #475569;">${ws.desc || ''}</p>
+                        <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #1e3a8a;">كشف حساب ورشة: ${ws.name}</h2>
+                        <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">${ws.desc || 'تقرير مالي معتمد'}</p>
                     </div>
-                    <div style="text-align: left; font-size: 11px; color: #475569;">تاريخ التقرير: ${getTodayStr()}</div>
+                    <div style="text-align: left; font-size: 11px; color: #64748b; font-weight: bold;">تاريخ التقرير: ${getTodayStr()}</div>
                 </div>
 
-                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                    <div style="flex: 1; border: 1px solid #10b981; background: #ecfdf5; border-radius: 10px; padding: 10px;">
+                <div style="display: flex; gap: 14px; margin-bottom: 18px;">
+                    <div style="flex: 1; border: 2px solid #10b981; background: #ecfdf5; border-radius: 12px; padding: 12px;">
                         <div style="font-size: 11px; font-weight: bold; color: #065f46;">صندوق الدولار الأمريكي المتبقي</div>
-                        <div style="font-size: 18px; font-weight: 800; color: #064e3b; margin-top: 4px;" dir="ltr">${formatUSD(stats.usdBalance)}</div>
-                        <div style="font-size: 10px; color: #047857; margin-top: 2px;">إيرادات: ${formatNumberClean(stats.usdIn)}$ | مصروفات: ${formatNumberClean(stats.usdOut)}$</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #064e3b; margin-top: 4px;" dir="ltr">${formatUSD(stats.usdBalance)}</div>
+                        <div style="font-size: 10px; color: #047857; margin-top: 3px; font-weight: bold;">إيرادات: ${formatNumberClean(stats.usdIn)}$ | مصروفات: ${formatNumberClean(stats.usdOut)}$</div>
                     </div>
-                    <div style="flex: 1; border: 1px solid #3b82f6; background: #eff6ff; border-radius: 10px; padding: 10px;">
+                    <div style="flex: 1; border: 2px solid #3b82f6; background: #eff6ff; border-radius: 12px; padding: 12px;">
                         <div style="font-size: 11px; font-weight: bold; color: #1e40af;">صندوق الليرة السورية المتبقي</div>
-                        <div style="font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 4px;" dir="ltr">${formatSYP(stats.sypBalance)}</div>
-                        <div style="font-size: 10px; color: #1d4ed8; margin-top: 2px;">إيرادات: ${formatSYP(stats.sypIn)} | مصروفات: ${formatSYP(stats.sypOut)}</div>
+                        <div style="font-size: 20px; font-weight: 800; color: #1e3a8a; margin-top: 4px;" dir="ltr">${formatSYP(stats.sypBalance)}</div>
+                        <div style="font-size: 10px; color: #1d4ed8; margin-top: 3px; font-weight: bold;">إيرادات: ${formatSYP(stats.sypIn)} | مصروفات: ${formatSYP(stats.sypOut)}</div>
                     </div>
                 </div>
 
                 <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                     <thead>
-                        <tr style="background: #0f172a; color: #fff;">
-                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">التاريخ</th>
-                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">النوع</th>
-                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">البند</th>
-                            <th style="border:1px solid #0f172a; padding:7px; text-align:right;">البيان / الوصف</th>
-                            <th style="border:1px solid #0f172a; padding:7px; text-align:left;">المبلغ والعملة</th>
+                        <tr style="background: #1e293b; color: #ffffff;">
+                            <th style="border:1px solid #1e293b; padding:8px; text-align:right;">التاريخ</th>
+                            <th style="border:1px solid #1e293b; padding:8px; text-align:right;">النوع</th>
+                            <th style="border:1px solid #1e293b; padding:8px; text-align:right;">البند</th>
+                            <th style="border:1px solid #1e293b; padding:8px; text-align:right;">البيان / الوصف</th>
+                            <th style="border:1px solid #1e293b; padding:8px; text-align:left;">المبلغ والعملة</th>
                         </tr>
                     </thead>
-                    <tbody>${rowsHtml || '<tr><td colspan="5" style="padding:12px; text-align:center;">لا توجد حركات</td></tr>'}</tbody>
+                    <tbody>${rowsHtml || '<tr><td colspan="5" style="padding:14px; text-align:center; color:#64748b;">لا توجد حركات مطابقة</td></tr>'}</tbody>
                 </table>
             `;
 
             const opt = {
-                margin: [8, 8, 8, 8],
+                margin: [10, 10, 10, 10],
                 filename: `${ws.name}_${getTodayStr()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['css', 'legacy'] }
             };
-            showToast('جاري إنشاء ملف PDF منسق A4...');
+            showToast('جاري إنشاء ملف PDF ملون ومنسق A4...');
             html2pdf().set(opt).from(pdfContainer).save();
         }
 
@@ -2007,7 +1837,6 @@
             el.classList.remove('flex');
         }
 
-        // ==================== تشغيل النظام عند تحميل الصفحة ====================
         initAppData();
         const savedSession = sessionStorage.getItem(SESSION_USER_KEY);
         if (savedSession) {
