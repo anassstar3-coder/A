@@ -235,12 +235,11 @@
         </footer>
     </div>
 
-    <!-- نافذة إضافة/تعديل حركة -->
+    <!-- نافذة إضافة حركة -->
     <div id="transactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <h3 id="modalTitle" class="text-lg font-extrabold text-slate-900 mb-4">إضافة حركة جديدة</h3>
             <form onsubmit="saveTransaction(event)" class="space-y-4">
-                <input type="hidden" id="transId">
                 <input type="hidden" id="transType">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">التاريخ</label>
@@ -278,7 +277,7 @@
                     <input type="date" id="excDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-indigo-600" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">نوع العملية</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">نوع عملية الصرافة</label>
                     <select id="excType" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-indigo-600">
                         <option value="buy_usd">شراء دولار (دفع ليرة وقبض دولار)</option>
                         <option value="sell_usd">بيع دولار (دفع دولار وقبض ليرة)</option>
@@ -295,8 +294,8 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">ملاحظات الصرافة</label>
-                    <input type="text" id="excDesc" placeholder="اسم الصراف أو تفاصيل سعر الصرف" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-indigo-600">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">ملاحظات الصرافة / الصراف</label>
+                    <input type="text" id="excDesc" placeholder="مثال: تصريف عند صراف فلان بسعر كذا" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-indigo-600">
                 </div>
                 <div class="flex gap-2 pt-3">
                     <button type="button" onclick="closeExchangeModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs transition">إلغاء</button>
@@ -381,7 +380,26 @@
         </div>
     </div>
 
-    <!-- جافاسكريبت النظام الأساسي المحصن ضد ضياع البيانات -->
+    <!-- نافذة تعديل كلمة مرور مستخدم معين -->
+    <div id="editUserPassModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <h3 class="text-lg font-extrabold text-slate-900 mb-2">تغيير كلمة المرور</h3>
+            <p id="editUserTargetName" class="text-xs text-slate-500 mb-4"></p>
+            <form onsubmit="saveNewUserPassword(event)" class="space-y-4">
+                <input type="hidden" id="editUserIndex">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور الجديدة</label>
+                    <input type="password" id="updatedUserPass" placeholder="أدخل كلمة المرور الجديدة" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-indigo-600" required>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeEditUserPassModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition">حفظ التعديل</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جافاسكريبت النظام الآمن الشامل -->
     <script>
         let db = {
             workshops: [
@@ -404,17 +422,24 @@
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    if (parsed && parsed.workshops && Array.isArray(parsed.workshops)) {
-                        db = parsed;
-                        // ضمان وجود حساب افتراضي دائماً
-                        if (!db.users || !Array.isArray(db.users) || db.users.length === 0) {
-                            db.users = [{ user: 'anas', pass: '789456123147' }];
-                        }
+                    if (parsed && parsed.workshops && Array.isArray(parsed.workshops) && parsed.workshops.length > 0) {
+                        db.workshops = parsed.workshops;
+                    }
+                    if (parsed && parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0) {
+                        db.users = parsed.users;
+                    }
+                    if (parsed && parsed.activeWorkshopId) {
+                        db.activeWorkshopId = parsed.activeWorkshopId;
                     }
                 } catch(e) {
                     console.error('Error loading data:', e);
                 }
             }
+            
+            if (!db.users || !Array.isArray(db.users) || db.users.length === 0) {
+                db.users = [{ user: 'anas', pass: '789456123147' }];
+            }
+
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
@@ -451,8 +476,6 @@
 
         function logout() {
             sessionStorage.removeItem('isLoggedIn');
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden'); // إبقاء الشاشة واضحة لطلب تسجيل الدخول
             location.reload();
         }
 
@@ -869,8 +892,8 @@
                 div.innerHTML = `
                     <span>👤 ${u.user}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-400 font-mono">••••••••</span>
-                        ${db.users.length > 1 ? `<button onclick="deleteUser(${index})" class="text-rose-500 hover:text-rose-700">🗑️</button>` : ''}
+                        <button onclick="openEditUserPassModal(${index})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px]">تغيير كلمة المرور</button>
+                        ${db.users.length > 1 ? `<button onclick="deleteUser(${index})" class="text-rose-500 hover:text-rose-700 p-1">🗑️</button>` : ''}
                     </div>
                 `;
                 container.appendChild(div);
@@ -895,6 +918,32 @@
             document.getElementById('newUserPass').value = '';
             renderUsersList();
             alert('تمت إضافة المستخدم بنجاح!');
+        }
+
+        function openEditUserPassModal(index) {
+            const u = db.users[index];
+            document.getElementById('editUserIndex').value = index;
+            document.getElementById('editUserTargetName').textContent = `تعديل كلمة مرور المستخدم: ${u.user}`;
+            document.getElementById('updatedUserPass').value = '';
+            document.getElementById('editUserPassModal').classList.remove('hidden');
+        }
+
+        function closeEditUserPassModal() {
+            document.getElementById('editUserPassModal').classList.add('hidden');
+        }
+
+        function saveNewUserPassword(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('editUserIndex').value);
+            const newPass = document.getElementById('updatedUserPass').value.trim();
+            if (!newPass) return;
+
+            if (db.users[index]) {
+                db.users[index].pass = newPass;
+                saveData();
+                closeEditUserPassModal();
+                alert('تم تحديث كلمة المرور بنجاح دون المساس بأي بيانات أخرى!');
+            }
         }
 
         function deleteUser(index) {
