@@ -69,6 +69,7 @@
                     استعادة كاملة
                     <input type="file" accept=".json" onchange="importFullBackup(event)" class="hidden">
                 </label>
+                <button onclick="openArchiveModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">الأرشيف والتنبيهات</button>
                 <button onclick="openUsersModal()" id="users-btn" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">المستخدمين</button>
                 <button onclick="logout()" class="bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 px-3 py-1.5 rounded text-xs font-medium transition">خروج</button>
             </div>
@@ -80,7 +81,46 @@
                     <h2 class="text-sm font-bold text-white">قائمة الورشات والمشاريع</h2>
                     <div class="flex items-center gap-2">
                         <button onclick="openNewWorkshopModal()" id="btn-new-ws" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-semibold transition border border-slate-700">ورشة جديدة</button>
-                        <button onclick="openArchiveModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold transition border border-slate-700">الأرشيف والتنبيهات</button>
+                        <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer border border-slate-700">
+                            استيراد ورشة
+                            <input type="file" accept=".json" onchange="importSingleWorkshop(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+                <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+            </section>
+
+            <div id="active-workshop-container" class="hidden space-y-4">
+                <div id="workshop-header-banner" class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h3 id="current-workshop-title" class="text-sm font-bold text-white"></h3>
+                            <span id="current-workshop-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold"></span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">الصناديق الفرعية وحركات الورشة</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700 text-xs">
+                        <div>
+                            <span class="text-slate-400 text-[10px] block">صندوق الورشة (ل.س):</span>
+                            <span id="ws-box-SYP" class="font-bold">0</span> <span class="text-[10px] text-slate-400">ل.س</span>
+                        </div>
+                        <div class="border-r border-slate-700 h-6 mx-1"></div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] block">صندوق الورشة ($):</span>
+                            <span id="ws-box-USD" class="font-bold">0</span> <span class="text-[10px] text-slate-400">$</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportCurrentWorkshopJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded text-xs font-medium transition border border-slate-700">تصدير الورشة</button>
+                        <select id="workshop-settings-select" onchange="handleWorkshopSettingAction(this)" class="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-xs font-medium focus:outline-none">
+                            <option value="">إجراءات الورشة</option>
+                            <option value="toggle-status">تبديل الحالة (نشطة / غير نشطة)</option>
+                            <option value="export-excel">تصدير Excel بمعادلات الجمع</option>
+                            <option value="print-sheet">طباعة كشف الحساب</option>
+                            <option value="delete-workshop" class="text-rose-400">حذف الورشة نهائياً</option>
+                        </select>
                     </div>
                 </div>
                 <div id="workshops-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
@@ -428,7 +468,6 @@
             const w = dbData.workshops.find(x => x.id === currentWorkshopId);
             if (!w) return;
             if (val === "toggle-status") { w.active = !w.active; saveDb(); renderWorkshopsList(); selectWorkshop(w.id); }
-            else if (val === "download-json") { downloadJsonFile(w, `${w.name}.json`); }
             else if (val === "export-excel") { exportWorkshopExcel(w); }
             else if (val === "print-sheet") { window.print(); }
             else if (val === "delete-workshop") {
@@ -439,6 +478,12 @@
                     currentWorkshopId = null; renderWorkshopsList();
                 }
             }
+        }
+
+        function exportCurrentWorkshopJson() {
+            if (!currentWorkshopId) return;
+            const w = dbData.workshops.find(x => x.id === currentWorkshopId);
+            if (w) downloadJsonFile(w, `${w.name}.json`);
         }
 
         function downloadJsonFile(dataObj, filename) {
