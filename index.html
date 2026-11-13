@@ -6,6 +6,8 @@
     <title>محاسبة الورشات - الإدارة المالية والصناديق المزدوجة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- مكتبة توليد PDF مباشر -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -24,6 +26,10 @@
         }
         /* التنسيق الاحترافي للطباعة وملفات PDF */
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
             body {
                 background-color: #ffffff !important;
                 color: #000000 !important;
@@ -58,6 +64,16 @@
         }
         .print-only-header {
             display: none;
+        }
+        /* تحسين عرض الجدول على شاشات الجوال */
+        @media (max-width: 768px) {
+            .mobile-responsive-table {
+                font-size: 11px !important;
+            }
+            .mobile-responsive-table th,
+            .mobile-responsive-table td {
+                padding: 6px 4px !important;
+            }
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #e2e8f0; }
@@ -307,18 +323,18 @@
 
                         <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
-                        <!-- زر إدارة بنود/تصنيفات الورشة -->
-                        <button id="btn-manage-categories" onclick="openCategoriesModal()"
-                            class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3 py-2.5 rounded-xl transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                            <span>بنود الورشة</span>
-                        </button>
-
-                        <!-- زر طباعة / حفظ PDF -->
-                        <button onclick="printWorkshopPDF()"
+                        <!-- زر طباعة مباشرة -->
+                        <button onclick="printWorkshopDirect()"
                             class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-sm transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            <span>طباعة / PDF</span>
+                            <span>طباعة</span>
+                        </button>
+
+                        <!-- زر حفظ PDF مقاس A4 مباشرة -->
+                        <button onclick="exportWorkshopPDF_A4()"
+                            class="flex items-center gap-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-sm transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <span>حفظ PDF (A4)</span>
                         </button>
 
                         <!-- زر تصدير Excel -->
@@ -398,21 +414,21 @@
 
                 <!-- جدول الحركات المالية -->
                 <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-right border-collapse">
+                    <table class="w-full text-right border-collapse mobile-responsive-table">
                         <thead>
-                            <tr class="bg-slate-800 text-white text-xs font-bold">
-                                <th class="py-3 px-3">التاريخ</th>
-                                <th class="py-3 px-3">النوع</th>
-                                <th class="py-3 px-3">البند / التصنيف</th>
-                                <th class="py-3 px-3">البيان / الوصف</th>
-                                <th class="py-3 px-3">المبلغ</th>
-                                <th class="py-3 px-3">الرصيد التراكمي ($)</th>
-                                <th class="py-3 px-3">الرصيد التراكمي (ل.س)</th>
-                                <th class="py-3 px-3 text-center no-print">المرفقات</th>
-                                <th class="py-3 px-3 text-center no-print">إجراءات</th>
+                            <tr class="bg-slate-800 text-white text-[11px] md:text-xs font-bold">
+                                <th class="py-2.5 px-2 md:px-3">التاريخ</th>
+                                <th class="py-2.5 px-2 md:px-3">النوع</th>
+                                <th class="py-2.5 px-2 md:px-3 hidden sm:table-cell">البند</th>
+                                <th class="py-2.5 px-2 md:px-3">البيان / الوصف</th>
+                                <th class="py-2.5 px-2 md:px-3">المبلغ</th>
+                                <th class="py-2.5 px-2 md:px-3">الرصيد ($)</th>
+                                <th class="py-2.5 px-2 md:px-3">الرصيد (ل.س)</th>
+                                <th class="py-2.5 px-2 md:px-3 text-center no-print">مرفق</th>
+                                <th class="py-2.5 px-2 md:px-3 text-center no-print">إجراء</th>
                             </tr>
                         </thead>
-                        <tbody id="transactions-tbody" class="divide-y divide-slate-200 text-xs md:text-sm font-semibold">
+                        <tbody id="transactions-tbody" class="divide-y divide-slate-200 text-[11px] md:text-sm font-semibold">
                             <!-- يتم تعبئتها برمجياً -->
                         </tbody>
                     </table>
@@ -557,14 +573,29 @@
             <p class="text-xs text-slate-500 mb-4">تحويل الأموال بين صندوق الدولار وصندوق السوري للورشة الحالية</p>
             <form id="form-exchange" class="space-y-4">
                 <input type="hidden" id="ex-edit-id" value="">
+                <input type="hidden" id="ex-direction" value="USD_TO_SYP">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">اتجاه التحويل</label>
-                    <select id="ex-direction" onchange="calculateExchangePreview()"
-                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 outline-none focus:border-amber-500">
-                        <option value="USD_TO_SYP">تصريف دولار إلى سوري (خصم $ ➔ إضافة ل.س)</option>
-                        <option value="SYP_TO_USD">شراء دولار بالسوري (خصم ل.س ➔ إضافة $)</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-700 mb-2">اتصال وتحويل العملة:</label>
+                    <div class="flex items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+                        <!-- المربع الأول -->
+                        <div id="ex-box-from" class="flex-1 bg-white p-3 rounded-xl border border-slate-300 text-center shadow-xs">
+                            <span id="ex-from-label" class="text-[11px] font-bold text-slate-500 block mb-0.5">من صندوق</span>
+                            <span id="ex-from-curr" class="text-sm font-black text-slate-800">الدولار الأمريكي ($)</span>
+                        </div>
+                        
+                        <!-- زر سهم التبديل المتحرك -->
+                        <button type="button" onclick="toggleExchangeDirection()" title="انقر لقلب اتجاه التحويل"
+                            class="w-10 h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center font-black text-lg shadow-md transition transform active:scale-95 shrink-0">
+                            ⇄
+                        </button>
+
+                        <!-- المربع الثاني -->
+                        <div id="ex-box-to" class="flex-1 bg-white p-3 rounded-xl border border-slate-300 text-center shadow-xs">
+                            <span id="ex-to-label" class="text-[11px] font-bold text-slate-500 block mb-0.5">إلى صندوق</span>
+                            <span id="ex-to-curr" class="text-sm font-black text-slate-800">الليرة السورية (ل.س)</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -1272,7 +1303,13 @@
         function formatUSD(val) {
             const num = Number(val) || 0;
             const sign = num < 0 ? '-' : '';
-            return `${sign}$ ${Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            const absVal = Math.abs(num);
+            // إلغاء الفواصل العشرية إذا كانت قيمتها صفر
+            const isWhole = Math.abs(absVal - Math.round(absVal)) < 0.0001;
+            const formatted = isWhole
+                ? Math.round(absVal).toLocaleString('en-US')
+                : absVal.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+            return `${sign}$ ${formatted}`;
         }
 
         function formatSYP(val) {
@@ -1561,20 +1598,23 @@
 
                 tr.className = `${rowBg} transition`;
                 tr.innerHTML = `
-                    <td class="py-3 px-3 whitespace-nowrap text-slate-700">${tx.date}</td>
-                    <td class="py-3 px-3 whitespace-nowrap">${typeBadge}</td>
-                    <td class="py-3 px-3 whitespace-nowrap">
-                        <span class="px-2 py-0.5 rounded bg-slate-200/80 text-slate-800 text-xs font-bold">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</span>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-slate-700">${tx.date}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap">${typeBadge}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap hidden sm:table-cell">
+                        <span class="px-2 py-0.5 rounded bg-slate-200/80 text-slate-800 text-[11px] font-bold">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</span>
                     </td>
-                    <td class="py-3 px-3 text-slate-800">${tx.description}</td>
-                    <td class="py-3 px-3 whitespace-nowrap">${amountDisplay}</td>
-                    <td class="py-3 px-3 whitespace-nowrap font-black ${tx.runUSD < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}" dir="ltr">${formatUSD(tx.runUSD)}</td>
-                    <td class="py-3 px-3 whitespace-nowrap font-black ${tx.runSYP < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}">${formatSYP(tx.runSYP)}</td>
-                    <td class="py-3 px-3 whitespace-nowrap text-center no-print">${attachmentsHtml}</td>
-                    <td class="py-3 px-3 whitespace-nowrap text-center no-print">
-                        <div class="inline-flex items-center gap-1.5">
+                    <td class="py-2.5 px-2 md:px-3 text-slate-800 min-w-[110px]">
+                        <div>${tx.description}</div>
+                        <span class="sm:hidden inline-block mt-0.5 px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 text-[10px]">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</span>
+                    </td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap">${amountDisplay}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap font-black ${tx.runUSD < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}" dir="ltr">${formatUSD(tx.runUSD)}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap font-black ${tx.runSYP < 0 ? 'text-rose-600 bg-rose-100/60' : 'text-slate-800'}">${formatSYP(tx.runSYP)}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-center no-print">${attachmentsHtml}</td>
+                    <td class="py-2.5 px-2 md:px-3 whitespace-nowrap text-center no-print">
+                        <div class="inline-flex items-center gap-1">
                             ${editBtnHtml}
-                            ${canDelete ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold transition">حذف</button>` : ''}
+                            ${canDelete ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-[11px] font-bold transition">حذف</button>` : ''}
                         </div>
                     </td>
                 `;
@@ -1838,7 +1878,7 @@
             document.getElementById('ex-edit-id').value = '';
             document.getElementById('ex-modal-title').textContent = 'عملية صرافة / تحويل بين الصناديق';
             document.getElementById('ex-submit-btn').textContent = 'تنفيذ التحويل';
-            document.getElementById('ex-direction').value = 'USD_TO_SYP';
+            setExchangeDirectionUI('USD_TO_SYP');
             document.getElementById('ex-usd-amount').value = '';
             document.getElementById('ex-rate').value = '';
             document.getElementById('ex-syp-preview').textContent = '0 ل.س';
@@ -1856,13 +1896,33 @@
             document.getElementById('ex-edit-id').value = tx.id;
             document.getElementById('ex-modal-title').textContent = '✏️ تعديل عملية الصرافة / التحويل';
             document.getElementById('ex-submit-btn').textContent = 'حفظ التعديلات';
-            document.getElementById('ex-direction').value = tx.exchangeDirection || 'USD_TO_SYP';
+            setExchangeDirectionUI(tx.exchangeDirection || 'USD_TO_SYP');
             document.getElementById('ex-usd-amount').value = tx.usdAmount;
             document.getElementById('ex-rate').value = tx.rate;
             calculateExchangePreview();
             document.getElementById('ex-date').value = tx.date;
             document.getElementById('ex-note').value = tx.description || '';
             document.getElementById('modal-exchange').classList.remove('hidden');
+        }
+
+        function toggleExchangeDirection() {
+            const currentDir = document.getElementById('ex-direction').value;
+            const newDir = currentDir === 'USD_TO_SYP' ? 'SYP_TO_USD' : 'USD_TO_SYP';
+            setExchangeDirectionUI(newDir);
+            calculateExchangePreview();
+        }
+
+        function setExchangeDirectionUI(dir) {
+            document.getElementById('ex-direction').value = dir;
+            const fromCurr = document.getElementById('ex-from-curr');
+            const toCurr = document.getElementById('ex-to-curr');
+            if (dir === 'USD_TO_SYP') {
+                fromCurr.textContent = 'الدولار الأمريكي ($)';
+                toCurr.textContent = 'الليرة السورية (ل.س)';
+            } else {
+                fromCurr.textContent = 'الليرة السورية (ل.س)';
+                toCurr.textContent = 'الدولار الأمريكي ($)';
+            }
         }
 
         function calculateExchangePreview() {
@@ -1989,8 +2049,104 @@
         // =========================================================================
         // 8. الطباعة / PDF / Excel / النسخ الاحتياطي والاستيراد
         // =========================================================================
-        function printWorkshopPDF() {
+        function printWorkshopDirect() {
             window.print();
+        }
+
+        function exportWorkshopPDF_A4() {
+            const ws = appState.workshops.find(w => w.id === selectedWorkshopId);
+            if (!ws) return;
+
+            const totals = calculateWorkshopTotals(ws);
+            const sortedTxs = [...(ws.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+            let runUSD = 0, runSYP = 0;
+
+            const rowsHtml = sortedTxs.map(tx => {
+                let typeAr = '', amtStr = '';
+                if (tx.type === 'income') {
+                    typeAr = 'إيراد';
+                    amtStr = tx.currency === 'USD' ? `+ ${formatUSD(tx.amount)}` : `+ ${formatSYP(tx.amount)}`;
+                    if (tx.currency === 'USD') runUSD += tx.amount; else runSYP += tx.amount;
+                } else if (tx.type === 'expense') {
+                    typeAr = 'مصروف';
+                    amtStr = tx.currency === 'USD' ? `- ${formatUSD(tx.amount)}` : `- ${formatSYP(tx.amount)}`;
+                    if (tx.currency === 'USD') runUSD -= tx.amount; else runSYP -= tx.amount;
+                } else {
+                    typeAr = 'صرافة';
+                    amtStr = tx.exchangeDirection === 'USD_TO_SYP'
+                        ? `-${formatUSD(tx.usdAmount)} ➔ +${formatSYP(tx.sypAmount)}`
+                        : `-${formatSYP(tx.sypAmount)} ➔ +${formatUSD(tx.usdAmount)}`;
+                    if (tx.exchangeDirection === 'USD_TO_SYP') { runUSD -= tx.usdAmount; runSYP += tx.sypAmount; }
+                    else { runSYP -= tx.sypAmount; runUSD += tx.usdAmount; }
+                }
+
+                return `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:6px;">${tx.date}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;">${typeAr}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;">${tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام')}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;">${tx.description}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; font-weight:bold;">${amtStr}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; direction:ltr;">${formatUSD(runUSD)}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;">${formatSYP(runSYP)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.dir = 'rtl';
+            pdfContainer.style.fontFamily = "'Cairo', sans-serif";
+            pdfContainer.style.padding = '15px';
+            pdfContainer.style.background = '#ffffff';
+            pdfContainer.style.color = '#0f172a';
+            pdfContainer.innerHTML = `
+                <div style="border-bottom:2px solid #0f172a; padding-bottom:10px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 style="margin:0; font-size:18px; font-weight:900;">كشف حساب ورشة: ${ws.name}</h2>
+                        <p style="margin:4px 0 0; font-size:12px; color:#475569;">${ws.description || ''}</p>
+                    </div>
+                    <div style="text-align:left; font-size:11px; color:#334155;">
+                        <div>التاريخ: ${new Date().toLocaleDateString('ar-SY')}</div>
+                        <div>الحالة: ${ws.active ? 'نشطة' : 'مؤرشفة'}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; margin-bottom:15px;">
+                    <div style="flex:1; border:1px solid #10b981; background:#ecfdf5; padding:10px; border-radius:8px;">
+                        <div style="font-size:11px; font-weight:bold; color:#065f46;">رصيد صندوق الدولار ($)</div>
+                        <div style="font-size:16px; font-weight:900; color:#047857; direction:ltr; text-align:right;">${formatUSD(totals.usdBal)}</div>
+                        <div style="font-size:10px; color:#334155; margin-top:4px;">إيرادات: ${formatUSD(totals.usdInc)} | مصروفات: ${formatUSD(totals.usdExp)}</div>
+                    </div>
+                    <div style="flex:1; border:1px solid #3b82f6; background:#eff6ff; padding:10px; border-radius:8px;">
+                        <div style="font-size:11px; font-weight:bold; color:#1e40af;">رصيد صندوق السوري (ل.س)</div>
+                        <div style="font-size:16px; font-weight:900; color:#1d4ed8;">${formatSYP(totals.sypBal)}</div>
+                        <div style="font-size:10px; color:#334155; margin-top:4px;">إيرادات: ${formatSYP(totals.sypInc)} | مصروفات: ${formatSYP(totals.sypExp)}</div>
+                    </div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:right;">
+                    <thead>
+                        <tr style="background:#1e293b; color:#ffffff;">
+                            <th style="border:1px solid #1e293b; padding:7px;">التاريخ</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">النوع</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">البند</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">البيان</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">المبلغ</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">التراكمي ($)</th>
+                            <th style="border:1px solid #1e293b; padding:7px;">التراكمي (ل.س)</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            `;
+
+            const opt = {
+                margin: 10,
+                filename: `كشف_حساب_${ws.name.replace(/\s+/g, '_')}_A4.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(pdfContainer).save();
         }
 
         function exportWorkshopExcel() {
