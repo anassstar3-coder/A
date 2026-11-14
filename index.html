@@ -20,7 +20,6 @@
             unicode-bidi: isolate;
             font-variant-numeric: tabular-nums;
         }
-        /* تدرج رمادي للورشة المتوقفة مع استثناء زر التفعيل ليبقى ملوناً وبارزاً */
         .workshop-card-inactive {
             background-color: #e2e8f0 !important;
             border-color: #64748b !important;
@@ -64,7 +63,6 @@
             background: #475569;
         }
 
-        /* تلوين صفوف الجدول حسب نوع الحركة في الشاشة والطباعة */
         tr.tx-row-income {
             background-color: #ecfdf5 !important;
             -webkit-print-color-adjust: exact !important;
@@ -81,7 +79,6 @@
             print-color-adjust: exact !important;
         }
 
-        /* تنسيق الطباعة وتصدير PDF ومنع تكسير الحروف العربية وقص الجوانب */
         .official-print-header {
             display: none;
         }
@@ -103,7 +100,7 @@
             }
             .official-print-header {
                 display: block !important;
-                margin-bottom: 10px !important;
+                margin-bottom: 8px !important;
                 width: 100% !important;
             }
             #app-main-layout {
@@ -123,7 +120,7 @@
                 background: #ffffff !important;
             }
             #workshop-workspace > div {
-                padding: 4px !important;
+                padding: 2px !important;
             }
             #workshop-workspace .ws-gray-target {
                 filter: none !important;
@@ -132,20 +129,20 @@
             .print-boxes-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 8px !important;
-                margin-bottom: 10px !important;
+                gap: 6px !important;
+                margin-bottom: 8px !important;
                 width: 100% !important;
             }
             .print-box-compact {
-                padding: 8px 10px !important;
+                padding: 6px 8px !important;
             }
             .print-box-compact .box-main-val {
-                font-size: 15px !important;
-                margin-top: 3px !important;
+                font-size: 14px !important;
+                margin-top: 2px !important;
             }
             .print-box-compact .box-sub-row {
-                margin-top: 5px !important;
-                padding-top: 4px !important;
+                margin-top: 4px !important;
+                padding-top: 3px !important;
                 font-size: 10px !important;
             }
             .print-table-wrapper {
@@ -164,7 +161,7 @@
             }
             th, td {
                 border: 1.5px solid #94a3b8 !important;
-                padding: 5px 4px !important;
+                padding: 4px 3px !important;
                 font-size: 10px !important;
                 word-break: break-word !important;
             }
@@ -187,7 +184,7 @@
         }
         .pdf-export-mode .official-print-header {
             display: block !important;
-            margin-bottom: 10px !important;
+            margin-bottom: 8px !important;
             width: 100% !important;
         }
         .pdf-export-mode #workshop-workspace {
@@ -195,12 +192,12 @@
             max-width: 730px !important;
             box-shadow: none !important;
             border: none !important;
-            padding: 6px !important;
+            padding: 4px !important;
             margin: 0 auto !important;
             background: #ffffff !important;
         }
         .pdf-export-mode #workshop-workspace > div {
-            padding: 4px !important;
+            padding: 2px !important;
         }
         .pdf-export-mode #workshop-workspace .ws-gray-target {
             filter: none !important;
@@ -209,20 +206,20 @@
         .pdf-export-mode .print-boxes-grid {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 8px !important;
-            margin-bottom: 10px !important;
+            gap: 6px !important;
+            margin-bottom: 8px !important;
             width: 100% !important;
         }
         .pdf-export-mode .print-box-compact {
-            padding: 8px 10px !important;
+            padding: 6px 8px !important;
         }
         .pdf-export-mode .print-box-compact .box-main-val {
-            font-size: 15px !important;
-            margin-top: 3px !important;
+            font-size: 14px !important;
+            margin-top: 2px !important;
         }
         .pdf-export-mode .print-box-compact .box-sub-row {
-            margin-top: 5px !important;
-            padding-top: 4px !important;
+            margin-top: 4px !important;
+            padding-top: 3px !important;
             font-size: 10px !important;
         }
         .pdf-export-mode .print-table-wrapper {
@@ -237,7 +234,7 @@
         }
         .pdf-export-mode th, .pdf-export-mode td {
             border: 1.5px solid #94a3b8 !important;
-            padding: 5px 4px !important;
+            padding: 4px 3px !important;
             font-size: 10px !important;
             word-break: break-word !important;
         }
@@ -2023,7 +2020,6 @@
             document.getElementById('tx-modal').classList.add('hidden');
         }
 
-        // تحديث السهم العمودي (أعلى / أسفل) ليشير دائماً من المصروف (-) إلى الإيراد (+)
         function updateExchangeDirectionUI() {
             const boxUsd = document.getElementById('ex-box-usd');
             const boxSyp = document.getElementById('ex-box-syp');
@@ -2032,7 +2028,6 @@
             const arrowSvg = document.getElementById('ex-arrow-svg');
 
             if (exchangeFromCurrency === 'USD') {
-                // الدولار في الأعلى هو المصروف (-)، والليرة في الأسفل هي الإيراد (+) -> السهم يشير للأسفل (من المصروف للإيراد)
                 boxUsd.className = 'p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all';
                 boxSyp.className = 'p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all';
                 usdBadge.textContent = 'المصروف (-)';
@@ -2041,7 +2036,6 @@
                 sypBadge.className = 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 if (arrowSvg) arrowSvg.style.transform = 'rotate(0deg)';
             } else {
-                // الليرة في الأسفل هي المصروف (-)، والدولار في الأعلى هو الإيراد (+) -> السهم ينقلب للأعلى (من المصروف للإيراد)
                 boxUsd.className = 'p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all';
                 boxSyp.className = 'p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all';
                 usdBadge.textContent = 'الإيراد (+)';
@@ -2584,48 +2578,10 @@
                 document.getElementById('ws-forms-container').classList.add('hidden');
             }
 
-            let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
             const categoriesSet = new Set(ensureWorkshopCategories(ws));
-
             (ws.transactions || []).forEach(tx => {
                 if (tx.category) categoriesSet.add(tx.category);
-                if (tx.type === 'income') {
-                    if (tx.currency === 'USD') usdIn += tx.amount; else sypIn += tx.amount;
-                } else if (tx.type === 'expense') {
-                    if (tx.currency === 'USD') usdOut += tx.amount; else sypOut += tx.amount;
-                } else if (tx.type === 'exchange') {
-                    if (tx.fromCurrency === 'USD') { usdOut += tx.fromAmount; sypIn += tx.toAmount; }
-                    else { sypOut += tx.fromAmount; usdIn += tx.toAmount; }
-                }
             });
-
-            const wsUsdNet = usdIn - usdOut;
-            const wsSypNet = sypIn - sypOut;
-
-            const wsUsdNetEl = document.getElementById('ws-usd-net');
-            const wsSypNetEl = document.getElementById('ws-syp-net');
-            wsUsdNetEl.textContent = `$ ${formatNum(wsUsdNet)}`;
-            document.getElementById('ws-usd-in').textContent = `$ ${formatNum(usdIn)}`;
-            document.getElementById('ws-usd-out').textContent = `$ ${formatNum(usdOut)}`;
-
-            wsSypNetEl.textContent = `${formatNum(wsSypNet)} ل.س`;
-            document.getElementById('ws-syp-in').textContent = `${formatNum(sypIn)} ل.س`;
-            document.getElementById('ws-syp-out').textContent = `${formatNum(sypOut)} ل.س`;
-
-            applyBalanceBoxTheme(
-                document.getElementById('ws-usd-box-card'),
-                wsUsdNetEl,
-                document.getElementById('ws-usd-sub-row'),
-                wsUsdNet,
-                true
-            );
-            applyBalanceBoxTheme(
-                document.getElementById('ws-syp-box-card'),
-                wsSypNetEl,
-                document.getElementById('ws-syp-sub-row'),
-                wsSypNet,
-                true
-            );
 
             const catSelect = document.getElementById('filter-category');
             const prevCat = catSelect.value;
@@ -2676,6 +2632,47 @@
                 filtered = [...filtered].reverse().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
             }
 
+            // حساب المجاميع بناءً على الحركات المفلترة الظاهرة فقط (وليس كل الورشة)
+            let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
+            filtered.forEach(tx => {
+                if (tx.type === 'income') {
+                    if (tx.currency === 'USD') usdIn += tx.amount; else sypIn += tx.amount;
+                } else if (tx.type === 'expense') {
+                    if (tx.currency === 'USD') usdOut += tx.amount; else sypOut += tx.amount;
+                } else if (tx.type === 'exchange') {
+                    if (tx.fromCurrency === 'USD') { usdOut += tx.fromAmount; sypIn += tx.toAmount; }
+                    else { sypOut += tx.fromAmount; usdIn += tx.toAmount; }
+                }
+            });
+
+            const wsUsdNet = usdIn - usdOut;
+            const wsSypNet = sypIn - sypOut;
+
+            const wsUsdNetEl = document.getElementById('ws-usd-net');
+            const wsSypNetEl = document.getElementById('ws-syp-net');
+            wsUsdNetEl.textContent = `$ ${formatNum(wsUsdNet)}`;
+            document.getElementById('ws-usd-in').textContent = `$ ${formatNum(usdIn)}`;
+            document.getElementById('ws-usd-out').textContent = `$ ${formatNum(usdOut)}`;
+
+            wsSypNetEl.textContent = `${formatNum(wsSypNet)} ل.س`;
+            document.getElementById('ws-syp-in').textContent = `${formatNum(sypIn)} ل.س`;
+            document.getElementById('ws-syp-out').textContent = `${formatNum(sypOut)} ل.س`;
+
+            applyBalanceBoxTheme(
+                document.getElementById('ws-usd-box-card'),
+                wsUsdNetEl,
+                document.getElementById('ws-usd-sub-row'),
+                wsUsdNet,
+                true
+            );
+            applyBalanceBoxTheme(
+                document.getElementById('ws-syp-box-card'),
+                wsSypNetEl,
+                document.getElementById('ws-syp-sub-row'),
+                wsSypNet,
+                true
+            );
+
             document.getElementById('filtered-count').textContent = filtered.length;
 
             const tbody = document.getElementById('transactions-tbody');
@@ -2702,7 +2699,6 @@
                     const fromStr = tx.fromCurrency === 'USD' ? `$ ${formatNum(tx.fromAmount)}` : `${formatNum(tx.fromAmount)} ل.س`;
                     const toStr = tx.toCurrency === 'USD' ? `$ ${formatNum(tx.toAmount)}` : `${formatNum(tx.toAmount)} ل.س`;
 
-                    // نقل سعر الصرف لخانة التصنيف/البند بدلاً من البيان
                     categoryCellHtml = tx.rate
                         ? `<div class="flex flex-col gap-1">
                                <span>صرافة</span>
@@ -2835,7 +2831,7 @@
             document.body.classList.add('pdf-export-mode');
 
             const opt = {
-                margin: [8, 8, 8, 8],
+                margin: [6, 6, 6, 6],
                 filename: `كشف_حساب_${ws.name}_${getTodayStr()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 794 },
