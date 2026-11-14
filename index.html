@@ -135,7 +135,7 @@
         </div>
     </div>
 
-    <!-- الشريط العلوي الفاخر -->
+    <!-- الشريط العلوي الفاخر (Sticky) -->
     <header class="no-print bg-gradient-to-l from-slate-950 via-slate-900 to-indigo-950 text-white shadow-xl sticky top-0 z-30 border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -156,17 +156,24 @@
                 </div>
             </div>
 
-            <!-- عداد سعة السحابة المتبقية + أزرار التحكم -->
+            <!-- شريط اسم الورشة النشطة حالياً (يبقى ظاهراً دائماً عند التصفح لأسفل) -->
+            <div id="sticky-active-workshop-pill" class="hidden bg-indigo-950/90 border border-indigo-500/40 px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-inner">
+                <span class="text-[11px] font-bold text-indigo-300">الورشة الحالية:</span>
+                <span id="sticky-ws-name" class="text-xs sm:text-sm font-black text-white truncate max-w-[180px] sm:max-w-[260px]"></span>
+                <span id="sticky-ws-status" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full"></span>
+            </div>
+
+            <!-- عداد سعة السحابة الفعلي + أزرار التحكم -->
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                <!-- مؤشر سعة السحابة -->
-                <div class="bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2.5 min-w-[165px]">
+                <!-- مؤشر سعة السحابة الحقيقي من السحابة -->
+                <div class="bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2.5 min-w-[185px]" title="القياس الفعلي لحجم البيانات المستلمة من خادم السحابة">
                     <div class="flex-1">
-                        <div class="flex justify-between items-center text-[10px] font-extrabold mb-1">
+                        <div class="flex justify-between items-center text-[10px] font-extrabold mb-1 gap-2">
                             <span class="text-slate-300">المتبقي بالسحابة:</span>
-                            <span id="cloud-remaining-text" class="text-emerald-400 ltr-num">100%</span>
+                            <span id="cloud-remaining-text" class="text-emerald-400 ltr-num">جاري القياس...</span>
                         </div>
                         <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                            <div id="cloud-capacity-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 2%"></div>
+                            <div id="cloud-capacity-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 1%"></div>
                         </div>
                     </div>
                 </div>
@@ -192,42 +199,24 @@
     <!-- المحتوى الرئيسي -->
     <main id="app-main-layout" class="max-w-7xl w-full mx-auto px-3 sm:px-5 py-5 sm:py-6 flex-1 space-y-5 sm:space-y-6">
 
-        <!-- ملخص الصندوق العام للورشات (بألوان متميزة لكل بطاقة) -->
-        <section id="global-summary-section" class="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-            <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 rounded-2xl p-4 shadow-sm border border-emerald-200/80 border-r-4 border-r-emerald-600">
+        <!-- ملخص الصندوق العام للورشات (صندوق الدولار وصندوق الليرة السورية فقط) -->
+        <section id="global-summary-section" class="no-print grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 rounded-2xl p-4 sm:p-5 shadow-sm border border-emerald-200/80 border-r-4 border-r-emerald-600">
                 <div class="flex items-center justify-between">
-                    <div class="text-xs font-extrabold text-emerald-900">الصندوق العام (دولار $)</div>
-                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-xs">$</span>
+                    <div class="text-xs sm:text-sm font-extrabold text-emerald-900">الصندوق العام (دولار $)</div>
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-sm">$</span>
                 </div>
-                <div id="global-usd-balance" class="text-2xl font-black text-emerald-700 mt-1.5 ltr-num">$ 0</div>
-                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات</div>
+                <div id="global-usd-balance" class="text-2xl sm:text-3xl font-black text-emerald-700 mt-1.5 ltr-num">$ 0</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات المتاحة</div>
             </div>
 
-            <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/40 rounded-2xl p-4 shadow-sm border border-blue-200/80 border-r-4 border-r-blue-600">
+            <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/40 rounded-2xl p-4 sm:p-5 shadow-sm border border-blue-200/80 border-r-4 border-r-blue-600">
                 <div class="flex items-center justify-between">
-                    <div class="text-xs font-extrabold text-blue-900">الصندوق العام (ليرة سورية)</div>
-                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-black text-[10px]">ل.س</span>
+                    <div class="text-xs sm:text-sm font-extrabold text-blue-900">الصندوق العام (ليرة سورية)</div>
+                    <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs">ل.س</span>
                 </div>
-                <div id="global-syp-balance" class="text-2xl font-black text-blue-700 mt-1.5 ltr-num">0 ل.س</div>
-                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات</div>
-            </div>
-
-            <div class="bg-gradient-to-br from-indigo-50 via-white to-indigo-50/40 rounded-2xl p-4 shadow-sm border border-indigo-200/80 border-r-4 border-r-indigo-600">
-                <div class="flex items-center justify-between">
-                    <div class="text-xs font-extrabold text-indigo-900">الورشات النشطة</div>
-                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs">▶</span>
-                </div>
-                <div id="global-active-count" class="text-2xl font-black text-indigo-800 mt-1.5">0</div>
-                <div class="text-[11px] font-bold text-slate-500 mt-1">ورشات قيد العمل حالياً</div>
-            </div>
-
-            <div class="bg-gradient-to-br from-slate-100 via-white to-slate-100/60 rounded-2xl p-4 shadow-sm border border-slate-300/80 border-r-4 border-r-slate-500">
-                <div class="flex items-center justify-between">
-                    <div class="text-xs font-extrabold text-slate-700">الورشات المتوقفة</div>
-                    <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">⏸</span>
-                </div>
-                <div id="global-inactive-count" class="text-2xl font-black text-slate-600 mt-1.5">0</div>
-                <div class="text-[11px] font-bold text-slate-500 mt-1">مؤرشفة ومقفلة عن التعديل</div>
+                <div id="global-syp-balance" class="text-2xl sm:text-3xl font-black text-blue-700 mt-1.5 ltr-num">0 ل.س</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات المتاحة</div>
             </div>
         </section>
 
@@ -311,16 +300,16 @@
                             <button onclick="toggleCategoryBreakdown()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 📊 ملخص البنود
                             </button>
-                            <button onclick="exportExcelCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                            <button id="btn-export-excel" onclick="exportExcelCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 📗 Excel
                             </button>
-                            <button onclick="exportPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                            <button id="btn-export-pdf" onclick="exportPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 📄 PDF (A4)
                             </button>
-                            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                            <button id="btn-print-ws" onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 🖨 طباعة
                             </button>
-                            <button onclick="exportSingleWorkshop()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                            <button id="btn-export-ws-json" onclick="exportSingleWorkshop()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 تصدير
                             </button>
                             <button onclick="deleteCurrentWorkshop()" id="btn-delete-ws" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs font-extrabold transition">
@@ -531,13 +520,13 @@
         </div>
     </main>
 
-    <!-- نافذة إدارة الحسابات والصلاحيات المتقدمة (عريضة ومفصلة ومتجاوبة) -->
+    <!-- نافذة إدارة الحسابات والصلاحيات التفصيلية الدقيقة -->
     <div id="users-modal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl max-h-[92vh] overflow-y-auto space-y-6 border border-slate-200 my-auto">
             <div class="flex items-center justify-between border-b border-slate-200 pb-4">
                 <div>
                     <h3 class="text-lg sm:text-xl font-black text-slate-900">👥 مركز إدارة الحسابات والصلاحيات السحابية</h3>
-                    <p class="text-xs font-bold text-slate-500 mt-0.5">التحكم الكامل بحساب المدير والمستخدمين الفرعيين وصلاحيات الوصول للورشات</p>
+                    <p class="text-xs font-bold text-slate-500 mt-0.5">تخصيص دقيق لصلاحيات كل مستخدم (حذف الورشات، الطباعة، تعديل الحركات، حذف الحركات)</p>
                 </div>
                 <button onclick="closeUsersModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-lg flex items-center justify-center transition">✕</button>
             </div>
@@ -565,15 +554,15 @@
                 </div>
             </form>
 
-            <!-- القسم الثاني: إضافة أو تعديل مستخدم فرعي بصلاحيات دقيقة -->
+            <!-- القسم الثاني: إضافة أو تعديل مستخدم فرعي بصلاحيات مفصلة -->
             <form onsubmit="saveSubUser(event)" class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4">
                 <input type="hidden" id="sub-edit-id">
                 <div class="flex items-center justify-between">
-                    <div id="sub-form-title" class="text-xs sm:text-sm font-black text-slate-900">➕ إنشاء حساب مستخدم فرعي جديد وتحديد صلاحياته</div>
+                    <div id="sub-form-title" class="text-xs sm:text-sm font-black text-slate-900">➕ إنشاء حساب مستخدم فرعي وتحديد صلاحياته بدقة</div>
                     <button type="button" id="sub-cancel-edit-btn" onclick="cancelEditSubUser()" class="hidden text-xs font-extrabold text-rose-600 hover:underline">إلغاء التعديل</button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
                         <input type="text" id="sub-username" required placeholder="مثال: ahmad" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
@@ -582,18 +571,39 @@
                         <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
                         <input type="text" id="sub-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">مستوى الصلاحية</label>
-                        <select id="sub-role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
-                            <option value="editor">محرر (إضافة وتعديل الحركات)</option>
-                            <option value="viewer">مشاهد فقط (اطلاع وطباعة بدون تعديل)</option>
-                        </select>
+                </div>
+
+                <!-- مصفوفة الصلاحيات الدقيقة -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                    <div class="text-xs font-extrabold text-slate-800">🛡️ الصلاحيات الممنوحة لهذا الحساب:</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs font-bold">
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50/50">
+                            <input type="checkbox" id="perm-edit-tx" checked class="rounded text-indigo-600 w-4 h-4">
+                            <span>إضافة وتعديل الحركات المالية</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50/50">
+                            <input type="checkbox" id="perm-delete-tx" class="rounded text-rose-600 w-4 h-4">
+                            <span>حذف الحركات المالية</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50/50">
+                            <input type="checkbox" id="perm-print-export" checked class="rounded text-emerald-600 w-4 h-4">
+                            <span>الطباعة وتصدير PDF / Excel</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50/50">
+                            <input type="checkbox" id="perm-create-ws" class="rounded text-indigo-600 w-4 h-4">
+                            <span>إضافة ورشات جديدة</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50/50">
+                            <input type="checkbox" id="perm-manage-ws" class="rounded text-rose-600 w-4 h-4">
+                            <span>حذف الورشات وتفعيلها/إيقافها</span>
+                        </label>
                     </div>
                 </div>
 
+                <!-- الورشات المسموح الوصول إليها -->
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <span class="text-xs font-extrabold text-slate-800">الورشات المسموح لهذا الحساب الوصول إليها:</span>
+                        <span class="text-xs font-extrabold text-slate-800">🏗️ الورشات المسموح لهذا الحساب الوصول إليها:</span>
                         <div class="flex gap-2">
                             <button type="button" onclick="toggleAllSubWorkshops(true)" class="text-[11px] font-extrabold text-indigo-600 hover:underline">تحديد الكل</button>
                             <span class="text-slate-300">|</span>
@@ -694,7 +704,7 @@
         const FIRESTORE_DOC_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/workshops_system/cloud_master_v8`;
         const SESSION_USER_KEY = 'ws_cloud_active_user_v8';
         const SESSION_WS_KEY = 'ws_cloud_selected_ws_v8';
-        const CLOUD_MAX_BYTES = 1048576; // الحد الأقصى لمستند Firestore (1 ميجابايت = 1,048,576 بايت)
+        const CLOUD_MAX_BYTES = 1048576; // الحد الأقصى الفعلي لمستند Firestore (1 ميجابايت = 1,048,576 بايت)
 
         const DEFAULT_OWNER = {
             username: 'anas',
@@ -714,6 +724,22 @@
         let initialCloudLoaded = false;
         let wsSidebarFilter = 'ALL';
         let masterWipeTimer = null;
+        let actualCloudBytesFromServer = null;
+
+        // دالة مساعدة للتحقق من صلاحيات المستخدم الحالي بدقة
+        function hasPermission(permKey) {
+            if (!window.currentUser) return false;
+            if (window.currentUser.role === 'owner') return true;
+            const perms = window.currentUser.permissions || {};
+            // توافق مع الحسابات القديمة التي كانت تعتمد role فقط
+            if (Object.keys(perms).length === 0) {
+                if (permKey === 'editTx') return window.currentUser.role === 'editor';
+                if (permKey === 'deleteTx') return window.currentUser.role === 'editor';
+                if (permKey === 'printExport') return true;
+                return false;
+            }
+            return Boolean(perms[permKey]);
+        }
 
         function setWorkshopSidebarFilter(mode) {
             wsSidebarFilter = mode;
@@ -746,20 +772,23 @@
             window._toastTimer = setTimeout(() => box.classList.add('hidden'), 3200);
         }
 
-        // تحديث عداد سعة السحابة المتبقية
+        // تحديث عداد سعة السحابة المتبقية بناءً على الحجم الفعلي المستلم من السحابة نفسها
         function updateCloudCapacityMeter() {
             try {
-                const jsonStr = JSON.stringify(window.appData);
-                const usedBytes = new Blob([jsonStr]).size;
+                const usedBytes = actualCloudBytesFromServer !== null
+                    ? actualCloudBytesFromServer
+                    : new Blob([JSON.stringify(window.appData)]).size;
+
                 const usedPercent = Math.min(100, (usedBytes / CLOUD_MAX_BYTES) * 100);
                 const remainingPercent = Math.max(0, 100 - usedPercent);
-                const remainingKB = Math.max(0, Math.round((CLOUD_MAX_BYTES - usedBytes) / 1024));
+                const usedKB = (usedBytes / 1024).toFixed(1);
+                const totalKB = Math.round(CLOUD_MAX_BYTES / 1024);
 
                 const textEl = document.getElementById('cloud-remaining-text');
                 const barEl = document.getElementById('cloud-capacity-bar');
                 if (textEl && barEl) {
-                    textEl.textContent = `${remainingPercent.toFixed(1)}% (${remainingKB} KB)`;
-                    barEl.style.width = `${Math.max(3, usedPercent)}%`;
+                    textEl.textContent = `${remainingPercent.toFixed(1)}% (${usedKB}/${totalKB} KB)`;
+                    barEl.style.width = `${Math.max(2, usedPercent)}%`;
 
                     if (remainingPercent > 35) {
                         textEl.className = 'text-emerald-400 ltr-num';
@@ -800,7 +829,7 @@
             }
         }
 
-        // جلب كافة البيانات من السحابة الحقيقية
+        // جلب كافة البيانات من السحابة الحقيقية وقياس حجمها الفعلي من استجابة الخادم
         async function fetchFromCloud() {
             try {
                 const res = await fetch(`${FIRESTORE_DOC_URL}?t=${Date.now()}`, {
@@ -813,7 +842,12 @@
                     return true;
                 }
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                const doc = await res.json();
+
+                // قراءة النص الخام المستلم من السحابة لقياس الحجم الفعلي بدقة
+                const rawResponseText = await res.text();
+                actualCloudBytesFromServer = new Blob([rawResponseText]).size;
+
+                const doc = JSON.parse(rawResponseText);
                 if (doc && doc.fields && doc.fields.payload && doc.fields.payload.stringValue) {
                     const parsed = JSON.parse(doc.fields.payload.stringValue);
                     window.appData = {
@@ -833,10 +867,9 @@
             }
         }
 
-        // حفظ كافة البيانات في السحابة الحقيقية
+        // حفظ كافة البيانات في السحابة الحقيقية وتحديث الحجم الفعلي من رد السحابة
         async function pushToCloud() {
             isSavingCloud = true;
-            updateCloudCapacityMeter();
             setCloudStatus('جاري المزامنة مع السحابة...', false);
             try {
                 const body = {
@@ -851,6 +884,11 @@
                     body: JSON.stringify(body)
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                const rawResponseText = await res.text();
+                actualCloudBytesFromServer = new Blob([rawResponseText]).size;
+                updateCloudCapacityMeter();
+
                 setCloudStatus('تم الحفظ في السحابة الموحدة ✓', true);
             } catch (err) {
                 console.error('Cloud push error:', err);
@@ -865,6 +903,18 @@
             setCloudStatus('جاري تحديث البيانات من السحابة...', false);
             const ok = await fetchFromCloud();
             if (ok) {
+                // تحديث صلاحيات المستخدم الحالي في حال عدّلها المدير
+                if (window.currentUser && window.currentUser.role !== 'owner') {
+                    const freshSub = window.appData.subUsers.find(u => u.username === window.currentUser.username);
+                    if (!freshSub || freshSub.suspended) {
+                        handleLogout();
+                        return;
+                    }
+                    window.currentUser.permissions = freshSub.permissions || {};
+                    window.currentUser.allowedWorkshops = freshSub.allowedWorkshops || [];
+                    sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(window.currentUser));
+                    applyUserPermissionsUI();
+                }
                 renderAll();
                 showToast('تم تحديث جميع البيانات من السحابة بنجاح');
             }
@@ -890,7 +940,7 @@
             btn.textContent = 'تسجيل الدخول إلى النظام';
 
             if (uInput === window.appData.owner.username && pInput === window.appData.owner.password) {
-                window.currentUser = { username: uInput, role: 'owner', allowedWorkshops: 'ALL' };
+                window.currentUser = { username: uInput, role: 'owner', allowedWorkshops: 'ALL', permissions: {} };
                 sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(window.currentUser));
                 enterApp();
                 return;
@@ -905,7 +955,8 @@
                 }
                 window.currentUser = {
                     username: sub.username,
-                    role: sub.role,
+                    role: sub.role || 'custom',
+                    permissions: sub.permissions || {},
                     allowedWorkshops: sub.allowedWorkshops || []
                 };
                 sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(window.currentUser));
@@ -917,16 +968,20 @@
             errEl.classList.remove('hidden');
         }
 
-        function enterApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            const isOwner = window.currentUser.role === 'owner';
+        function applyUserPermissionsUI() {
+            const isOwner = window.currentUser && window.currentUser.role === 'owner';
             document.getElementById('btn-users-modal').classList.toggle('hidden', !isOwner);
             document.getElementById('btn-backup-modal').classList.toggle('hidden', !isOwner);
-            document.getElementById('add-workshop-form').classList.toggle('hidden', !isOwner);
+            document.getElementById('add-workshop-form').classList.toggle('hidden', !hasPermission('createWs'));
             document.getElementById('lbl-import-single-ws').classList.toggle('hidden', !isOwner);
 
-            const roleName = isOwner ? 'مدير النظام' : (window.currentUser.role === 'editor' ? 'محرر' : 'مشاهد');
+            const roleName = isOwner ? 'مدير النظام' : 'حساب مخصص الصلاحيات';
             document.getElementById('current-user-badge').textContent = `| 👤 ${window.currentUser.username} (${roleName})`;
+        }
+
+        function enterApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            applyUserPermissionsUI();
 
             document.getElementById('tx-date').value = getTodayStr();
             document.getElementById('ex-date').value = getTodayStr();
@@ -939,6 +994,7 @@
             window.currentUser = null;
             document.getElementById('login-password').value = '';
             document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('sticky-active-workshop-pill').classList.add('hidden');
             fetchFromCloud();
         }
 
@@ -952,9 +1008,9 @@
             return window.appData.workshops.filter(w => allowed.includes(w.id));
         }
 
-        function addNewWorkshop(e) {
+        async function addNewWorkshop(e) {
             e.preventDefault();
-            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            if (!hasPermission('createWs')) return;
             const input = document.getElementById('new-workshop-name');
             const name = input.value.trim();
             if (!name) return;
@@ -966,11 +1022,22 @@
                 transactions: []
             };
             window.appData.workshops.unshift(newWs);
+
+            // إذا كان من أضاف الورشة مستخدماً فرعياً لديه صلاحية الإضافة، نضيفها تلقائياً لقائمة ورشاته المسموحة
+            if (window.currentUser.role !== 'owner') {
+                const sub = window.appData.subUsers.find(u => u.username === window.currentUser.username);
+                if (sub) {
+                    sub.allowedWorkshops = Array.from(new Set([...(sub.allowedWorkshops || []), newWs.id]));
+                    window.currentUser.allowedWorkshops = sub.allowedWorkshops;
+                    sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(window.currentUser));
+                }
+            }
+
             selectedWorkshopId = newWs.id;
             sessionStorage.setItem(SESSION_WS_KEY, selectedWorkshopId);
             input.value = '';
             renderAll();
-            pushToCloud();
+            await pushToCloud();
             showToast('تمت إضافة الورشة ومزامنتها سحابياً');
         }
 
@@ -982,7 +1049,7 @@
         }
 
         function toggleWorkshopActive() {
-            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            if (!hasPermission('manageWs')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             ws.active = !ws.active;
@@ -992,7 +1059,7 @@
         }
 
         function deleteCurrentWorkshop() {
-            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            if (!hasPermission('manageWs')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             if (!confirm(`هل أنت متأكد من حذف ورشة "${ws.name}" نهائياً من السحابة؟`)) return;
@@ -1005,6 +1072,7 @@
         }
 
         function quickToggleWorkshop(id) {
+            if (!hasPermission('manageWs')) return;
             const ws = window.appData.workshops.find(w => w.id === id);
             if (!ws) return;
             ws.active = !ws.active;
@@ -1014,6 +1082,7 @@
         }
 
         function quickExportWorkshop(id) {
+            if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === id);
             if (!ws) return;
             downloadJsonFile({ singleWorkshop: ws }, `workshop_${ws.name}_${getTodayStr()}.json`);
@@ -1021,7 +1090,7 @@
         }
 
         function quickDeleteWorkshop(id) {
-            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            if (!hasPermission('manageWs')) return;
             const ws = window.appData.workshops.find(w => w.id === id);
             if (!ws) return;
             if (!confirm(`هل أنت متأكد من حذف ورشة "${ws.name}" نهائياً؟`)) return;
@@ -1036,7 +1105,7 @@
         }
 
         function renameCurrentWorkshop() {
-            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            if (!hasPermission('manageWs')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const newName = prompt('أدخل الاسم الجديد للورشة:', ws.name);
@@ -1102,6 +1171,7 @@
         }
 
         function exportExcelCSV() {
+            if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const rows = [['التاريخ', 'النوع', 'البند', 'البيان', 'المبلغ دولار', 'المبلغ سوري']];
@@ -1188,6 +1258,7 @@
 
         async function saveTransaction(e) {
             e.preventDefault();
+            if (!hasPermission('editTx')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
@@ -1242,6 +1313,7 @@
         }
 
         function editTransaction(txId) {
+            if (!hasPermission('editTx')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             const tx = ws.transactions.find(t => t.id === txId);
@@ -1271,6 +1343,7 @@
 
         function saveExchange(e) {
             e.preventDefault();
+            if (!hasPermission('editTx')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
@@ -1301,6 +1374,7 @@
         }
 
         function deleteTransaction(txId) {
+            if (!hasPermission('deleteTx')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             if (!confirm('هل تريد حذف هذه الحركة؟')) return;
@@ -1327,10 +1401,9 @@
 
         function renderGlobalSummary() {
             const workshops = getAccessibleWorkshops();
-            let totalUsd = 0, totalSyp = 0, activeCount = 0, inactiveCount = 0;
+            let totalUsd = 0, totalSyp = 0;
 
             workshops.forEach(w => {
-                if (w.active) activeCount++; else inactiveCount++;
                 (w.transactions || []).forEach(tx => {
                     if (tx.type === 'income') {
                         if (tx.currency === 'USD') totalUsd += tx.amount; else totalSyp += tx.amount;
@@ -1345,8 +1418,6 @@
 
             document.getElementById('global-usd-balance').textContent = `$ ${formatNum(totalUsd)}`;
             document.getElementById('global-syp-balance').textContent = `${formatNum(totalSyp)} ل.س`;
-            document.getElementById('global-active-count').textContent = activeCount;
-            document.getElementById('global-inactive-count').textContent = inactiveCount;
         }
 
         function renderWorkshopsList() {
@@ -1372,7 +1443,8 @@
                 return;
             }
 
-            const isOwner = window.currentUser && window.currentUser.role === 'owner';
+            const canManageWs = hasPermission('manageWs');
+            const canPrintExport = hasPermission('printExport');
 
             listEl.innerHTML = workshops.map(w => {
                 const isSelected = w.id === selectedWorkshopId;
@@ -1417,17 +1489,23 @@
                             </div>
                         </div>
 
-                        ${isOwner ? `
+                        ${(canManageWs || canPrintExport) ? `
                         <div class="flex items-center justify-end gap-1.5 mt-2.5 pt-2 border-t border-slate-100" onclick="event.stopPropagation()">
+                            ${canManageWs ? `
                             <button onclick="quickToggleWorkshop('${w.id}')" title="${w.active ? 'إيقاف الورشة' : 'تفعيل الورشة'}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${w.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}">
                                 ${w.active ? '⏸ إيقاف' : '▶ تفعيل'}
                             </button>
+                            ` : ''}
+                            ${canPrintExport ? `
                             <button onclick="quickExportWorkshop('${w.id}')" title="تصدير ملف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-700">
                                 📤 تصدير
                             </button>
+                            ` : ''}
+                            ${canManageWs ? `
                             <button onclick="quickDeleteWorkshop('${w.id}')" title="حذف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-rose-50 hover:bg-rose-100 text-rose-700">
                                 🗑️
                             </button>
+                            ` : ''}
                         </div>
                         ` : ''}
                     </div>
@@ -1440,25 +1518,49 @@
             const ws = workshops.find(w => w.id === selectedWorkshopId);
             const emptyState = document.getElementById('no-workshop-selected');
             const detailsEl = document.getElementById('workshop-details-content');
+            const stickyPill = document.getElementById('sticky-active-workshop-pill');
 
             if (!ws) {
                 emptyState.classList.remove('hidden');
                 detailsEl.classList.add('hidden');
+                if (stickyPill) stickyPill.classList.add('hidden');
                 return;
             }
 
             emptyState.classList.add('hidden');
             detailsEl.classList.remove('hidden');
 
+            // تحديث الشريط العلوي الثابت باسم الورشة الحالية حتى عند النزول لأسفل الصفحة
+            if (stickyPill) {
+                stickyPill.classList.remove('hidden');
+                document.getElementById('sticky-ws-name').textContent = ws.name;
+                const stickyStatus = document.getElementById('sticky-ws-status');
+                if (ws.active) {
+                    stickyStatus.textContent = 'نشطة';
+                    stickyStatus.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
+                } else {
+                    stickyStatus.textContent = 'متوقفة';
+                    stickyStatus.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-600 text-slate-200';
+                }
+            }
+
             document.getElementById('ws-title').textContent = ws.name;
             const statusBadge = document.getElementById('ws-status-badge');
             const toggleBtn = document.getElementById('btn-toggle-active');
-            const isOwner = window.currentUser && window.currentUser.role === 'owner';
-            const canEdit = isOwner || (window.currentUser && window.currentUser.role === 'editor');
 
-            document.getElementById('btn-delete-ws').classList.toggle('hidden', !isOwner);
-            document.getElementById('btn-rename-ws').classList.toggle('hidden', !isOwner);
-            toggleBtn.classList.toggle('hidden', !isOwner);
+            const canManageWs = hasPermission('manageWs');
+            const canEditTx = hasPermission('editTx');
+            const canDeleteTx = hasPermission('deleteTx');
+            const canPrintExport = hasPermission('printExport');
+
+            document.getElementById('btn-delete-ws').classList.toggle('hidden', !canManageWs);
+            document.getElementById('btn-rename-ws').classList.toggle('hidden', !canManageWs);
+            toggleBtn.classList.toggle('hidden', !canManageWs);
+
+            document.getElementById('btn-export-excel').classList.toggle('hidden', !canPrintExport);
+            document.getElementById('btn-export-pdf').classList.toggle('hidden', !canPrintExport);
+            document.getElementById('btn-print-ws').classList.toggle('hidden', !canPrintExport);
+            document.getElementById('btn-export-ws-json').classList.toggle('hidden', !canPrintExport);
 
             if (ws.active) {
                 statusBadge.textContent = '● نشطة';
@@ -1466,7 +1568,7 @@
                 toggleBtn.textContent = '⏸ إيقاف الورشة';
                 toggleBtn.className = 'px-3 py-2 rounded-xl text-xs font-extrabold bg-amber-100 hover:bg-amber-200 text-amber-900 transition';
                 document.getElementById('ws-locked-banner').classList.add('hidden');
-                document.getElementById('ws-forms-container').classList.toggle('hidden', !canEdit);
+                document.getElementById('ws-forms-container').classList.toggle('hidden', !canEditTx);
             } else {
                 statusBadge.textContent = '⏸ متوقفة';
                 statusBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700';
@@ -1570,12 +1672,13 @@
                     ? `<button onclick="openImageModal('${tx.image}')" class="text-indigo-600 hover:underline text-xs font-extrabold">🖼️ عرض</button>`
                     : `<span class="text-slate-300">—</span>`;
 
-                const actionsHtml = (ws.active && canEdit)
-                    ? `<div class="flex items-center justify-center gap-1.5">
-                        ${tx.type !== 'exchange' ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold">تعديل</button>` : ''}
-                        <button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold">حذف</button>
-                       </div>`
-                    : `<span class="text-slate-300 text-xs">مقفل</span>`;
+                let actionsHtml = `<span class="text-slate-300 text-xs">مقفل</span>`;
+                if (ws.active && (canEditTx || canDeleteTx)) {
+                    actionsHtml = `<div class="flex items-center justify-center gap-1.5">
+                        ${(canEditTx && tx.type !== 'exchange') ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold">تعديل</button>` : ''}
+                        ${canDeleteTx ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold">حذف</button>` : ''}
+                    </div>`;
+                }
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
@@ -1595,6 +1698,7 @@
         // تصدير PDF (A4) الملون والمنظم
         // ==========================================
         function exportPDF() {
+            if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const element = document.getElementById('workshop-workspace');
@@ -1616,7 +1720,7 @@
         }
 
         // ==========================================
-        // إدارة الحسابات والصلاحيات المتقدمة
+        // إدارة الحسابات والصلاحيات التفصيلية الدقيقة
         // ==========================================
         function openUsersModal() {
             document.getElementById('owner-new-username').value = window.appData.owner.username;
@@ -1665,12 +1769,30 @@
             showToast('تم تحديث اسم المستخدم وكلمة المرور للمدير في السحابة');
         }
 
+        function readPermissionsFromForm() {
+            return {
+                editTx: document.getElementById('perm-edit-tx').checked,
+                deleteTx: document.getElementById('perm-delete-tx').checked,
+                printExport: document.getElementById('perm-print-export').checked,
+                createWs: document.getElementById('perm-create-ws').checked,
+                manageWs: document.getElementById('perm-manage-ws').checked
+            };
+        }
+
+        function writePermissionsToForm(perms = {}) {
+            document.getElementById('perm-edit-tx').checked = Boolean(perms.editTx);
+            document.getElementById('perm-delete-tx').checked = Boolean(perms.deleteTx);
+            document.getElementById('perm-print-export').checked = perms.printExport !== undefined ? Boolean(perms.printExport) : true;
+            document.getElementById('perm-create-ws').checked = Boolean(perms.createWs);
+            document.getElementById('perm-manage-ws').checked = Boolean(perms.manageWs);
+        }
+
         async function saveSubUser(e) {
             e.preventDefault();
             const editId = document.getElementById('sub-edit-id').value;
             const u = document.getElementById('sub-username').value.trim();
             const p = document.getElementById('sub-password').value.trim();
-            const role = document.getElementById('sub-role').value;
+            const permissions = readPermissionsFromForm();
             const checked = Array.from(document.querySelectorAll('.sub-ws-checkbox:checked')).map(cb => cb.value);
 
             if (!u || !p) return;
@@ -1682,7 +1804,8 @@
                         ...window.appData.subUsers[idx],
                         username: u,
                         password: p,
-                        role,
+                        role: 'custom',
+                        permissions,
                         allowedWorkshops: checked
                     };
                 }
@@ -1697,11 +1820,13 @@
                     id: 'usr_' + Date.now(),
                     username: u,
                     password: p,
-                    role,
+                    role: 'custom',
+                    permissions,
                     suspended: false,
                     allowedWorkshops: checked
                 });
                 e.target.reset();
+                writePermissionsToForm({ editTx: true, printExport: true });
                 renderSubUsersWorkshopsChecklist([]);
                 showToast('تم إضافة الحساب ومزامنته سحابياً');
             }
@@ -1716,7 +1841,15 @@
             document.getElementById('sub-edit-id').value = user.id;
             document.getElementById('sub-username').value = user.username;
             document.getElementById('sub-password').value = user.password;
-            document.getElementById('sub-role').value = user.role;
+
+            const legacyPerms = user.permissions || {
+                editTx: user.role === 'editor',
+                deleteTx: user.role === 'editor',
+                printExport: true,
+                createWs: false,
+                manageWs: false
+            };
+            writePermissionsToForm(legacyPerms);
             renderSubUsersWorkshopsChecklist(user.allowedWorkshops || []);
 
             document.getElementById('sub-form-title').textContent = `✏️ تعديل صلاحيات الحساب: ${user.username}`;
@@ -1728,9 +1861,9 @@
             document.getElementById('sub-edit-id').value = '';
             document.getElementById('sub-username').value = '';
             document.getElementById('sub-password').value = '';
-            document.getElementById('sub-role').value = 'editor';
+            writePermissionsToForm({ editTx: true, printExport: true });
             renderSubUsersWorkshopsChecklist([]);
-            document.getElementById('sub-form-title').textContent = '➕ إنشاء حساب مستخدم فرعي جديد وتحديد صلاحياته';
+            document.getElementById('sub-form-title').textContent = '➕ إنشاء حساب مستخدم فرعي وتحديد صلاحياته بدقة';
             document.getElementById('sub-submit-btn').textContent = '+ اعتماد وإضافة الحساب للسحابة';
             document.getElementById('sub-cancel-edit-btn').classList.add('hidden');
         }
@@ -1767,15 +1900,27 @@
                     .map(wid => window.appData.workshops.find(w => w.id === wid)?.name)
                     .filter(Boolean);
 
+                const p = u.permissions || {
+                    editTx: u.role === 'editor',
+                    deleteTx: u.role === 'editor',
+                    printExport: true,
+                    createWs: false,
+                    manageWs: false
+                };
+
+                const badges = [];
+                if (p.editTx) badges.push('<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">تعديل حركات</span>');
+                if (p.deleteTx) badges.push('<span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">حذف حركات</span>');
+                if (p.printExport) badges.push('<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">طباعة/تصدير</span>');
+                if (p.createWs) badges.push('<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">إضافة ورشات</span>');
+                if (p.manageWs) badges.push('<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">حذف/إدارة ورشات</span>');
+
                 return `
                     <div class="bg-white p-4 rounded-2xl border ${u.suspended ? 'border-rose-200 bg-rose-50/30 opacity-80' : 'border-slate-200'} shadow-xs space-y-2.5">
                         <div class="flex items-start justify-between gap-2">
                             <div>
                                 <div class="font-black text-slate-900 text-sm flex items-center gap-1.5">
                                     <span>👤 ${u.username}</span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.role === 'editor' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-700'}">
-                                        ${u.role === 'editor' ? 'محرر' : 'مشاهد'}
-                                    </span>
                                 </div>
                                 <div class="text-[11px] font-bold text-slate-500 mt-0.5">
                                     كلمة المرور: <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-800">${u.password}</span>
@@ -1784,6 +1929,10 @@
                             <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${u.suspended ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
                                 ${u.suspended ? 'مجمّد' : 'نشط'}
                             </span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1 text-[10px] font-extrabold">
+                            ${badges.length ? badges.join('') : '<span class="text-slate-400">مشاهدة فقط بدون صلاحيات تعديل</span>'}
                         </div>
 
                         <div class="text-[11px] font-bold text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100">
@@ -1929,6 +2078,7 @@
         }
 
         function exportSingleWorkshop() {
+            if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             downloadJsonFile({ singleWorkshop: ws }, `workshop_${ws.name}_${getTodayStr()}.json`);
@@ -2027,6 +2177,17 @@
                     const prevJson = JSON.stringify(window.appData);
                     const ok = await fetchFromCloud();
                     if (ok && window.currentUser && JSON.stringify(window.appData) !== prevJson) {
+                        if (window.currentUser.role !== 'owner') {
+                            const freshSub = window.appData.subUsers.find(u => u.username === window.currentUser.username);
+                            if (!freshSub || freshSub.suspended) {
+                                handleLogout();
+                                return;
+                            }
+                            window.currentUser.permissions = freshSub.permissions || {};
+                            window.currentUser.allowedWorkshops = freshSub.allowedWorkshops || [];
+                            sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(window.currentUser));
+                            applyUserPermissionsUI();
+                        }
                         renderAll();
                     }
                 }
