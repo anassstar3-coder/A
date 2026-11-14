@@ -84,18 +84,6 @@
                         <span id="header-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                         <span id="header-cloud-text">متصل بالسحابة</span>
                     </div>
-                    <div>
-                        <h1 class="text-base sm:text-lg font-extrabold leading-tight">محاسبة الورشات</h1>
-                        <p class="text-[11px] text-slate-400">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
-                    </div>
-                </div>
-
-                <!-- أدوات السحابة والنسخ الاحتياطي والمستخدمين -->
-                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                        <span>متصل موحد</span>
-                    </div>
 
                     <button id="btn-backup-all" onclick="exportFullBackup()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
                         <span>⬇</span> <span>نسخة احتياطية</span>
@@ -551,40 +539,10 @@
                 </div>
             </div>
 
-            <!-- أرشفة وتفريغ الورشات غير النشطة -->
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
-                <h4 class="text-xs font-extrabold text-amber-900">أرشفة وتفريغ الورشات غير النشطة:</h4>
-                <p class="text-[11px] text-amber-800">يقوم هذا الخيار بتنزيل ملف نسخة احتياطية لجميع الورشات "غير النشطة" ثم حذفها من النظام لتخفيف الزحمة.</p>
-                <button onclick="backupAndDeleteInactiveWorkshops()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">⬇ تنزيل نسخة للورشات غير المفعلة وحذفها</button>
-            </div>
-
-            <!-- منطقة الخطر: تصفير شامل بعد 10 ثواني -->
-            <div id="danger-zone-box" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
-                <h4 class="text-xs font-extrabold text-rose-900">منطقة الخطر: حذف جميع البيانات وتصفير النظام</h4>
-                <p class="text-[11px] text-rose-700">سيتم مسح جميع الورشات والحركات نهائياً.</p>
-                <div class="flex gap-2">
-                    <button type="button" id="btn-arm-wipe" onclick="armFullWipeCountdown()" class="flex-1 bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold py-2 rounded-xl text-xs">تفعيل زر الحذف الشامل (انتظار 10 ثوانٍ)</button>
-                    <button type="button" id="btn-execute-wipe" disabled onclick="executeFullWipe()" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs opacity-40 cursor-not-allowed">حذف الكل نهائياً</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة عرض الصور بحجم كامل -->
-    <div id="image-viewer-modal" onclick="closeModal('image-viewer-modal')" class="fixed inset-0 z-50 bg-black/85 hidden items-center justify-center p-4">
-        <div class="max-w-3xl max-h-[90vh] relative" onclick="event.stopPropagation()">
-            <button onclick="closeModal('image-viewer-modal')" class="absolute -top-10 left-0 bg-white text-slate-900 px-3 py-1 rounded-lg text-xs font-bold">✕ إغلاق</button>
-            <img id="viewer-img-el" src="" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl border-2 border-white">
-        </div>
-    </div>
-
-    <!-- رسائل التنبيه العائمة (Toast) -->
-    <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2 no-print"></div>
-
-    <!-- ربط سحابي مباشر 100% لجميع المتصفحات والأجهزة بدون تخزين محلي منفصل -->
+    <!-- ربط سحابي مباشر 100% لجميع المتصفحات والأجهزة -->
     <script>
-        // رابط قاعدة البيانات السحابية المشتركة الفورية (Firebase Realtime REST API)
         const CLOUD_DB_URL = 'https://anas-alasfar-default-rtdb.firebaseio.com/workshops_cloud_v6.json';
+        const LOCAL_CACHE_KEY = 'workshops_accounting_v5_data';
         const SESSION_USER_KEY = 'ws_session_user_v6';
         const SESSION_WS_KEY = 'ws_session_selected_ws_v6';
 
@@ -594,6 +552,15 @@
             workshops: [],
             lastUpdated: 0
         };
+
+        // تحميل الكاش المحلي فوراً كاحتياط ريثما يكتمل رد السحابة
+        try {
+            const cached = localStorage.getItem(LOCAL_CACHE_KEY);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed && parsed.owner) window.appData = parsed;
+            }
+        } catch (e) {}
 
         window.currentUser = null;
         let selectedWorkshopId = null;
@@ -620,24 +587,29 @@
                 if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
                 if (headerText) headerText.textContent = text || 'جاري المزامنة...';
             } else {
-                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
-                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-                if (loginText) loginText.textContent = text || 'تعذر الاتصال بالسحابة - تحقق من الإنترنت';
-                if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-                if (headerText) headerText.textContent = 'غير متصل بالسحابة';
+                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+                if (loginText) loginText.textContent = text || 'وضع العمل السريع (جاهز للدخول)';
+                if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+                if (headerText) headerText.textContent = 'متصل محلياً';
             }
         }
 
-        // جلب البيانات حصراً من السحابة
+        // جلب البيانات من السحابة مع مهلة زمنية قصيرة (5 ثوانٍ) لمنع التعليق نهائياً
         async function fetchFromCloud(silent = false) {
             if (isSavingCloud) return false;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             try {
-                const res = await fetch(CLOUD_DB_URL + '?t=' + Date.now(), { cache: 'no-store' });
+                const res = await fetch(CLOUD_DB_URL + '?t=' + Date.now(), {
+                    cache: 'no-store',
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const cloudData = await res.json();
 
                 if (cloudData && typeof cloudData === 'object') {
-                    // إذا كانت السحابة تحتوي على بيانات، نعتمدها بالكامل
                     if (cloudData.owner && cloudData.owner.username) {
                         window.appData.owner = cloudData.owner;
                     }
@@ -649,19 +621,20 @@
                         transactions: Array.isArray(w.transactions) ? w.transactions : []
                     })) : [];
                     window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
+                    try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
                 } else {
-                    // أول تشغيل على الإطلاق للسحابة: تهيئة البيانات الافتراضية على السحابة
                     await pushToCloud(true);
                 }
 
                 isCloudReady = true;
                 setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
-                updateStorageQuotaUI();
-                if (window.currentUser) renderAll();
+                if (typeof updateStorageQuotaUI === 'function') updateStorageQuotaUI();
+                if (window.currentUser && typeof renderAll === 'function') renderAll();
                 return true;
             } catch (err) {
-                console.error('Cloud fetch error:', err);
-                if (!silent) setCloudStatusUI('error', 'تحقق من اتصال الإنترنت');
+                clearTimeout(timeoutId);
+                console.warn('Cloud fetch fallback:', err);
+                if (!silent) setCloudStatusUI('error', 'جاهز للدخول (مزامنة تلقائية)');
                 return false;
             }
         }
@@ -671,6 +644,8 @@
             isSavingCloud = true;
             setCloudStatusUI('syncing', 'جاري الحفظ بالسحابة...');
             window.appData.lastUpdated = Date.now();
+            try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
+
             try {
                 const res = await fetch(CLOUD_DB_URL, {
                     method: 'PUT',
@@ -680,11 +655,10 @@
                 if (!res.ok) throw new Error('Failed to save');
                 isCloudReady = true;
                 setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
-                updateStorageQuotaUI();
+                if (typeof updateStorageQuotaUI === 'function') updateStorageQuotaUI();
             } catch (err) {
                 console.error('Cloud save error:', err);
-                setCloudStatusUI('error', 'فشل الحفظ بالسحابة');
-                if (!isInit) showToast('تعذر الحفظ في السحابة، تحقق من الإنترنت!', 'error');
+                setCloudStatusUI('error', 'تم الحفظ محلياً');
             } finally {
                 isSavingCloud = false;
             }
@@ -694,7 +668,7 @@
             pushToCloud(false);
         };
 
-        // مزامنة تلقائية من السحابة كل 4 ثوانٍ لتحديث أي جهاز مفتوح لحظياً
+        // مزامنة تلقائية من السحابة كل 5 ثوانٍ لتحديث أي جهاز مفتوح لحظياً
         setInterval(async () => {
             if (!isSavingCloud) {
                 try {
@@ -711,16 +685,34 @@
                             transactions: Array.isArray(w.transactions) ? w.transactions : []
                         })) : [];
                         window.appData.lastUpdated = cloudData.lastUpdated;
-                        updateStorageQuotaUI();
-                        if (window.currentUser) renderAll();
+                        try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
+                        if (typeof updateStorageQuotaUI === 'function') updateStorageQuotaUI();
+                        if (window.currentUser && typeof renderAll === 'function') renderAll();
                     }
                 } catch (e) {}
             }
-        }, 4000);
+        }, 5000);
     </script>
 
     <!-- منطق التطبيق -->
     <script>
+        function getTodayStr() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold text-white transition-all transform translate-y-0 ${type === 'error' ? 'bg-rose-600' : 'bg-emerald-700'}`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
         function formatNumberClean(num) {
             const val = Number(num) || 0;
             if (Number.isInteger(val)) return val.toLocaleString('en-US');
@@ -744,6 +736,8 @@
                 .replace(/[^\d.-]/g, '');
             const num = parseFloat(normalized);
             return isNaN(num) ? 0 : num;
+        }
+
         // تسجيل الدخول بعد التأكد من جلب أحدث بيانات من السحابة
         function authenticateUser(username, password, isRestore = false) {
             if (username === window.appData.owner.username && password === window.appData.owner.password) {
@@ -777,19 +771,13 @@
             const btn = document.getElementById('btn-login-submit');
 
             btn.disabled = true;
-            btn.textContent = 'جاري التحقق من السحابة...';
+            btn.textContent = 'جاري التحقق من البيانات...';
             errEl.classList.add('hidden');
 
-            // جلب أحدث بيانات وكلمات مرور من السحابة قبل التحقق
-            const ok = await fetchFromCloud(false);
+            // محاولة جلب أحدث بيانات من السحابة مع مهلة سريعة حتى لا يعلق الدخول أبداً
+            await fetchFromCloud(true);
             btn.disabled = false;
             btn.textContent = 'تسجيل الدخول';
-
-            if (!ok && !isCloudReady) {
-                errEl.textContent = 'تعذر الاتصال بالسحابة! تأكد من اتصالك بالإنترنت.';
-                errEl.classList.remove('hidden');
-                return;
-            }
 
             if (authenticateUser(u, p, false)) {
                 errEl.classList.add('hidden');
