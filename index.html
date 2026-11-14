@@ -33,20 +33,17 @@
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Floating Modal Backdrop */
         .modal-backdrop {
             background: rgba(2, 6, 23, 0.84);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }
 
-        /* Inactive Workshop Full Grayscale */
         .workshop-inactive-mode {
             filter: grayscale(100%) contrast(0.95);
             opacity: 0.9;
@@ -57,7 +54,6 @@
             opacity: 1 !important;
         }
 
-        /* Drag & Drop Card Styling */
         .ws-draggable-card {
             cursor: grab;
             user-select: none;
@@ -71,7 +67,6 @@
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.35) !important;
         }
 
-        /* Official Construction / Engineering A4 Print Styles */
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
             body {
@@ -149,7 +144,6 @@
         }
         .print-only { display: none; }
 
-        /* Dedicated PDF Export Mode (Zero Clipping, Centered A4, No Row Split) */
         body.pdf-exporting {
             background: #ffffff !important;
             color: #0f172a !important;
@@ -234,7 +228,6 @@
         body.pdf-exporting .row-expense { background-color: #ffe4e6 !important; }
         body.pdf-exporting .row-exchange { background-color: #fef08a !important; }
 
-        /* Solid Crisp Row Colors in Screen View (Zero Fade / Zero Hover Dimming) */
         .row-income { background-color: #d1fae5; }
         .row-expense { background-color: #ffe4e6; }
         .row-exchange { background-color: #fef08a; }
@@ -251,7 +244,6 @@
     <!-- ==================== 1. LOGIN SCREEN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-4 overflow-y-auto">
         <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 text-slate-800 my-auto">
-            <!-- House Logo Icon -->
             <div class="flex flex-col items-center text-center mb-6">
                 <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-emerald-500 p-0.5 shadow-xl shadow-indigo-500/30 mb-4">
                     <div class="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center">
@@ -263,10 +255,9 @@
                 <h1 class="text-2xl font-black text-slate-900 tracking-tight">نظام إدارة محاسبة الورشات</h1>
                 <p class="text-xs font-bold text-slate-500 mt-1">بوابة الدخول السحابية الموحدة • USD & SYP</p>
 
-                <!-- Live Cloud Green Indicator on Login Screen -->
                 <div id="loginCloudBadge" class="mt-4 inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-extrabold text-slate-600 transition-all">
                     <span id="loginCloudDot" class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span id="loginCloudText">جاري الاتصال بالسحابة وجلب البيانات...</span>
+                    <span id="loginCloudText">جاري الاتصال بالسحابة وفحص كافة المستندات...</span>
                 </div>
             </div>
 
@@ -290,17 +281,22 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                 </button>
             </form>
+
+            <div class="mt-4 pt-3 border-t border-slate-200 text-center">
+                <button type="button" onclick="openCloudInspectorModal()"
+                    class="text-xs font-extrabold text-indigo-700 hover:text-indigo-900 underline">
+                    🔍 فحص واسترجاع كافة المستندات والحسابات من السحابة
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- ==================== 2. MAIN APPLICATION ==================== -->
     <div id="appContainer" class="hidden flex-1 flex flex-col">
 
-        <!-- TOP MAIN HEADER -->
         <header class="no-print bg-gradient-to-l from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-indigo-500/30 shadow-xl">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3.5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <!-- Brand & Current User -->
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-emerald-400 p-0.5 shadow-md">
                             <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
@@ -321,7 +317,6 @@
                         </div>
                     </div>
 
-                    <!-- Cloud Capacity Meter (1 GB Multi-Doc) & Action Buttons -->
                     <div class="flex flex-wrap items-center gap-2">
                         <div class="bg-slate-800/90 border border-slate-700 rounded-2xl px-3 py-1.5 flex items-center gap-2.5">
                             <div class="text-right">
@@ -340,6 +335,12 @@
                             class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/10 transition flex items-center gap-1.5">
                             <span id="syncSpinnerIcon">🔄</span>
                             <span>تحديث</span>
+                        </button>
+
+                        <button onclick="openCloudInspectorModal()" title="فحص مستندات السحابة"
+                            class="px-3 py-2 rounded-xl bg-sky-600/30 hover:bg-sky-600/50 text-sky-200 text-xs font-extrabold border border-sky-400/30 transition flex items-center gap-1.5">
+                            <span>🔍</span>
+                            <span>فحص السحابة</span>
                         </button>
 
                         <button id="btnUsersManager" onclick="openUsersModal()"
@@ -388,7 +389,7 @@
         <!-- MAIN WORKSPACE CONTENT -->
         <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 space-y-8">
 
-            <!-- ==================== SECTION 1: GLOBAL CASHBOX SUMMARY (DARK THEME) ==================== -->
+            <!-- SECTION 1: GLOBAL CASHBOX SUMMARY -->
             <section class="no-print rounded-3xl border-2 border-slate-700/90 bg-slate-900 shadow-2xl overflow-hidden">
                 <div class="bg-slate-800/95 px-5 py-3.5 border-b border-slate-700 flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -397,7 +398,6 @@
                     </div>
                 </div>
                 <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <!-- Global USD Box -->
                     <div id="globalUsdBox" class="rounded-2xl border-2 p-5 transition-all shadow-lg">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-black text-slate-700">الصندوق العام</span>
@@ -413,7 +413,6 @@
                         </div>
                     </div>
 
-                    <!-- Global SYP Box -->
                     <div id="globalSypBox" class="rounded-2xl border-2 p-5 transition-all shadow-lg">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-black text-slate-700">الصندوق العام</span>
@@ -431,7 +430,7 @@
                 </div>
             </section>
 
-            <!-- ==================== SECTION 2: WORKSHOPS GRID & REORDERING (DARK THEME) ==================== -->
+            <!-- SECTION 2: WORKSHOPS GRID & REORDERING -->
             <section class="no-print rounded-3xl border-2 border-slate-700/90 bg-slate-900 shadow-2xl overflow-hidden">
                 <div class="bg-slate-800/95 px-5 py-3.5 border-b border-slate-700 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2.5">
@@ -454,7 +453,6 @@
                 </div>
 
                 <div class="p-4 sm:p-6 space-y-5">
-                    <!-- Add New Workshop Form (Name + Description) -->
                     <form id="addWorkshopForm" onsubmit="handleAddWorkshop(event)" class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 grid grid-cols-1 md:grid-cols-12 gap-3">
                         <div class="md:col-span-4">
                             <input type="text" id="newWorkshopName" required placeholder="اسم الورشة الجديدة (مثال: بناء برج السلام)..."
@@ -472,7 +470,6 @@
                         </div>
                     </form>
 
-                    <!-- Reorder Mode Banner -->
                     <div id="reorderBanner" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border-2 border-amber-400/50 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-2 text-amber-200 text-xs sm:text-sm font-extrabold">
                             <span class="text-lg">🖐️</span>
@@ -484,7 +481,6 @@
                         </button>
                     </div>
 
-                    <!-- Search & Status Filter Bar -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                         <div class="relative flex-1">
                             <input type="text" id="workshopSearchInput" oninput="renderWorkshopsList()" placeholder="🔍 ابحث عن ورشة بالاسم أو الوصف..."
@@ -497,17 +493,13 @@
                         </div>
                     </div>
 
-                    <!-- Workshops Responsive Cards Grid -->
-                    <div id="workshopsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Cards injected dynamically -->
-                    </div>
+                    <div id="workshopsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
             </section>
 
-            <!-- ==================== SECTION 3: ACTIVE WORKSHOP WORKSPACE (DAYLIGHT THEME) ==================== -->
+            <!-- SECTION 3: ACTIVE WORKSHOP WORKSPACE -->
             <section id="activeWorkshopSection" class="hidden rounded-3xl border-2 border-slate-500/80 bg-white shadow-xl overflow-hidden transition-all">
                 
-                <!-- OFFICIAL CONSTRUCTION COMPANY PRINT / PDF HEADER -->
                 <div class="print-only mb-3">
                     <div class="bg-slate-900 text-white p-3.5 rounded-xl flex items-center justify-between border-b-4 border-amber-400">
                         <div>
@@ -525,7 +517,6 @@
                     </div>
                 </div>
 
-                <!-- Screen Header of Active Workshop -->
                 <div class="no-print bg-gradient-to-l from-slate-900 via-slate-800 to-indigo-950 px-5 py-4 border-b-2 border-slate-600 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
                         <span class="w-3.5 h-3.5 rounded-full bg-amber-400 shrink-0"></span>
@@ -541,7 +532,6 @@
                         </div>
                     </div>
 
-                    <!-- Workshop Management Controls -->
                     <div class="flex flex-wrap items-center gap-2">
                         <button id="btnToggleWsStatus" onclick="toggleCurrentWorkshopStatus()"
                             class="no-grayscale-btn px-3.5 py-2 rounded-xl text-xs font-black shadow transition flex items-center gap-1.5">
@@ -561,12 +551,8 @@
                     </div>
                 </div>
 
-                <!-- Active Workshop Body -->
                 <div id="activeWorkshopBody" class="p-4 sm:p-6 space-y-6 text-slate-800">
-
-                    <!-- Workshop Dynamic Cashboxes -->
                     <div class="print-boxes-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <!-- Workshop USD Box -->
                         <div id="wsUsdBox" class="print-box-compact rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span id="wsUsdBoxLabel" class="text-xs font-black text-slate-700">صندوق الورشة</span>
@@ -582,7 +568,6 @@
                             </div>
                         </div>
 
-                        <!-- Workshop SYP Box -->
                         <div id="wsSypBox" class="print-box-compact rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span id="wsSypBoxLabel" class="text-xs font-black text-slate-700">صندوق الورشة</span>
@@ -599,7 +584,6 @@
                         </div>
                     </div>
 
-                    <!-- Clean 3-Button Action Bar -->
                     <div id="txActionButtonsBar" class="no-print grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <button onclick="openTxModal('income')"
                             class="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
@@ -618,7 +602,6 @@
                         </button>
                     </div>
 
-                    <!-- Filter & Export Toolbar -->
                     <div class="no-print rounded-2xl border-2 border-slate-300 bg-slate-50 p-4 space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200">
                             <span class="text-xs font-black text-slate-700 flex items-center gap-1.5">
@@ -699,7 +682,6 @@
                         </div>
                     </div>
 
-                    <!-- Transactions Table -->
                     <div id="txTableWrapper" class="overflow-x-auto rounded-2xl border-2 border-slate-300">
                         <table class="w-full text-right border-collapse">
                             <thead>
@@ -712,13 +694,10 @@
                                     <th class="no-print py-3 px-3 border-b border-slate-700 text-center">إجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="transactionsTableBody" class="divide-y divide-slate-300 text-xs sm:text-sm font-bold text-slate-900">
-                                <!-- Rows rendered dynamically -->
-                            </tbody>
+                            <tbody id="transactionsTableBody" class="divide-y divide-slate-300 text-xs sm:text-sm font-bold text-slate-900"></tbody>
                         </table>
                     </div>
 
-                    <!-- Official Print / PDF Signatures Footer -->
                     <div class="print-only mt-6 pt-3 border-t-2 border-slate-300">
                         <div class="grid grid-cols-3 gap-4 text-center text-xs font-black text-slate-800">
                             <div>
@@ -735,13 +714,41 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </section>
         </main>
     </div>
 
     <!-- ==================== FLOATING MODALS ==================== -->
+
+    <!-- CLOUD INSPECTOR & RECOVERY MODAL -->
+    <div id="cloudInspectorModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border-2 border-indigo-200 overflow-hidden my-auto text-slate-800">
+            <div class="bg-gradient-to-l from-slate-900 to-indigo-950 px-5 py-4 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-black">🔍 فاحص ومسترجع بيانات السحابة (anas-alasfar)</h3>
+                    <p class="text-[11px] font-bold text-indigo-200">عرض كافة المستندات والحسابات والورشات المكتشفة في السحابة</p>
+                </div>
+                <button type="button" onclick="closeModal('cloudInspectorModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div id="cloudInspectorSummary" class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs font-extrabold text-indigo-950">
+                    جاري فحص السحابة...
+                </div>
+                <div id="cloudInspectorDocsList" class="space-y-2.5"></div>
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
+                    <button type="button" onclick="runDeepCloudScan(true)"
+                        class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow">
+                        🔄 إعادة المسح الشامل ودمج الكل
+                    </button>
+                    <button type="button" onclick="closeModal('cloudInspectorModal')"
+                        class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-extrabold">
+                        إغلاق
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL 0: MANDATORY / EDIT USER PERSONAL NAME FOR PRINTING -->
     <div id="profileNameModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
@@ -977,7 +984,6 @@
                         + إضافة
                     </button>
                 </form>
-
                 <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="categoriesListContainer"></div>
             </div>
         </div>
@@ -1211,14 +1217,15 @@
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY FIRESTORE + DEEP DATA RECOVERY) ==================== -->
+    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + DEEP RECOVERY INSPECTOR) ==================== -->
     <script>
         // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
         const FIREBASE_PROJECT_ID = 'anas-alasfar';
         const FIRESTORE_COLLECTION = 'workshops_accounting_sync';
         const MASTER_DOC_ID = 'cloud_master_v8';
-        const FIRESTORE_BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${FIRESTORE_COLLECTION}`;
-        const CLOUD_MAX_BYTES = 1024 * 1024 * 1024; // 1 GB True Multi-Document Cloud Capacity
+        const FIRESTORE_ROOT_DOCS = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+        const FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_DOCS}/${FIRESTORE_COLLECTION}`;
+        const CLOUD_MAX_BYTES = 1024 * 1024 * 1024; // 1 GB
 
         // ==================== 2. IN-MEMORY APPLICATION STATE (NO LOCAL STORAGE) ====================
         let appState = {
@@ -1243,6 +1250,7 @@
         let isModalOpen = false;
         let lastCloudHash = '';
         let syncIntervalHandle = null;
+        let lastScannedDocsReport = [];
 
         // ==================== 3. NUMBER FORMATTING & UTILITY HELPERS ====================
         function formatNum(val, decimals = 2) {
@@ -1302,7 +1310,7 @@
             clearTimeout(window._toastTimer);
             window._toastTimer = setTimeout(() => {
                 toast.classList.add('hidden');
-            }, 3200);
+            }, 3500);
         }
 
         function openModal(id) {
@@ -1327,7 +1335,7 @@
             openModal('customConfirmModal');
         }
 
-        // ==================== 4. FIRESTORE VALUE DECODER & DATA NORMALIZATION ====================
+        // ==================== 4. FIRESTORE VALUE DECODER & UNIVERSAL NORMALIZATION ====================
         function decodeFirestoreValue(valObj) {
             if (!valObj || typeof valObj !== 'object') return null;
             if ('stringValue' in valObj) return valObj.stringValue;
@@ -1357,6 +1365,11 @@
                 } catch (e) {
                     console.warn('JSON parse failed for payload string:', e);
                 }
+            }
+            if (fields.data && fields.data.stringValue) {
+                try {
+                    return JSON.parse(fields.data.stringValue);
+                } catch (e) {}
             }
             const decoded = {};
             for (const k of Object.keys(fields)) {
@@ -1460,7 +1473,7 @@
             };
         }
 
-        // ==================== 5. FIRESTORE CLOUD ENGINE (FULL PAGINATED SCAN + SMART DATA RECOVERY) ====================
+        // ==================== 5. DEEP MULTI-COLLECTION CLOUD SCANNER & RECOVERY ====================
         function updateCloudStatusUI(connected, labelText = null) {
             cloudConnected = connected;
             const loginDot = document.getElementById('loginCloudDot');
@@ -1505,24 +1518,28 @@
             if (barEl) barEl.style.width = `${Math.max(2, remainingPct)}%`;
         }
 
-        async function fetchAllCollectionDocuments() {
-            const allDocs = [];
+        async function fetchCollectionDocs(collectionName) {
+            const docs = [];
             let pageToken = '';
-            do {
-                const url = `${FIRESTORE_BASE_URL}?pageSize=300${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    cache: 'no-store'
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (Array.isArray(data.documents)) {
-                    allDocs.push(...data.documents);
-                }
-                pageToken = data.nextPageToken || '';
-            } while (pageToken);
-            return allDocs;
+            try {
+                do {
+                    const url = `${FIRESTORE_ROOT_DOCS}/${collectionName}?pageSize=300${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+                    const res = await fetch(url, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        cache: 'no-store'
+                    });
+                    if (!res.ok) break;
+                    const data = await res.json();
+                    if (Array.isArray(data.documents)) {
+                        docs.push(...data.documents);
+                    }
+                    pageToken = data.nextPageToken || '';
+                } while (pageToken);
+            } catch (e) {
+                console.warn(`Collection ${collectionName} fetch skipped:`, e);
+            }
+            return docs;
         }
 
         function pickRicherWorkshop(wsA, wsB) {
@@ -1530,61 +1547,100 @@
             if (!wsB) return wsA;
             const txA = Array.isArray(wsA.transactions) ? wsA.transactions.length : 0;
             const txB = Array.isArray(wsB.transactions) ? wsB.transactions.length : 0;
-            if (txB > txA) return wsB;
-            return wsA;
+            return txB > txA ? wsB : wsA;
         }
 
         async function fetchFromCloud(isBackgroundPoll = false) {
             if (isSavingToCloud) return false;
             try {
-                const docs = await fetchAllCollectionDocuments();
+                // Discover all root collections in project anas-alasfar
+                let collectionsToScan = [FIRESTORE_COLLECTION];
+                try {
+                    const colRes = await fetch(`${FIRESTORE_ROOT_DOCS}:listCollectionIds`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    if (colRes.ok) {
+                        const colData = await colRes.json();
+                        if (Array.isArray(colData.collectionIds)) {
+                            for (const cid of colData.collectionIds) {
+                                if (!collectionsToScan.includes(cid)) collectionsToScan.push(cid);
+                            }
+                        }
+                    }
+                } catch (e) {}
 
-                let masterPayload = null;
-                const splitWorkshopsMap = new Map();
+                let masterCandidates = [];
+                const workshopsMap = new Map();
+                const subUsersMap = new Map();
+                let bestAdmin = null;
+                const docsReport = [];
 
-                for (const doc of docs) {
-                    const docName = doc.name.split('/').pop();
-                    const parsed = parseFirestoreDocument(doc);
-                    if (!parsed || typeof parsed !== 'object') continue;
+                for (const colName of collectionsToScan) {
+                    const docs = await fetchCollectionDocs(colName);
+                    for (const doc of docs) {
+                        const docName = doc.name.split('/').pop();
+                        const parsed = parseFirestoreDocument(doc);
+                        if (!parsed || typeof parsed !== 'object') continue;
 
-                    if (docName === MASTER_DOC_ID) {
-                        masterPayload = parsed;
-                    } else if (docName.startsWith('ws_doc_')) {
-                        const wsId = parsed.id || docName.replace('ws_doc_', '');
-                        parsed.id = wsId;
-                        const existing = splitWorkshopsMap.get(wsId);
-                        splitWorkshopsMap.set(wsId, pickRicherWorkshop(existing, parsed));
-                    } else if (parsed.name && Array.isArray(parsed.transactions)) {
-                        // Any legacy standalone workshop document
-                        const wsId = parsed.id || docName;
-                        parsed.id = wsId;
-                        const existing = splitWorkshopsMap.get(wsId);
-                        splitWorkshopsMap.set(wsId, pickRicherWorkshop(existing, parsed));
+                        const wsCount = Array.isArray(parsed.workshops) ? parsed.workshops.length : (parsed.name && Array.isArray(parsed.transactions) ? 1 : 0);
+                        const subCount = Array.isArray(parsed.subUsers) ? parsed.subUsers.length : (Array.isArray(parsed.users) ? parsed.users.length : 0);
+
+                        docsReport.push({
+                            collection: colName,
+                            docId: docName,
+                            updateTime: doc.updateTime || '',
+                            wsCount,
+                            subCount,
+                            hasAdmin: !!(parsed.admin || parsed.adminUser)
+                        });
+
+                        // Extract admin credentials (prefer non-default or richer doc)
+                        if (parsed.admin && parsed.admin.username) {
+                            const isNonDefault = parsed.admin.username !== 'anas' || parsed.admin.password !== '123' || !!parsed.admin.fullName;
+                            if (!bestAdmin || isNonDefault || docName === MASTER_DOC_ID) {
+                                bestAdmin = parsed.admin;
+                            }
+                        } else if (parsed.adminUser) {
+                            if (!bestAdmin) {
+                                bestAdmin = { username: parsed.adminUser, password: parsed.adminPass || '123', fullName: '' };
+                            }
+                        }
+
+                        // Merge all subUsers across documents
+                        const subs = Array.isArray(parsed.subUsers) ? parsed.subUsers : (Array.isArray(parsed.users) ? parsed.users : []);
+                        for (const su of subs) {
+                            if (su && su.username && su.role !== 'admin') {
+                                subUsersMap.set(su.username, su);
+                            }
+                        }
+
+                        // Merge workshops array if present
+                        if (Array.isArray(parsed.workshops)) {
+                            for (const w of parsed.workshops) {
+                                if (w && w.id) {
+                                    workshopsMap.set(w.id, pickRicherWorkshop(workshopsMap.get(w.id), w));
+                                }
+                            }
+                        }
+
+                        // Merge standalone workshop doc (ws_doc_... or legacy workshop doc)
+                        if (parsed.name && Array.isArray(parsed.transactions)) {
+                            const wsId = parsed.id || docName.replace('ws_doc_', '');
+                            parsed.id = wsId;
+                            workshopsMap.set(wsId, pickRicherWorkshop(workshopsMap.get(wsId), parsed));
+                        }
                     }
                 }
 
-                const mergedWorkshops = [];
-                const seenIds = new Set();
+                lastScannedDocsReport = docsReport;
 
-                if (masterPayload && Array.isArray(masterPayload.workshops)) {
-                    for (const w of masterPayload.workshops) {
-                        const splitVersion = splitWorkshopsMap.get(w.id);
-                        mergedWorkshops.push(pickRicherWorkshop(w, splitVersion));
-                        seenIds.add(w.id);
-                    }
-                }
-
-                for (const [id, w] of splitWorkshopsMap.entries()) {
-                    if (!seenIds.has(id)) {
-                        mergedWorkshops.push(w);
-                        seenIds.add(id);
-                    }
-                }
-
-                if (masterPayload || mergedWorkshops.length > 0) {
+                if (docsReport.length > 0) {
                     const normalized = normalizeFullState({
-                        ...(masterPayload || {}),
-                        workshops: mergedWorkshops
+                        admin: bestAdmin || appState.admin,
+                        subUsers: Array.from(subUsersMap.values()),
+                        workshops: Array.from(workshopsMap.values())
                     });
 
                     const newHash = JSON.stringify(normalized);
@@ -1605,7 +1661,7 @@
                     updateCloudCapacityMeter();
                 }
 
-                updateCloudStatusUI(true);
+                updateCloudStatusUI(true, `متصل بالسحابة (${appState.workshops.length} ورشة • ${appState.subUsers.length} حساب فرعي)`);
                 return true;
             } catch (err) {
                 console.error('Cloud fetch error:', err);
@@ -1614,11 +1670,52 @@
             }
         }
 
+        async function openCloudInspectorModal() {
+            openModal('cloudInspectorModal');
+            await runDeepCloudScan(false);
+        }
+
+        async function runDeepCloudScan(saveAfterMerge = false) {
+            const summaryEl = document.getElementById('cloudInspectorSummary');
+            const listEl = document.getElementById('cloudInspectorDocsList');
+            summaryEl.textContent = '⏳ جاري مسح كافة قواعد ومستندات السحابة في مشروع anas-alasfar...';
+            listEl.innerHTML = '';
+
+            await fetchFromCloud(false);
+
+            summaryEl.innerHTML = `
+                <div>✅ تم فحص <span class="text-indigo-700">${lastScannedDocsReport.length}</span> مستند في السحابة.</div>
+                <div class="mt-1">النتيجة المجمّعة: <span class="text-emerald-700">${appState.workshops.length} ورشة</span> | <span class="text-indigo-700">${appState.subUsers.length} حساب فرعي</span> | المدير: <span class="text-slate-900">${escapeHtml(appState.admin.username)}</span></div>
+            `;
+
+            if (lastScannedDocsReport.length === 0) {
+                listEl.innerHTML = `<div class="p-4 rounded-xl bg-slate-100 text-xs font-bold text-slate-600 text-center">لم يتم العثور على مستندات بعد في السحابة</div>`;
+            } else {
+                listEl.innerHTML = lastScannedDocsReport.map(d => `
+                    <div class="p-3 rounded-xl border border-slate-300 bg-slate-50 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div>
+                            <div class="font-black text-slate-900">${escapeHtml(d.collection)} / <span class="text-indigo-700">${escapeHtml(d.docId)}</span></div>
+                            <div class="text-[11px] font-bold text-slate-500 mt-0.5">آخر تحديث: ${escapeHtml(d.updateTime || 'غير محدد')}</div>
+                        </div>
+                        <div class="flex items-center gap-1.5 font-extrabold">
+                            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">ورشات: ${d.wsCount}</span>
+                            <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">حسابات: ${d.subCount}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (saveAfterMerge && appState.workshops.length > 0) {
+                await saveToCloud();
+                if (currentUser) refreshAllViewsAfterSync();
+                showToast('تم دمج وتثبيت كافة البيانات المسترجعة في السحابة!', '✅');
+            }
+        }
+
         async function saveToCloud(specificWorkshopIdToSync = null, deletedWorkshopId = null) {
             isSavingToCloud = true;
             updateCloudStatusUI(true, 'جاري الحفظ بالسحابة...');
             try {
-                // Keep full transactions in master doc whenever under 850KB so single-doc reads NEVER lose transactions
                 const fullBytes = new TextEncoder().encode(JSON.stringify(appState)).length;
                 const keepTxsInMaster = fullBytes < 850000;
 
@@ -1722,7 +1819,7 @@
                     activeWorkshopId = accessible[0].id;
                 }
                 refreshAllViewsAfterSync();
-                showToast(`تمت المزامنة واسترجاع (${accessible.length}) ورشة من السحابة`, '🔄');
+                showToast(`تمت المزامنة: (${accessible.length}) ورشة و (${appState.subUsers.length}) حساب`, '🔄');
             }
         }
 
@@ -1736,7 +1833,7 @@
 
             errBox.classList.add('hidden');
             btn.disabled = true;
-            btn.innerHTML = '<span>جاري التحقق وجلب الورشات من السحابة...</span>';
+            btn.innerHTML = '<span>جاري التحقق وجلب البيانات من السحابة...</span>';
 
             await fetchFromCloud(false);
 
@@ -2911,7 +3008,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 13. PRINT, A4 PDF (NO ROW CUTTING) & EXCEL EXPORT ====================
+        // ==================== 13. PRINT, A4 PDF & EXCEL EXPORT ====================
         function openPrintDetailsModal(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
