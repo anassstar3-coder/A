@@ -650,7 +650,7 @@
                 const cloudData = await res.json();
 
                 if (cloudData && typeof cloudData === 'object') {
-                    // إذا لم يكن في السحابة حساب مالك مضبوط أو كان قديماً غير موحد، نثبت (anas / 123) مرة واحدة
+                    // توحيد كلمة المرور الرئيسية إلى (anas / 123) مرة واحدة في السحابة ثم اعتماد أي تعديل لاحق لك
                     if (!cloudData.unifiedResetV1) {
                         window.appData.owner = { username: 'anas', password: '123' };
                         window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : window.appData.subUsers;
