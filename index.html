@@ -7,11 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <!-- مكتبات Firebase (متوافقة مع الإصدار المعتمد في السكربتات) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; color: #0f172a; }
         .tab-active { background-color: #1e40af !important; color: #ffffff !important; border-color: #1e40af !important; }
@@ -48,8 +43,8 @@
                 <h1 class="text-2xl font-extrabold text-slate-800">محاسبة الورشات</h1>
                 <p class="text-sm text-slate-500 mt-1">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
                 <div id="login-cloud-badge" class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                    <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
-                    <span id="login-cloud-text">جاري الاتصال بقاعدة بيانات Firebase...</span>
+                    <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span id="login-cloud-text">جاري جلب البيانات من السحابة...</span>
                 </div>
             </div>
 
@@ -63,7 +58,7 @@
                     <input type="password" id="login-password" required autocomplete="current-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-left" dir="ltr" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs font-bold bg-red-50 p-2.5 rounded-lg border border-red-200 text-center"></div>
-                <button type="submit" id="login-submit-btn" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-md transition">تسجيل الدخول</button>
+                <button type="submit" id="btn-login-submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-md transition">تسجيل الدخول</button>
             </form>
         </div>
     </div>
@@ -85,9 +80,21 @@
 
                 <!-- أدوات السحابة والنسخ الاحتياطي والمستخدمين -->
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <div id="header-sync-badge" class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
-                        <span id="header-sync-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="header-sync-text">متزامن سحابياً</span>
+                    <div id="header-cloud-badge" class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
+                        <span id="header-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        <span id="header-cloud-text">متصل بالسحابة</span>
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold leading-tight">محاسبة الورشات</h1>
+                        <p class="text-[11px] text-slate-400">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
+                    </div>
+                </div>
+
+                <!-- أدوات السحابة والنسخ الاحتياطي والمستخدمين -->
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-700">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        <span>متصل موحد</span>
                     </div>
 
                     <button id="btn-backup-all" onclick="exportFullBackup()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
@@ -101,7 +108,7 @@
 
                     <button id="btn-storage-archive" onclick="openStorageArchiveModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
                         <span>🗄️ الأرشيف والتخزين</span>
-                        <span id="header-storage-pct" class="bg-slate-900/60 px-1.5 py-0.5 rounded text-[10px]">0 KB</span>
+                        <span id="header-storage-pct" class="bg-slate-900/60 px-1.5 py-0.5 rounded text-[10px]">0%</span>
                     </button>
 
                     <button id="btn-manage-users" onclick="openUsersModal()" class="hidden bg-blue-700 hover:bg-blue-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition">
@@ -126,7 +133,7 @@
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                         ملخص الصندوق العام (مجموع أرصدة الورشات المتبقية)
                     </h2>
-                    <span class="text-xs text-slate-400 font-semibold">تحديث سحابي فوري</span>
+                    <span class="text-xs text-slate-400 font-semibold">تحديث تلقائي</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between">
@@ -258,10 +265,6 @@
                     <!-- ملخص الفلتر الحالي -->
                     <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-600 pt-1 border-t border-slate-200">
                         <span>عدد الحركات المعروضة: <strong id="filtered-count" class="text-slate-900">0</strong></span>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <span>مجموع المعروض ($): <strong id="filtered-sum-usd" class="text-emerald-700" dir="ltr">0 $</strong></span>
-                            <span>مجموع المعروض (ل.س): <strong id="filtered-sum-syp" class="text-blue-700" dir="ltr">0 ل.س</strong></span>
-                        </div>
                     </div>
                 </div>
 
@@ -533,18 +536,18 @@
     <div id="storage-archive-modal" class="fixed inset-0 z-50 bg-slate-900/60 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="text-lg font-extrabold text-slate-800">الأرشيف وحالة المزامنة السحابية</h3>
+                <h3 class="text-lg font-extrabold text-slate-800">الأرشيف وسعة التخزين السحابي</h3>
                 <button onclick="closeModal('storage-archive-modal')" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
             </div>
 
-            <!-- عداد السعة السحابية -->
+            <!-- عداد السعة -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <div class="flex justify-between text-xs font-bold mb-1.5">
-                    <span class="text-slate-700">حجم البيانات على Firebase:</span>
-                    <span id="storage-usage-text" class="text-emerald-700 font-extrabold" dir="ltr">0 KB</span>
+                    <span class="text-slate-700">المساحة المستخدمة (1 GB مجانية دائمة):</span>
+                    <span id="storage-usage-text" class="text-blue-700" dir="ltr">0 KB / 1,048,576 KB</span>
                 </div>
-                <div class="w-full bg-emerald-100 rounded-full h-2.5 overflow-hidden">
-                    <div id="storage-progress-bar" class="bg-emerald-600 h-2.5 rounded-full w-full"></div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                    <div id="storage-progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all" style="width: 1%"></div>
                 </div>
             </div>
 
@@ -558,7 +561,7 @@
             <!-- منطقة الخطر: تصفير شامل بعد 10 ثواني -->
             <div id="danger-zone-box" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
                 <h4 class="text-xs font-extrabold text-rose-900">منطقة الخطر: حذف جميع البيانات وتصفير النظام</h4>
-                <p class="text-[11px] text-rose-700">سيتم مسح جميع الورشات والحركات نهائياً من السحابة.</p>
+                <p class="text-[11px] text-rose-700">سيتم مسح جميع الورشات والحركات نهائياً.</p>
                 <div class="flex gap-2">
                     <button type="button" id="btn-arm-wipe" onclick="armFullWipeCountdown()" class="flex-1 bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold py-2 rounded-xl text-xs">تفعيل زر الحذف الشامل (انتظار 10 ثوانٍ)</button>
                     <button type="button" id="btn-execute-wipe" disabled onclick="executeFullWipe()" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs opacity-40 cursor-not-allowed">حذف الكل نهائياً</button>
@@ -578,31 +581,18 @@
     <!-- رسائل التنبيه العائمة (Toast) -->
     <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2 no-print"></div>
 
-    <!-- إعداد وربط Firebase الحقيقي ومزامنة البيانات الفورية -->
+    <!-- ربط سحابي مباشر 100% لجميع المتصفحات والأجهزة بدون تخزين محلي منفصل -->
     <script>
-        // =========================================================================
-        // هام جداً: استبدل القيم التالية ببيانات مشروعك من لوحة تحكم Firebase
-        // =========================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0FSJ2FcABlW5wlIStf_VJbCOVtMLZyHY",
-            authDomain: "anas-alasfar.firebaseapp.com",
-            databaseURL: "https://anas-alasfar-default-rtdb.firebaseio.com",
-            projectId: "anas-alasfar",
-            storageBucket: "anas-alasfar.firebasestorage.app",
-            messagingSenderId: "91067590533",
-            appId: "1:91067590533:web:34851c44aabb8a9e9a46ec"
-        };
-
-        // تهيئة Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const dbRef = firebase.database().ref('workshop_system_global_data');
+        // رابط قاعدة البيانات السحابية المشتركة الفورية (Firebase Realtime REST API)
+        const CLOUD_DB_URL = 'https://anas-alasfar-default-rtdb.firebaseio.com/workshops_cloud_v6.json';
+        const SESSION_USER_KEY = 'ws_session_user_v6';
+        const SESSION_WS_KEY = 'ws_session_selected_ws_v6';
 
         window.appData = {
             owner: { username: 'anas', password: '123' },
             subUsers: [],
-            workshops: []
+            workshops: [],
+            lastUpdated: 0
         };
 
         window.currentUser = null;
@@ -610,146 +600,126 @@
         let pendingImportedWorkshop = null;
         let currentTxImages = [];
         let wipeTimerInterval = null;
-        let isCloudSyncing = false;
-        let isInitialLoadDone = false;
+        let isCloudReady = false;
+        let isSavingCloud = false;
 
-        const SESSION_USER_KEY = 'ws_session_user_v5';
-        const SESSION_WS_KEY = 'ws_session_selected_ws_v5';
+        function setCloudStatusUI(state, text) {
+            const loginBadge = document.getElementById('login-cloud-badge');
+            const loginDot = document.getElementById('login-cloud-dot');
+            const loginText = document.getElementById('login-cloud-text');
+            const headerDot = document.getElementById('header-cloud-dot');
+            const headerText = document.getElementById('header-cloud-text');
 
-        // تحديث شارة حالة الاتصال بالسحابة
-        function setCloudBadgeState(status, text) {
-            const badge = document.getElementById('login-cloud-badge');
-            const dot = document.getElementById('login-cloud-dot');
-            const txt = document.getElementById('login-cloud-text');
-            if (!badge || !dot || !txt) return;
-
-            txt.textContent = text;
-            if (status === 'connected') {
-                badge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-            } else if (status === 'error') {
-                badge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800';
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
+            if (state === 'ok') {
+                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+                if (loginText) loginText.textContent = text || 'متصل بالسحابة الموحدة 100%';
+                if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+                if (headerText) headerText.textContent = text || 'متصل بالسحابة';
+            } else if (state === 'syncing') {
+                if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+                if (headerText) headerText.textContent = text || 'جاري المزامنة...';
             } else {
-                badge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
-                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping';
+                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
+                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                if (loginText) loginText.textContent = text || 'تعذر الاتصال بالسحابة - تحقق من الإنترنت';
+                if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                if (headerText) headerText.textContent = 'غير متصل بالسحابة';
             }
         }
 
-        // إصلاح هيكلية البيانات القادمة من Firebase (لأن Firebase يحذف المصفوفات الفارغة تلقائياً)
-        function normalizeCloudData(raw) {
-            const normalized = {
-                owner: (raw && raw.owner && raw.owner.username) ? raw.owner : { username: 'anas', password: '123' },
-                subUsers: [],
-                workshops: []
-            };
+        // جلب البيانات حصراً من السحابة
+        async function fetchFromCloud(silent = false) {
+            if (isSavingCloud) return false;
+            try {
+                const res = await fetch(CLOUD_DB_URL + '?t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const cloudData = await res.json();
 
-            if (raw && raw.subUsers) {
-                const subsArr = Array.isArray(raw.subUsers) ? raw.subUsers : Object.values(raw.subUsers);
-                normalized.subUsers = subsArr.filter(Boolean).map(u => ({
-                    ...u,
-                    perms: u.perms || {},
-                    allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : (u.allowedWorkshops ? Object.values(u.allowedWorkshops) : [])
-                }));
-            }
-
-            if (raw && raw.workshops) {
-                const wsArr = Array.isArray(raw.workshops) ? raw.workshops : Object.values(raw.workshops);
-                normalized.workshops = wsArr.filter(Boolean).map(w => {
-                    const txs = w.transactions ? (Array.isArray(w.transactions) ? w.transactions : Object.values(w.transactions)) : [];
-                    const cats = w.categories ? (Array.isArray(w.categories) ? w.categories : Object.values(w.categories)) : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'];
-                    return {
+                if (cloudData && typeof cloudData === 'object') {
+                    // إذا كانت السحابة تحتوي على بيانات، نعتمدها بالكامل
+                    if (cloudData.owner && cloudData.owner.username) {
+                        window.appData.owner = cloudData.owner;
+                    }
+                    window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
+                    window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
                         ...w,
                         active: typeof w.active === 'boolean' ? w.active : true,
-                        categories: cats.length > 0 ? cats : ['عام'],
-                        transactions: txs.filter(Boolean).map(t => ({
-                            ...t,
-                            images: t.images ? (Array.isArray(t.images) ? t.images : Object.values(t.images)) : []
-                        }))
-                    };
-                });
-            }
-
-            return normalized;
-        }
-
-        // جلب البيانات من Firebase عند فتح التطبيق والاستماع للتحديثات اللحظية
-        function initAppData() {
-            // الاستماع اللحظي الدائم لأي تغيير في السحابة
-            dbRef.on('value', (snapshot) => {
-                const cloudData = snapshot.val();
-                if (!isInitialLoadDone) {
-                    isInitialLoadDone = true;
-                    setCloudBadgeState('connected', 'متصل بقاعدة بيانات Firebase الموحدة');
-                    if (cloudData) {
-                        window.appData = normalizeCloudData(cloudData);
-                    } else {
-                        // تهيئة أولية للسحابة إذا كانت فارغة تماماً
-                        saveGlobalAndLocal();
-                    }
-                    checkSavedSessionAndRender();
+                        categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
+                        transactions: Array.isArray(w.transactions) ? w.transactions : []
+                    })) : [];
+                    window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
                 } else {
-                    if (isCloudSyncing) return;
-                    if (cloudData) {
-                        window.appData = normalizeCloudData(cloudData);
-                        if (window.currentUser) {
-                            // التحقق من عدم حذف أو تغيير صلاحيات المستخدم الحالي أثناء الجلسة
-                            if (window.currentUser.role === 'sub') {
-                                const stillExists = window.appData.subUsers.find(u => u.id === window.currentUser.id);
-                                if (!stillExists) {
-                                    logoutUser();
-                                    showToast('تم إيقاف حسابك أو تعديله من قبل المدير', 'error');
-                                    return;
-                                }
-                                window.currentUser = { role: 'sub', ...stillExists };
-                                applyUserPermissionsUI();
-                            }
-                            renderAll();
-                            updateStorageQuotaUI();
-                        }
-                    }
+                    // أول تشغيل على الإطلاق للسحابة: تهيئة البيانات الافتراضية على السحابة
+                    await pushToCloud(true);
                 }
-            }, (err) => {
-                console.error("Firebase Read Error:", err);
-                setCloudBadgeState('error', 'خطأ في الاتصال بالسحابة (تأكد من إعدادات Firebase والقواعد)');
-                showToast('تعذر الاتصال بالسحابة: ' + err.message, 'error');
-            });
+
+                isCloudReady = true;
+                setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
+                updateStorageQuotaUI();
+                if (window.currentUser) renderAll();
+                return true;
+            } catch (err) {
+                console.error('Cloud fetch error:', err);
+                if (!silent) setCloudStatusUI('error', 'تحقق من اتصال الإنترنت');
+                return false;
+            }
         }
 
-        function checkSavedSessionAndRender() {
-            const savedSession = sessionStorage.getItem(SESSION_USER_KEY);
-            if (savedSession) {
+        // رفع البيانات مباشرة إلى السحابة
+        async function pushToCloud(isInit = false) {
+            isSavingCloud = true;
+            setCloudStatusUI('syncing', 'جاري الحفظ بالسحابة...');
+            window.appData.lastUpdated = Date.now();
+            try {
+                const res = await fetch(CLOUD_DB_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(window.appData)
+                });
+                if (!res.ok) throw new Error('Failed to save');
+                isCloudReady = true;
+                setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
+                updateStorageQuotaUI();
+            } catch (err) {
+                console.error('Cloud save error:', err);
+                setCloudStatusUI('error', 'فشل الحفظ بالسحابة');
+                if (!isInit) showToast('تعذر الحفظ في السحابة، تحقق من الإنترنت!', 'error');
+            } finally {
+                isSavingCloud = false;
+            }
+        }
+
+        window.saveGlobalAndLocal = function() {
+            pushToCloud(false);
+        };
+
+        // مزامنة تلقائية من السحابة كل 4 ثوانٍ لتحديث أي جهاز مفتوح لحظياً
+        setInterval(async () => {
+            if (!isSavingCloud) {
                 try {
-                    const creds = JSON.parse(savedSession);
-                    authenticateUser(creds.username, creds.password, true);
+                    const res = await fetch(CLOUD_DB_URL + '?t=' + Date.now(), { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const cloudData = await res.json();
+                    if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated > (window.appData.lastUpdated || 0)) {
+                        window.appData.owner = cloudData.owner || window.appData.owner;
+                        window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
+                        window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
+                            ...w,
+                            active: typeof w.active === 'boolean' ? w.active : true,
+                            categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
+                            transactions: Array.isArray(w.transactions) ? w.transactions : []
+                        })) : [];
+                        window.appData.lastUpdated = cloudData.lastUpdated;
+                        updateStorageQuotaUI();
+                        if (window.currentUser) renderAll();
+                    }
                 } catch (e) {}
             }
-            updateStorageQuotaUI();
-        }
-
-        // دالة الحفظ السحابي الموحد لتتزامن فوراً مع كل الأجهزة والمتصفحات
-        window.saveGlobalAndLocal = function() {
-            isCloudSyncing = true;
-            const dot = document.getElementById('header-sync-dot');
-            const txt = document.getElementById('header-sync-text');
-            if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
-            if (txt) txt.textContent = 'جاري الحفظ...';
-
-            dbRef.set(window.appData).then(() => {
-                setTimeout(() => { isCloudSyncing = false; }, 400);
-                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
-                if (txt) txt.textContent = 'متزامن سحابياً';
-                updateStorageQuotaUI();
-            }).catch(err => {
-                isCloudSyncing = false;
-                if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
-                if (txt) txt.textContent = 'خطأ في المزامنة';
-                showToast('فشل الحفظ على السحابة: ' + err.message, 'error');
-            });
-        };
+        }, 4000);
     </script>
 
-    <!-- منطق وتوابع التطبيق -->
+    <!-- منطق التطبيق -->
     <script>
         function formatNumberClean(num) {
             const val = Number(num) || 0;
@@ -774,28 +744,12 @@
                 .replace(/[^\d.-]/g, '');
             const num = parseFloat(normalized);
             return isNaN(num) ? 0 : num;
-        }
-
-        function getTodayStr() {
-            return new Date().toISOString().split('T')[0];
-        }
-
-        function showToast(msg, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const el = document.createElement('div');
-            const bg = type === 'error' ? 'bg-red-700' : 'bg-slate-900';
-            el.className = `${bg} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2 transition-all`;
-            el.textContent = msg;
-            container.appendChild(el);
-            setTimeout(() => el.remove(), 3500);
-        }
-
-        // تسجيل الدخول
+        // تسجيل الدخول بعد التأكد من جلب أحدث بيانات من السحابة
         function authenticateUser(username, password, isRestore = false) {
             if (username === window.appData.owner.username && password === window.appData.owner.password) {
                 window.currentUser = { role: 'owner', username: window.appData.owner.username };
             } else {
-                const sub = (window.appData.subUsers || []).find(u => u.username === username && u.password === password);
+                const sub = window.appData.subUsers.find(u => u.username === username && u.password === password);
                 if (!sub) return false;
                 window.currentUser = { role: 'sub', ...sub };
             }
@@ -815,17 +769,27 @@
             return true;
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
             const errEl = document.getElementById('login-error');
-            if (!isInitialLoadDone) {
-                errEl.textContent = 'يرجى الانتظار ثوانٍ حتى يكتمل الاتصال بالسحابة...';
+            const btn = document.getElementById('btn-login-submit');
+
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق من السحابة...';
+            errEl.classList.add('hidden');
+
+            // جلب أحدث بيانات وكلمات مرور من السحابة قبل التحقق
+            const ok = await fetchFromCloud(false);
+            btn.disabled = false;
+            btn.textContent = 'تسجيل الدخول';
+
+            if (!ok && !isCloudReady) {
+                errEl.textContent = 'تعذر الاتصال بالسحابة! تأكد من اتصالك بالإنترنت.';
                 errEl.classList.remove('hidden');
                 return;
             }
-
-            const u = document.getElementById('login-username').value.trim();
-            const p = document.getElementById('login-password').value.trim();
 
             if (authenticateUser(u, p, false)) {
                 errEl.classList.add('hidden');
@@ -863,9 +827,9 @@
 
         function getVisibleWorkshops() {
             if (!window.currentUser) return [];
-            if (window.currentUser.role === 'owner') return window.appData.workshops || [];
+            if (window.currentUser.role === 'owner') return window.appData.workshops;
             const allowed = window.currentUser.allowedWorkshops || [];
-            return (window.appData.workshops || []).filter(w => allowed.includes(w.id));
+            return window.appData.workshops.filter(w => allowed.includes(w.id));
         }
 
         window.renderAll = function() {
@@ -939,7 +903,7 @@
         }
 
         function renderSelectedWorkshop() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             const workspace = document.getElementById('workshop-workspace');
             if (!ws) {
                 workspace.classList.add('hidden');
@@ -952,16 +916,15 @@
             document.getElementById('ws-desc').textContent = ws.desc || '';
 
             const statusBtn = document.getElementById('ws-status-btn');
-            const isOwner = window.currentUser.role === 'owner';
-            statusBtn.classList.toggle('pointer-events-none', !isOwner);
             if (ws.active) {
-                statusBtn.textContent = isOwner ? 'نشطة (اضغط للإيقاف)' : 'نشطة';
-                statusBtn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition no-print' + (!isOwner ? ' pointer-events-none' : '');
+                statusBtn.textContent = 'نشطة (اضغط للإيقاف)';
+                statusBtn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition no-print';
             } else {
-                statusBtn.textContent = isOwner ? 'غير نشطة / مقفلة (اضغط للتنشيط)' : 'غير نشطة / مقفلة';
-                statusBtn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 hover:bg-slate-400 transition no-print' + (!isOwner ? ' pointer-events-none' : '');
+                statusBtn.textContent = 'غير نشطة / مقفلة (اضغط للتنشيط)';
+                statusBtn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-300 text-slate-800 hover:bg-slate-400 transition no-print';
             }
 
+            const isOwner = window.currentUser.role === 'owner';
             const perms = window.currentUser.perms || {};
             const canAdd = ws.active && (isOwner || perms.addTx);
             const canCats = ws.active && (isOwner || perms.manageCats);
@@ -995,7 +958,7 @@
         }
 
         function renderTransactionsTable() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
 
             const searchQ = document.getElementById('filter-search').value.trim().toLowerCase();
@@ -1033,8 +996,6 @@
             });
 
             document.getElementById('filtered-count').textContent = filtered.length;
-            document.getElementById('filtered-sum-usd').textContent = formatUSD(sumUSD);
-            document.getElementById('filtered-sum-syp').textContent = formatSYP(sumSYP);
 
             const printSub = document.getElementById('print-filter-subtitle');
             const typeNames = { ALL: 'كشف شامل', income: 'كشف الإيرادات فقط', expense: 'كشف المصروفات فقط', exchange: 'كشف عمليات الصرافة' };
@@ -1058,19 +1019,19 @@
                 if (tx.type === 'income') {
                     typeBadge = '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md text-[11px] font-bold">إيراد</span>';
                     amountDisplay = tx.currency === 'USD'
-                        ? `<span class="text-emerald-700 font-extrabold" dir="ltr">+ ${formatUSD(tx.amount)}</span>`
-                        : `<span class="text-emerald-700 font-extrabold" dir="ltr">+ ${formatSYP(tx.amount)}</span>`;
+                        ? `<span class="text-emerald-700 font-extrabold inline-block" dir="ltr">+ ${formatUSD(tx.amount)}</span>`
+                        : `<span class="text-emerald-700 font-extrabold inline-block" dir="ltr">+ ${formatSYP(tx.amount)}</span>`;
                 } else if (tx.type === 'expense') {
                     typeBadge = '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md text-[11px] font-bold">مصروف</span>';
                     amountDisplay = tx.currency === 'USD'
-                        ? `<span class="text-rose-700 font-extrabold" dir="ltr">- ${formatUSD(tx.amount)}</span>`
-                        : `<span class="text-rose-700 font-extrabold" dir="ltr">- ${formatSYP(tx.amount)}</span>`;
+                        ? `<span class="text-rose-700 font-extrabold inline-block" dir="ltr">- ${formatUSD(tx.amount)}</span>`
+                        : `<span class="text-rose-700 font-extrabold inline-block" dir="ltr">- ${formatSYP(tx.amount)}</span>`;
                 } else {
                     typeBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md text-[11px] font-bold">⇄ صرافة</span>';
                     if (tx.direction === 'USD_TO_SYP') {
-                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)}</span>`;
+                        amountDisplay = `<div class="inline-flex flex-wrap items-center gap-1.5 text-xs font-extrabold"><span class="text-rose-700" dir="ltr">-${formatNumberClean(tx.usdAmount)} $</span><span class="text-slate-400">⬅</span><span class="text-emerald-700" dir="ltr">+${formatNumberClean(tx.sypAmount)} ل.س</span></div>`;
                     } else {
-                        amountDisplay = `<span class="text-slate-800 font-bold text-xs" dir="ltr">-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$</span>`;
+                        amountDisplay = `<div class="inline-flex flex-wrap items-center gap-1.5 text-xs font-extrabold"><span class="text-rose-700" dir="ltr">-${formatNumberClean(tx.sypAmount)} ل.س</span><span class="text-slate-400">⬅</span><span class="text-emerald-700" dir="ltr">+${formatNumberClean(tx.usdAmount)} $</span></div>`;
                     }
                 }
 
@@ -1117,8 +1078,6 @@
             const desc = document.getElementById('new-ws-desc').value.trim();
             if (!name) return;
 
-            if (!window.appData.workshops) window.appData.workshops = [];
-
             const newWs = {
                 id: 'ws_' + Date.now(),
                 name,
@@ -1133,12 +1092,11 @@
             saveGlobalAndLocal();
             closeModal('add-ws-modal');
             renderAll();
-            showToast('تم إنشاء الورشة بنجاح ومزامنتها');
+            showToast('تم إنشاء الورشة بنجاح');
         }
 
         function toggleWorkshopStatus() {
-            if (window.currentUser.role !== 'owner') return;
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             ws.active = !ws.active;
             saveGlobalAndLocal();
@@ -1147,7 +1105,7 @@
         }
 
         function deleteCurrentWorkshop() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const modalConfirm = document.createElement('div');
             modalConfirm.className = 'fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4';
@@ -1174,14 +1132,14 @@
         }
 
         function openCategoriesModal() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             renderCategoriesList();
             openModal('categories-modal');
         }
 
         function renderCategoriesList() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const list = document.getElementById('categories-list');
             list.innerHTML = '';
@@ -1198,7 +1156,7 @@
 
         function addWorkshopCategory(e) {
             e.preventDefault();
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             const input = document.getElementById('new-category-name');
             const name = input.value.trim();
@@ -1215,7 +1173,7 @@
         }
 
         function deleteWorkshopCategory(catName) {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             ws.categories = ws.categories.filter(c => c !== catName);
             saveGlobalAndLocal();
@@ -1224,7 +1182,7 @@
         }
 
         function openTxModal(type, editId = null) {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
             document.getElementById('tx-type').value = type;
@@ -1246,7 +1204,7 @@
             document.getElementById('tx-images-input').value = '';
 
             if (editId) {
-                const tx = (ws.transactions || []).find(t => t.id === editId);
+                const tx = ws.transactions.find(t => t.id === editId);
                 if (tx) {
                     document.getElementById('tx-currency').value = tx.currency || 'USD';
                     document.getElementById('tx-amount').value = tx.amount;
@@ -1314,7 +1272,7 @@
 
         function saveTransaction(e) {
             e.preventDefault();
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
             const editId = document.getElementById('tx-edit-id').value;
@@ -1329,8 +1287,6 @@
                 showToast('يرجى إدخال مبلغ صحيح أكبر من صفر', 'error');
                 return;
             }
-
-            if (!ws.transactions) ws.transactions = [];
 
             if (editId) {
                 const idx = ws.transactions.findIndex(t => t.id === editId);
@@ -1363,25 +1319,25 @@
             saveGlobalAndLocal();
             closeModal('tx-modal');
             renderAll();
-            showToast('تم حفظ الحركة ومزامنتها');
+            showToast('تم حفظ الحركة بنجاح');
         }
 
         function deleteTransaction(txId) {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
-            ws.transactions = (ws.transactions || []).filter(t => t.id !== txId);
+            ws.transactions = ws.transactions.filter(t => t.id !== txId);
             saveGlobalAndLocal();
             renderAll();
             showToast('تم حذف الحركة');
         }
 
         function openExchangeModal(editId = null) {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
             document.getElementById('ex-edit-id').value = editId || '';
             if (editId) {
-                const tx = (ws.transactions || []).find(t => t.id === editId);
+                const tx = ws.transactions.find(t => t.id === editId);
                 if (tx) {
                     document.getElementById('ex-direction').value = tx.direction || 'USD_TO_SYP';
                     document.getElementById('ex-usd-amount').value = tx.usdAmount;
@@ -1442,7 +1398,7 @@
 
         function saveExchange(e) {
             e.preventDefault();
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
             const editId = document.getElementById('ex-edit-id').value;
@@ -1457,8 +1413,6 @@
                 showToast('يرجى إدخال المبلغ وسعر الصرف بشكل صحيح', 'error');
                 return;
             }
-
-            if (!ws.transactions) ws.transactions = [];
 
             if (editId) {
                 const idx = ws.transactions.findIndex(t => t.id === editId);
@@ -1486,7 +1440,7 @@
             saveGlobalAndLocal();
             closeModal('exchange-modal');
             renderAll();
-            showToast('تم حفظ عملية الصرافة ومزامنتها');
+            showToast('تم حفظ عملية الصرافة بنجاح');
         }
 
         function openUsersModal() {
@@ -1507,7 +1461,7 @@
             window.currentUser.username = u;
             saveGlobalAndLocal();
             applyUserPermissionsUI();
-            showToast('تم تحديث بيانات الحساب الأساسي على السحابة لجميع الأجهزة');
+            showToast('تم تحديث بيانات الحساب الأساسي وحفظها');
         }
 
         function resetSubUserForm() {
@@ -1525,12 +1479,11 @@
         function renderSubUserWorkshopsCheckboxes(selectedIds) {
             const box = document.getElementById('subuser-workshops-checkboxes');
             box.innerHTML = '';
-            const listWs = window.appData.workshops || [];
-            if (listWs.length === 0) {
+            if (window.appData.workshops.length === 0) {
                 box.innerHTML = '<p class="text-slate-400">لا توجد ورشات مضافة بعد.</p>';
                 return;
             }
-            listWs.forEach(ws => {
+            window.appData.workshops.forEach(ws => {
                 const checked = selectedIds.includes(ws.id) ? 'checked' : '';
                 const label = document.createElement('label');
                 label.className = 'flex items-center gap-2 cursor-pointer bg-slate-50 p-1.5 rounded-lg border border-slate-200';
@@ -1555,8 +1508,6 @@
 
             const allowedWorkshops = Array.from(document.querySelectorAll('.subuser-ws-cb:checked')).map(cb => cb.value);
 
-            if (!window.appData.subUsers) window.appData.subUsers = [];
-
             if (editId) {
                 const idx = window.appData.subUsers.findIndex(u => u.id === editId);
                 if (idx !== -1) {
@@ -1575,11 +1526,11 @@
             saveGlobalAndLocal();
             resetSubUserForm();
             renderSubUsersList();
-            showToast('تم حفظ بيانات المستخدم ومزامنتها سحابياً');
+            showToast('تم حفظ بيانات المستخدم وصلاحياته');
         }
 
         function editSubUser(id) {
-            const u = (window.appData.subUsers || []).find(x => x.id === id);
+            const u = window.appData.subUsers.find(x => x.id === id);
             if (!u) return;
             document.getElementById('subuser-form-title').textContent = '✏️ تعديل المستخدم: ' + u.username;
             document.getElementById('subuser-edit-id').value = u.id;
@@ -1593,7 +1544,7 @@
         }
 
         function deleteSubUser(id) {
-            window.appData.subUsers = (window.appData.subUsers || []).filter(u => u.id !== id);
+            window.appData.subUsers = window.appData.subUsers.filter(u => u.id !== id);
             saveGlobalAndLocal();
             renderSubUsersList();
             showToast('تم حذف المستخدم');
@@ -1602,12 +1553,11 @@
         function renderSubUsersList() {
             const list = document.getElementById('subusers-list');
             list.innerHTML = '';
-            const subs = window.appData.subUsers || [];
-            if (subs.length === 0) {
+            if (window.appData.subUsers.length === 0) {
                 list.innerHTML = '<p class="text-xs text-slate-400">لا يوجد مستخدمون فرعيون حالياً.</p>';
                 return;
             }
-            subs.forEach(u => {
+            window.appData.subUsers.forEach(u => {
                 const div = document.createElement('div');
                 div.className = 'flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs';
                 div.innerHTML = `
@@ -1628,10 +1578,15 @@
         window.updateStorageQuotaUI = function() {
             const bytes = new Blob([JSON.stringify(window.appData)]).size;
             const kb = Math.round(bytes / 1024);
+            const maxKb = 1048576;
+            const pct = Math.min(100, Math.max(0, Math.round((kb / maxKb) * 100)));
             const pctEl = document.getElementById('header-storage-pct');
             const textEl = document.getElementById('storage-usage-text');
-            if (pctEl) pctEl.textContent = kb + ' KB';
-            if (textEl) textEl.textContent = `${kb.toLocaleString()} KB (متصل سحابياً)`;
+            const barEl = document.getElementById('storage-progress-bar');
+
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (textEl) textEl.textContent = `${kb.toLocaleString()} KB / 1,048,576 KB`;
+            if (barEl) barEl.style.width = Math.max(2, pct) + '%';
         };
 
         function openStorageArchiveModal() {
@@ -1651,13 +1606,13 @@
         }
 
         function backupAndDeleteInactiveWorkshops() {
-            const inactive = (window.appData.workshops || []).filter(w => !w.active);
+            const inactive = window.appData.workshops.filter(w => !w.active);
             if (inactive.length === 0) {
                 showToast('لا توجد ورشات غير نشطة حالياً!', 'error');
                 return;
             }
             downloadJSONFile(inactive, `inactive_workshops_archive_${getTodayStr()}.json`);
-            window.appData.workshops = (window.appData.workshops || []).filter(w => w.active);
+            window.appData.workshops = window.appData.workshops.filter(w => w.active);
             saveGlobalAndLocal();
             renderAll();
             closeModal('storage-archive-modal');
@@ -1706,10 +1661,10 @@
                 try {
                     const parsed = JSON.parse(ev.target.result);
                     if (parsed && Array.isArray(parsed.workshops)) {
-                        window.appData = normalizeCloudData(parsed);
+                        window.appData = parsed;
                         saveGlobalAndLocal();
                         renderAll();
-                        showToast('تمت استعادة النسخة الاحتياطية ومزامنتها بنجاح');
+                        showToast('تمت استعادة النسخة الاحتياطية الكاملة بنجاح');
                     } else {
                         showToast('ملف النسخة الاحتياطية غير صالح', 'error');
                     }
@@ -1722,7 +1677,7 @@
         }
 
         function exportSingleWorkshopJSON() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             downloadJSONFile(ws, `workshop_${ws.name}_${getTodayStr()}.json`);
             showToast('تم تصدير ملف الورشة');
@@ -1753,7 +1708,6 @@
 
         function confirmImportedWorkshop() {
             if (!pendingImportedWorkshop) return;
-            if (!window.appData.workshops) window.appData.workshops = [];
             const newWs = {
                 ...pendingImportedWorkshop,
                 id: 'ws_' + Date.now(),
@@ -1765,7 +1719,7 @@
             document.getElementById('imported-preview-banner').classList.add('hidden');
             saveGlobalAndLocal();
             renderAll();
-            showToast('تم اعتماد وإضافة الورشة المستوردة ومزامنتها');
+            showToast('تم اعتماد وإضافة الورشة المستوردة');
         }
 
         function cancelImportedWorkshop() {
@@ -1773,9 +1727,9 @@
             document.getElementById('imported-preview-banner').classList.add('hidden');
         }
 
-        // طباعة وتصدير PDF
+        // ==================== طباعة وتصدير PDF ملون ومنسق واحترافي ====================
         function exportWorkshopPDF() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
 
             const typeQ = document.getElementById('filter-type').value;
@@ -1802,8 +1756,8 @@
                 if (tx.type === 'income') amtStr = tx.currency === 'USD' ? `+ ${formatUSD(tx.amount)}` : `+ ${formatSYP(tx.amount)}`;
                 else if (tx.type === 'expense') amtStr = tx.currency === 'USD' ? `- ${formatUSD(tx.amount)}` : `- ${formatSYP(tx.amount)}`;
                 else amtStr = tx.direction === 'USD_TO_SYP'
-                    ? `-${formatNumberClean(tx.usdAmount)}$ ➔ +${formatSYP(tx.sypAmount)}`
-                    : `-${formatSYP(tx.sypAmount)} ➔ +${formatNumberClean(tx.usdAmount)}$`;
+                    ? `من ${formatNumberClean(tx.usdAmount)} $ إلى ${formatNumberClean(tx.sypAmount)} ل.س`
+                    : `من ${formatNumberClean(tx.sypAmount)} ل.س إلى ${formatNumberClean(tx.usdAmount)} $`;
 
                 const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
 
@@ -1870,18 +1824,15 @@
         }
 
         function exportWorkshopExcel() {
-            const ws = (window.appData.workshops || []).find(w => w.id === selectedWorkshopId);
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
-            let csv = '﻿التاريخ,النوع,البند,الوصف,العملة,المبلغ
-';
+            let csv = '\uFEFFالتاريخ,النوع,البند,الوصف,العملة,المبلغ\n';
             (ws.transactions || []).forEach(tx => {
                 if (tx.type === 'exchange') {
-                    csv += `${tx.date},صرافة,صرافة,"${tx.note || ''}",USD/SYP,"${tx.usdAmount}$ <-> ${tx.sypAmount} SYP"
-`;
+                    csv += `${tx.date},صرافة,صرافة,"${tx.note || ''}",USD/SYP,"${tx.usdAmount}$ <-> ${tx.sypAmount} SYP"\n`;
                 } else {
                     const typeAr = tx.type === 'income' ? 'إيراد' : 'مصروف';
-                    csv += `${tx.date},${typeAr},"${tx.category || 'عام'}","${(tx.desc || '').replace(/"/g, '""')}",${tx.currency},${tx.amount}
-`;
+                    csv += `${tx.date},${typeAr},"${tx.category || 'عام'}","${(tx.desc || '').replace(/"/g, '""')}",${tx.currency},${tx.amount}\n`;
                 }
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1920,8 +1871,17 @@
             el.classList.remove('flex');
         }
 
-        // بدء تشغيل النظام السحابي
-        initAppData();
+        // بدء التشغيل بجلب البيانات مباشرة من السحابة
+        (async function bootApp() {
+            await fetchFromCloud(false);
+            const savedSession = sessionStorage.getItem(SESSION_USER_KEY);
+            if (savedSession) {
+                try {
+                    const creds = JSON.parse(savedSession);
+                    authenticateUser(creds.username, creds.password, true);
+                } catch (e) {}
+            }
+        })();
     </script>
 </body>
 </html>
