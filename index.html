@@ -1211,7 +1211,7 @@
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY FIRESTORE) ==================== -->
+    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY FIRESTORE + DEEP DATA RECOVERY) ==================== -->
     <script>
         // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
         const FIREBASE_PROJECT_ID = 'anas-alasfar';
@@ -1327,7 +1327,44 @@
             openModal('customConfirmModal');
         }
 
-        // ==================== 4. DATA NORMALIZATION (COMPATIBLE WITH ALL PREVIOUS CLOUD SCHEMAS) ====================
+        // ==================== 4. FIRESTORE VALUE DECODER & DATA NORMALIZATION ====================
+        function decodeFirestoreValue(valObj) {
+            if (!valObj || typeof valObj !== 'object') return null;
+            if ('stringValue' in valObj) return valObj.stringValue;
+            if ('integerValue' in valObj) return Number(valObj.integerValue);
+            if ('doubleValue' in valObj) return Number(valObj.doubleValue);
+            if ('booleanValue' in valObj) return Boolean(valObj.booleanValue);
+            if ('nullValue' in valObj) return null;
+            if ('arrayValue' in valObj) {
+                return (valObj.arrayValue.values || []).map(decodeFirestoreValue);
+            }
+            if ('mapValue' in valObj) {
+                const res = {};
+                const fields = valObj.mapValue.fields || {};
+                for (const k of Object.keys(fields)) {
+                    res[k] = decodeFirestoreValue(fields[k]);
+                }
+                return res;
+            }
+            return null;
+        }
+
+        function parseFirestoreDocument(doc) {
+            const fields = doc.fields || {};
+            if (fields.payload && fields.payload.stringValue) {
+                try {
+                    return JSON.parse(fields.payload.stringValue);
+                } catch (e) {
+                    console.warn('JSON parse failed for payload string:', e);
+                }
+            }
+            const decoded = {};
+            for (const k of Object.keys(fields)) {
+                decoded[k] = decodeFirestoreValue(fields[k]);
+            }
+            return decoded;
+        }
+
         function normalizeWorkshopData(ws, index = 0) {
             const safeCategories = Array.isArray(ws.categories) ? [...ws.categories] : [];
             if (!safeCategories.includes('عام')) {
@@ -1373,7 +1410,6 @@
         }
 
         function normalizeFullState(raw) {
-            // Support all possible admin credential formats stored in cloud_master_v8
             let adminUsername = 'anas';
             let adminPassword = '123';
             let adminFullName = '';
@@ -1388,7 +1424,6 @@
                 adminFullName = raw.adminFullName || '';
             }
 
-            // Support both subUsers and legacy users arrays
             const rawSubs = Array.isArray(raw?.subUsers)
                 ? raw.subUsers
                 : (Array.isArray(raw?.users) ? raw.users.filter(u => u.role !== 'admin') : []);
@@ -1425,7 +1460,7 @@
             };
         }
 
-        // ==================== 5. FIRESTORE CLOUD ENGINE (MULTI-DOC 1GB + COMPATIBLE WITH cloud_master_v8) ====================
+        // ==================== 5. FIRESTORE CLOUD ENGINE (FULL PAGINATED SCAN + SMART DATA RECOVERY) ====================
         function updateCloudStatusUI(connected, labelText = null) {
             cloudConnected = connected;
             const loginDot = document.getElementById('loginCloudDot');
@@ -1470,60 +1505,85 @@
             if (barEl) barEl.style.width = `${Math.max(2, remainingPct)}%`;
         }
 
-        async function fetchFromCloud(isBackgroundPoll = false) {
-            if (isSavingToCloud) return false;
-            try {
-                const res = await fetch(`${FIRESTORE_BASE_URL}?pageSize=300`, {
+        async function fetchAllCollectionDocuments() {
+            const allDocs = [];
+            let pageToken = '';
+            do {
+                const url = `${FIRESTORE_BASE_URL}?pageSize=300${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+                const res = await fetch(url, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     cache: 'no-store'
                 });
-
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                const docs = Array.isArray(data.documents) ? data.documents : [];
+                if (Array.isArray(data.documents)) {
+                    allDocs.push(...data.documents);
+                }
+                pageToken = data.nextPageToken || '';
+            } while (pageToken);
+            return allDocs;
+        }
+
+        function pickRicherWorkshop(wsA, wsB) {
+            if (!wsA) return wsB;
+            if (!wsB) return wsA;
+            const txA = Array.isArray(wsA.transactions) ? wsA.transactions.length : 0;
+            const txB = Array.isArray(wsB.transactions) ? wsB.transactions.length : 0;
+            if (txB > txA) return wsB;
+            return wsA;
+        }
+
+        async function fetchFromCloud(isBackgroundPoll = false) {
+            if (isSavingToCloud) return false;
+            try {
+                const docs = await fetchAllCollectionDocuments();
 
                 let masterPayload = null;
                 const splitWorkshopsMap = new Map();
 
                 for (const doc of docs) {
                     const docName = doc.name.split('/').pop();
-                    const payloadStr = doc.fields?.payload?.stringValue;
-                    if (!payloadStr) continue;
-                    try {
-                        const parsed = JSON.parse(payloadStr);
-                        if (docName === MASTER_DOC_ID) {
-                            masterPayload = parsed;
-                        } else if (docName.startsWith('ws_doc_') && parsed && parsed.id) {
-                            splitWorkshopsMap.set(parsed.id, parsed);
-                        }
-                    } catch (e) {
-                        console.warn('Skipping malformed cloud doc:', docName);
+                    const parsed = parseFirestoreDocument(doc);
+                    if (!parsed || typeof parsed !== 'object') continue;
+
+                    if (docName === MASTER_DOC_ID) {
+                        masterPayload = parsed;
+                    } else if (docName.startsWith('ws_doc_')) {
+                        const wsId = parsed.id || docName.replace('ws_doc_', '');
+                        parsed.id = wsId;
+                        const existing = splitWorkshopsMap.get(wsId);
+                        splitWorkshopsMap.set(wsId, pickRicherWorkshop(existing, parsed));
+                    } else if (parsed.name && Array.isArray(parsed.transactions)) {
+                        // Any legacy standalone workshop document
+                        const wsId = parsed.id || docName;
+                        parsed.id = wsId;
+                        const existing = splitWorkshopsMap.get(wsId);
+                        splitWorkshopsMap.set(wsId, pickRicherWorkshop(existing, parsed));
                     }
                 }
 
-                if (masterPayload) {
-                    const mergedWorkshops = [];
-                    const seenIds = new Set();
+                const mergedWorkshops = [];
+                const seenIds = new Set();
 
-                    if (Array.isArray(masterPayload.workshops)) {
-                        for (const w of masterPayload.workshops) {
-                            if (splitWorkshopsMap.has(w.id)) {
-                                mergedWorkshops.push(splitWorkshopsMap.get(w.id));
-                            } else {
-                                mergedWorkshops.push(w);
-                            }
-                            seenIds.add(w.id);
-                        }
+                if (masterPayload && Array.isArray(masterPayload.workshops)) {
+                    for (const w of masterPayload.workshops) {
+                        const splitVersion = splitWorkshopsMap.get(w.id);
+                        mergedWorkshops.push(pickRicherWorkshop(w, splitVersion));
+                        seenIds.add(w.id);
                     }
-                    for (const [id, w] of splitWorkshopsMap.entries()) {
-                        if (!seenIds.has(id)) {
-                            mergedWorkshops.push(w);
-                        }
-                    }
+                }
 
+                for (const [id, w] of splitWorkshopsMap.entries()) {
+                    if (!seenIds.has(id)) {
+                        mergedWorkshops.push(w);
+                        seenIds.add(id);
+                    }
+                }
+
+                if (masterPayload || mergedWorkshops.length > 0) {
                     const normalized = normalizeFullState({
-                        ...masterPayload,
+                        ...(masterPayload || {}),
                         workshops: mergedWorkshops
                     });
 
@@ -1534,6 +1594,10 @@
                         updateCloudCapacityMeter();
 
                         if (currentUser && !isModalOpen && !isReorderMode) {
+                            const accessible = getAccessibleWorkshops();
+                            if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
+                                activeWorkshopId = accessible[0].id;
+                            }
                             refreshAllViewsAfterSync();
                         }
                     }
@@ -1554,6 +1618,10 @@
             isSavingToCloud = true;
             updateCloudStatusUI(true, 'جاري الحفظ بالسحابة...');
             try {
+                // Keep full transactions in master doc whenever under 850KB so single-doc reads NEVER lose transactions
+                const fullBytes = new TextEncoder().encode(JSON.stringify(appState)).length;
+                const keepTxsInMaster = fullBytes < 850000;
+
                 const masterCompact = {
                     admin: appState.admin,
                     subUsers: appState.subUsers,
@@ -1564,7 +1632,7 @@
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
-                        transactions: JSON.stringify(appState).length < 750000 ? w.transactions : []
+                        transactions: keepTxsInMaster ? (w.transactions || []) : []
                     })),
                     updatedAt: Date.now()
                 };
@@ -1649,8 +1717,12 @@
             const ok = await fetchFromCloud(false);
             if (icon) icon.classList.remove('animate-spin');
             if (ok) {
+                const accessible = getAccessibleWorkshops();
+                if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
+                    activeWorkshopId = accessible[0].id;
+                }
                 refreshAllViewsAfterSync();
-                showToast('تمت المزامنة وجلب أحدث البيانات من السحابة', '🔄');
+                showToast(`تمت المزامنة واسترجاع (${accessible.length}) ورشة من السحابة`, '🔄');
             }
         }
 
@@ -1664,7 +1736,7 @@
 
             errBox.classList.add('hidden');
             btn.disabled = true;
-            btn.innerHTML = '<span>جاري التحقق من السحابة...</span>';
+            btn.innerHTML = '<span>جاري التحقق وجلب الورشات من السحابة...</span>';
 
             await fetchFromCloud(false);
 
