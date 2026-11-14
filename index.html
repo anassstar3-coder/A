@@ -29,9 +29,17 @@
             th:nth-child(4), td:nth-child(4) { width: 22% !important; }
             th:nth-child(5), td:nth-child(5) { width: 27% !important; }
         }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: #fff !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
+
+    <!-- حاوية الإشعارات -->
+    <div id="toast-container" class="fixed bottom-4 left-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
@@ -51,11 +59,11 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم</label>
-                    <input type="text" id="login-username" required autocomplete="username" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-left" dir="ltr" placeholder="Username">
+                    <input type="text" id="login-username" required autocomplete="username" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-left" dir="ltr" placeholder="anas">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
-                    <input type="password" id="login-password" required autocomplete="current-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-left" dir="ltr" placeholder="••••••••">
+                    <input type="password" id="login-password" required autocomplete="current-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none text-left" dir="ltr" placeholder="123">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs font-bold bg-red-50 p-2.5 rounded-lg border border-red-200 text-center"></div>
                 <button type="submit" id="btn-login-submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-md transition">تسجيل الدخول</button>
@@ -539,6 +547,35 @@
                 </div>
             </div>
 
+            <!-- أرشفة الورشات غير النشطة -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
+                <h4 class="text-xs font-extrabold text-amber-900">📦 أرشفة وتفريغ الورشات غير النشطة</h4>
+                <p class="text-[11px] text-amber-800">يتم تحميل ملف نسخة احتياطية لجميع الورشات غير النشطة ثم حذفها من النظام لتوفير المساحة.</p>
+                <button onclick="backupAndDeleteInactiveWorkshops()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs shadow">⬇ تنزيل نسخة للورشات غير النشطة وحذفها</button>
+            </div>
+
+            <!-- منطقة الخطر -->
+            <div id="danger-zone-box" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
+                <h4 class="text-xs font-extrabold text-rose-900">⚠️ تصفير وحذف جميع الورشات</h4>
+                <p class="text-[11px] text-rose-700">سيتم حذف كافة الورشات من السحابة والجهاز نهائياً.</p>
+                <div class="flex gap-2">
+                    <button id="btn-arm-wipe" onclick="armFullWipeCountdown()" class="flex-1 bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold py-2 rounded-xl text-xs">تفعيل زر الحذف الشامل (انتظار 10 ثوانٍ)</button>
+                    <button id="btn-execute-wipe" onclick="executeFullWipe()" disabled class="px-4 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs opacity-40 cursor-not-allowed">حذف الكل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة عرض الصورة المكبرة -->
+    <div id="image-viewer-modal" class="fixed inset-0 z-50 bg-slate-900/80 hidden items-center justify-center p-4" onclick="closeModal('image-viewer-modal')">
+        <div class="bg-white rounded-2xl p-2 max-w-2xl w-full shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-end pb-1">
+                <button onclick="closeModal('image-viewer-modal')" class="text-slate-600 hover:text-slate-900 font-bold px-2">✕ إغلاق</button>
+            </div>
+            <img id="viewer-img-el" src="" class="w-full max-h-[80vh] object-contain rounded-xl">
+        </div>
+    </div>
+
     <!-- ربط سحابي مباشر 100% لجميع المتصفحات والأجهزة -->
     <script>
         const CLOUD_DB_URL = 'https://anas-alasfar-default-rtdb.firebaseio.com/workshops_cloud_v6.json';
@@ -546,6 +583,7 @@
         const SESSION_USER_KEY = 'ws_session_user_v6';
         const SESSION_WS_KEY = 'ws_session_selected_ws_v6';
 
+        // توحيد وتثبيت بيانات الدخول الرئيسية الافتراضية (anas / 123)
         window.appData = {
             owner: { username: 'anas', password: '123' },
             subUsers: [],
@@ -553,12 +591,15 @@
             lastUpdated: 0
         };
 
-        // تحميل الكاش المحلي فوراً كاحتياط ريثما يكتمل رد السحابة
         try {
             const cached = localStorage.getItem(LOCAL_CACHE_KEY);
             if (cached) {
                 const parsed = JSON.parse(cached);
-                if (parsed && parsed.owner) window.appData = parsed;
+                if (parsed) {
+                    if (parsed.owner && parsed.owner.username) window.appData.owner = parsed.owner;
+                    if (Array.isArray(parsed.subUsers)) window.appData.subUsers = parsed.subUsers;
+                    if (Array.isArray(parsed.workshops)) window.appData.workshops = parsed.workshops;
+                }
             }
         } catch (e) {}
 
@@ -589,13 +630,12 @@
             } else {
                 if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
                 if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
-                if (loginText) loginText.textContent = text || 'وضع العمل السريع (جاهز للدخول)';
+                if (loginText) loginText.textContent = text || 'جاهز للدخول (مزامنة تلقائية)';
                 if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
                 if (headerText) headerText.textContent = 'متصل محلياً';
             }
         }
 
-        // جلب البيانات من السحابة مع مهلة زمنية قصيرة (5 ثوانٍ) لمنع التعليق نهائياً
         async function fetchFromCloud(silent = false) {
             if (isSavingCloud) return false;
             const controller = new AbortController();
@@ -610,19 +650,31 @@
                 const cloudData = await res.json();
 
                 if (cloudData && typeof cloudData === 'object') {
-                    if (cloudData.owner && cloudData.owner.username) {
-                        window.appData.owner = cloudData.owner;
+                    // إذا لم يكن في السحابة حساب مالك مضبوط أو كان قديماً غير موحد، نثبت (anas / 123) مرة واحدة
+                    if (!cloudData.unifiedResetV1) {
+                        window.appData.owner = { username: 'anas', password: '123' };
+                        window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : window.appData.subUsers;
+                        window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops : window.appData.workshops;
+                        window.appData.unifiedResetV1 = true;
+                        await pushToCloud(true);
+                    } else {
+                        if (cloudData.owner && cloudData.owner.username) {
+                            window.appData.owner = cloudData.owner;
+                        }
+                        window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
+                        window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
+                            ...w,
+                            active: typeof w.active === 'boolean' ? w.active : true,
+                            categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
+                            transactions: Array.isArray(w.transactions) ? w.transactions : []
+                        })) : [];
+                        window.appData.unifiedResetV1 = true;
+                        window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
                     }
-                    window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
-                    window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
-                        ...w,
-                        active: typeof w.active === 'boolean' ? w.active : true,
-                        categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
-                        transactions: Array.isArray(w.transactions) ? w.transactions : []
-                    })) : [];
-                    window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
                     try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
                 } else {
+                    window.appData.owner = { username: 'anas', password: '123' };
+                    window.appData.unifiedResetV1 = true;
                     await pushToCloud(true);
                 }
 
@@ -639,11 +691,11 @@
             }
         }
 
-        // رفع البيانات مباشرة إلى السحابة
         async function pushToCloud(isInit = false) {
             isSavingCloud = true;
             setCloudStatusUI('syncing', 'جاري الحفظ بالسحابة...');
             window.appData.lastUpdated = Date.now();
+            window.appData.unifiedResetV1 = true;
             try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
 
             try {
@@ -668,7 +720,6 @@
             pushToCloud(false);
         };
 
-        // مزامنة تلقائية من السحابة كل 5 ثوانٍ لتحديث أي جهاز مفتوح لحظياً
         setInterval(async () => {
             if (!isSavingCloud) {
                 try {
@@ -738,7 +789,6 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // تسجيل الدخول بعد التأكد من جلب أحدث بيانات من السحابة
         function authenticateUser(username, password, isRestore = false) {
             if (username === window.appData.owner.username && password === window.appData.owner.password) {
                 window.currentUser = { role: 'owner', username: window.appData.owner.username };
@@ -774,7 +824,6 @@
             btn.textContent = 'جاري التحقق من البيانات...';
             errEl.classList.add('hidden');
 
-            // محاولة جلب أحدث بيانات من السحابة مع مهلة سريعة حتى لا يعلق الدخول أبداً
             await fetchFromCloud(true);
             btn.disabled = false;
             btn.textContent = 'تسجيل الدخول';
@@ -970,17 +1019,6 @@
                     if (!txt.includes(searchQ)) return false;
                 }
                 return true;
-            });
-
-            let sumUSD = 0, sumSYP = 0;
-            filtered.forEach(tx => {
-                if (tx.type === 'income') {
-                    if (tx.currency === 'USD') sumUSD += Number(tx.amount) || 0;
-                    else sumSYP += Number(tx.amount) || 0;
-                } else if (tx.type === 'expense') {
-                    if (tx.currency === 'USD') sumUSD -= Number(tx.amount) || 0;
-                    else sumSYP -= Number(tx.amount) || 0;
-                }
             });
 
             document.getElementById('filtered-count').textContent = filtered.length;
@@ -1449,7 +1487,7 @@
             window.currentUser.username = u;
             saveGlobalAndLocal();
             applyUserPermissionsUI();
-            showToast('تم تحديث بيانات الحساب الأساسي وحفظها');
+            showToast('تم تحديث بيانات الحساب الأساسي وحفظها بالسحابة');
         }
 
         function resetSubUserForm() {
