@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #e6ebf2;
+            background-color: #d6dee8;
             color: #0f172a;
             overflow-x: hidden;
         }
@@ -20,30 +20,48 @@
             unicode-bidi: isolate;
             font-variant-numeric: tabular-nums;
         }
+        /* تدرج رمادي للورشة المتوقفة مع استثناء زر التفعيل ليبقى ملوناً وبارزاً */
         .workshop-card-inactive {
             background-color: #e2e8f0 !important;
-            border-color: #94a3b8 !important;
-            filter: grayscale(100%);
+            border-color: #64748b !important;
         }
-        /* تدرجات الرمادي للورشة المتوقفة بالكامل وصناديقها في الشاشة */
+        .workshop-card-inactive .ws-gray-area {
+            filter: grayscale(100%);
+            opacity: 0.78;
+        }
         .workspace-inactive-gray {
-            filter: grayscale(100%);
-            background-color: #f1f5f9 !important;
-            border-color: #94a3b8 !important;
+            background-color: #e2e8f0 !important;
+            border-color: #64748b !important;
         }
+        .workspace-inactive-gray .ws-gray-target {
+            filter: grayscale(100%);
+            opacity: 0.82;
+        }
+        .btn-activate-vivid {
+            filter: none !important;
+            opacity: 1 !important;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+            color: #ffffff !important;
+            border: 2px solid #047857 !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
+        }
+        .btn-activate-vivid:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: #e2e8f0;
         }
         ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
+            background: #64748b;
             border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+            background: #475569;
         }
 
         /* تلوين صفوف الجدول حسب نوع الحركة في الشاشة والطباعة */
@@ -97,8 +115,11 @@
                 border: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                filter: none !important;
                 background: #ffffff !important;
+            }
+            #workshop-workspace .ws-gray-target {
+                filter: none !important;
+                opacity: 1 !important;
             }
             .print-boxes-grid {
                 display: grid !important;
@@ -157,7 +178,10 @@
             border: none !important;
             padding: 8px !important;
             background: #ffffff !important;
+        }
+        .pdf-export-mode #workshop-workspace .ws-gray-target {
             filter: none !important;
+            opacity: 1 !important;
         }
         .pdf-export-mode .print-boxes-grid {
             display: grid !important;
@@ -304,270 +328,290 @@
         </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <main id="app-main-layout" class="max-w-7xl w-full mx-auto px-3 sm:px-5 py-5 sm:py-6 flex-1 space-y-6">
+    <!-- المحتوى الرئيسي بأقسام منفصلة ومحددة بوضوح تام -->
+    <main id="app-main-layout" class="max-w-7xl w-full mx-auto px-3 sm:px-5 py-6 sm:py-8 flex-1 space-y-8">
 
-        <!-- قسم 1: ملخص الصندوق العام للورشات بإطار غامق مستقل -->
-        <section id="global-summary-section" class="no-print bg-white rounded-3xl p-4 sm:p-5 shadow-md border-2 border-slate-400/80">
-            <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
-                <span class="w-2.5 h-5 bg-slate-800 rounded-full"></span>
-                <h2 class="font-black text-slate-900 text-sm sm:text-base">ملخص الصندوق العام للنظام</h2>
+        <!-- قسم 1: ملخص الصندوق العام للنظام (بطاقة مستقلة بإطار وترويسة بارزة) -->
+        <section id="global-summary-section" class="no-print bg-white rounded-3xl overflow-hidden shadow-lg border-2 border-slate-500/85">
+            <div class="bg-slate-900 text-white px-4 sm:px-6 py-3 flex items-center justify-between border-b-2 border-slate-700">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                    <h2 class="font-black text-sm sm:text-base tracking-normal">القسم الأول: ملخص الصندوق العام للنظام</h2>
+                </div>
+                <span class="text-[11px] font-bold text-slate-300">إجمالي جميع الورشات</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 rounded-2xl p-4 sm:p-5 shadow-xs border-2 border-emerald-400/70 border-r-4 border-r-emerald-600">
-                    <div class="flex items-center justify-between">
-                        <div class="text-xs sm:text-sm font-extrabold text-emerald-900">الصندوق العام (دولار $)</div>
-                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-sm">$</span>
+
+            <div class="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- بطاقة الصندوق العام دولار (تتغير للأخضر عند الموجب والأحمر عند السالب) -->
+                <div id="global-usd-card" class="rounded-2xl p-4 sm:p-5 shadow-sm border-2 transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500 border-r-8 border-r-emerald-600">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-xs sm:text-sm font-black text-slate-900">الصندوق العام</div>
+                        <span class="px-3 py-1 rounded-xl bg-slate-900 text-amber-300 font-black text-sm sm:text-base shadow-xs border border-slate-700">USD $</span>
                     </div>
-                    <div id="global-usd-balance" class="text-2xl sm:text-3xl font-black text-emerald-700 mt-1.5 ltr-num">$ 0</div>
-                    <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات المتاحة</div>
+                    <div id="global-usd-balance" class="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 ltr-num">$ 0</div>
+                    <div id="global-usd-status-note" class="text-[11px] font-extrabold text-emerald-800 mt-1">صافي رصيد جميع الورشات المتاحة</div>
                 </div>
 
-                <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/40 rounded-2xl p-4 sm:p-5 shadow-xs border-2 border-blue-400/70 border-r-4 border-r-blue-600">
-                    <div class="flex items-center justify-between">
-                        <div class="text-xs sm:text-sm font-extrabold text-blue-900">الصندوق العام (ليرة سورية)</div>
-                        <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs">ل.س</span>
+                <!-- بطاقة الصندوق العام ليرة سورية (تتغير للأخضر عند الموجب والأحمر عند السالب) -->
+                <div id="global-syp-card" class="rounded-2xl p-4 sm:p-5 shadow-sm border-2 transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500 border-r-8 border-r-emerald-600">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-xs sm:text-sm font-black text-slate-900">الصندوق العام</div>
+                        <span class="px-3 py-1 rounded-xl bg-blue-900 text-cyan-200 font-black text-sm sm:text-base shadow-xs border border-blue-700">SYP ل.س</span>
                     </div>
-                    <div id="global-syp-balance" class="text-2xl sm:text-3xl font-black text-blue-700 mt-1.5 ltr-num">0 ل.س</div>
-                    <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات المتاحة</div>
+                    <div id="global-syp-balance" class="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 ltr-num">0 ل.س</div>
+                    <div id="global-syp-status-note" class="text-[11px] font-extrabold text-emerald-800 mt-1">صافي رصيد جميع الورشات المتاحة</div>
                 </div>
             </div>
         </section>
 
-        <!-- قسم 2: الورشات والمشاريع بإطار غامق مستقل -->
-        <section id="workshops-section" class="no-print bg-white rounded-3xl p-4 sm:p-6 shadow-md border-2 border-slate-400/80 space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b-2 border-slate-200">
+        <!-- قسم 2: الورشات والمشاريع (بطاقة مستقلة بإطار وترويسة بارزة) -->
+        <section id="workshops-section" class="no-print bg-white rounded-3xl overflow-hidden shadow-lg border-2 border-slate-500/85">
+            <div class="bg-indigo-950 text-white px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 border-b-2 border-indigo-800">
                 <div class="flex items-center gap-2.5">
-                    <span class="w-2.5 h-6 bg-indigo-600 rounded-full"></span>
-                    <h2 class="font-black text-slate-900 text-base sm:text-lg">الورشات والمشاريع</h2>
+                    <span class="w-3 h-3 rounded-full bg-indigo-400"></span>
+                    <h2 class="font-black text-sm sm:text-base">القسم الثاني: الورشات والمشاريع</h2>
                 </div>
-                <label id="lbl-import-single-ws" class="cursor-pointer bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-200 px-3 py-1.5 rounded-xl text-xs font-extrabold transition">
+                <label id="lbl-import-single-ws" class="cursor-pointer bg-indigo-800 hover:bg-indigo-700 text-white border border-indigo-500 px-3 py-1 rounded-xl text-xs font-extrabold transition">
                     📥 استيراد ورشة (متوافق مع كافة الإصدارات)
                     <input type="file" accept=".json" onchange="handleSingleWorkshopImport(event)" class="hidden">
                 </label>
             </div>
 
-            <!-- نموذج إضافة ورشة جديدة مع حقل الوصف -->
-            <form id="add-workshop-form" onsubmit="addNewWorkshop(event)" class="grid grid-cols-1 md:grid-cols-12 gap-2.5 bg-slate-100/90 p-3 rounded-2xl border border-slate-300">
-                <div class="md:col-span-5">
-                    <input type="text" id="new-workshop-name" required placeholder="اسم الورشة الجديدة..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
-                </div>
-                <div class="md:col-span-5">
-                    <input type="text" id="new-workshop-desc" placeholder="وصف الورشة أو الموقع (اختياري)..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
-                </div>
-                <div class="md:col-span-2">
-                    <button type="submit" class="w-full h-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-extrabold shadow-sm transition">
-                        + إضافة
-                    </button>
-                </div>
-            </form>
+            <div class="p-4 sm:p-6 space-y-4">
+                <!-- نموذج إضافة ورشة جديدة مع حقل الوصف -->
+                <form id="add-workshop-form" onsubmit="addNewWorkshop(event)" class="grid grid-cols-1 md:grid-cols-12 gap-2.5 bg-slate-100 p-3.5 rounded-2xl border-2 border-slate-300">
+                    <div class="md:col-span-5">
+                        <input type="text" id="new-workshop-name" required placeholder="اسم الورشة الجديدة..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+                    </div>
+                    <div class="md:col-span-5">
+                        <input type="text" id="new-workshop-desc" placeholder="وصف الورشة أو الموقع (اختياري)..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="w-full h-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-extrabold shadow-sm transition">
+                            + إضافة
+                        </button>
+                    </div>
+                </form>
 
-            <!-- شريط البحث وفلترة الورشات -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
-                <div class="md:col-span-7">
-                    <input type="text" id="ws-sidebar-search" oninput="renderWorkshopsList()" placeholder="🔍 ابحث عن ورشة بالاسم أو الوصف..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-xs sm:text-sm font-bold outline-none focus:border-indigo-500">
+                <!-- شريط البحث وفلترة الورشات -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+                    <div class="md:col-span-7">
+                        <input type="text" id="ws-sidebar-search" oninput="renderWorkshopsList()" placeholder="🔍 ابحث عن ورشة بالاسم أو الوصف..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-xs sm:text-sm font-bold outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="md:col-span-5 grid grid-cols-3 gap-1.5 text-xs font-extrabold">
+                        <button type="button" onclick="setWorkshopSidebarFilter('ALL')" id="ws-filter-btn-ALL" class="py-2.5 rounded-xl bg-indigo-600 text-white transition shadow-xs">الكل (<span id="ws-count-all">0</span>)</button>
+                        <button type="button" onclick="setWorkshopSidebarFilter('ACTIVE')" id="ws-filter-btn-ACTIVE" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-300 transition">نشطة (<span id="ws-count-active">0</span>)</button>
+                        <button type="button" onclick="setWorkshopSidebarFilter('INACTIVE')" id="ws-filter-btn-INACTIVE" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-300 transition">متوقفة (<span id="ws-count-inactive">0</span>)</button>
+                    </div>
                 </div>
-                <div class="md:col-span-5 grid grid-cols-3 gap-1.5 text-xs font-extrabold">
-                    <button type="button" onclick="setWorkshopSidebarFilter('ALL')" id="ws-filter-btn-ALL" class="py-2.5 rounded-xl bg-indigo-600 text-white transition shadow-xs">الكل (<span id="ws-count-all">0</span>)</button>
-                    <button type="button" onclick="setWorkshopSidebarFilter('ACTIVE')" id="ws-filter-btn-ACTIVE" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-300 transition">نشطة (<span id="ws-count-active">0</span>)</button>
-                    <button type="button" onclick="setWorkshopSidebarFilter('INACTIVE')" id="ws-filter-btn-INACTIVE" class="py-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-300 transition">متوقفة (<span id="ws-count-inactive">0</span>)</button>
+
+                <!-- بطاقة معاينة الورشة المستوردة -->
+                <div id="pending-import-card" class="hidden p-4 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-500">
+                    <div class="text-xs font-black text-slate-700 mb-1">معاينة ورشة مستوردة (تمت تهيئتها وتحديث بنيتها تلقائياً):</div>
+                    <div id="pending-import-name" class="text-sm font-black text-slate-900"></div>
+                    <div id="pending-import-stats" class="text-xs font-bold text-slate-600 mt-1"></div>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <button onclick="confirmSingleWorkshopImport()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
+                            اعتماد وإضافة رسمية
+                        </button>
+                        <button onclick="cancelSingleWorkshopImport()" class="px-4 bg-slate-300 hover:bg-slate-400 text-slate-800 py-2 rounded-xl text-xs font-extrabold">
+                            إلغاء
+                        </button>
+                    </div>
                 </div>
+
+                <!-- شبكة بطاقات الورشات المتجاورة -->
+                <div id="workshops-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[58vh] overflow-y-auto pt-1"></div>
             </div>
-
-            <!-- بطاقة معاينة الورشة المستوردة -->
-            <div id="pending-import-card" class="hidden p-4 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-500">
-                <div class="text-xs font-black text-slate-700 mb-1">معاينة ورشة مستوردة (تمت تهيئتها وتحديث بنيتها تلقائياً):</div>
-                <div id="pending-import-name" class="text-sm font-black text-slate-900"></div>
-                <div id="pending-import-stats" class="text-xs font-bold text-slate-600 mt-1"></div>
-                <div class="flex flex-wrap gap-2 mt-3">
-                    <button onclick="confirmSingleWorkshopImport()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
-                        اعتماد وإضافة رسمية
-                    </button>
-                    <button onclick="cancelSingleWorkshopImport()" class="px-4 bg-slate-300 hover:bg-slate-400 text-slate-800 py-2 rounded-xl text-xs font-extrabold">
-                        إلغاء
-                    </button>
-                </div>
-            </div>
-
-            <!-- شبكة بطاقات الورشات المتجاورة -->
-            <div id="workshops-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[58vh] overflow-y-auto pt-1"></div>
         </section>
 
-        <!-- قسم 3: مساحة عمل الورشة المحددة بإطار غامق مستقل -->
-        <section id="workshop-workspace" class="bg-white rounded-3xl p-4 sm:p-6 shadow-md border-2 border-slate-400/80 min-h-[450px] transition-all">
-            <div id="no-workshop-selected" class="h-72 flex flex-col items-center justify-center text-center text-slate-400 px-4">
-                <div class="w-20 h-20 rounded-3xl bg-slate-100 border-2 border-slate-300 flex items-center justify-center text-4xl mb-3 shadow-inner">🏗️</div>
-                <p class="font-extrabold text-base text-slate-700">اختر ورشة من البطاقات أعلاه لعرض حساباتها وبنودها</p>
-                <p class="text-xs font-bold mt-1 text-slate-500">أو قم بإضافة ورشة جديدة للبدء فوراً في التسجيل</p>
+        <!-- قسم 3: مساحة عمل الورشة المحددة (بطاقة مستقلة بإطار وترويسة بارزة) -->
+        <section id="workshop-workspace" class="bg-white rounded-3xl overflow-hidden shadow-lg border-2 border-slate-500/85 min-h-[450px] transition-all">
+            <div class="no-print bg-slate-800 text-white px-4 sm:px-6 py-3 flex items-center justify-between border-b-2 border-slate-700">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                    <h2 class="font-black text-sm sm:text-base">القسم الثالث: تفاصيل وحسابات الورشة المحددة</h2>
+                </div>
+                <span class="text-[11px] font-bold text-slate-300">السجل المالي التفصيلي</span>
             </div>
 
-            <div id="workshop-details-content" class="hidden space-y-5">
-
-                <!-- الترويسة الرسمية لشركات البناء والمقاولات (تظهر حصراً عند الطباعة وتصدير PDF) -->
-                <div class="official-print-header border-2 border-slate-800 rounded-xl overflow-hidden">
-                    <div class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
-                        <div>
-                            <div class="text-base font-black">كشف حساب ومستخلص أعمال ورشة / مشروع</div>
-                            <div class="text-[11px] text-slate-300 font-bold mt-0.5">إدارة المشاريع الهندسية والمقاولات العامة - السجل المالي المعتمد</div>
-                        </div>
-                        <div class="text-left text-[11px] font-bold">
-                            <div>تاريخ الإصدار: <span id="print-issue-date" class="ltr-num font-black"></span></div>
-                            <div class="mt-0.5">رقم المرجع: <span id="print-ref-code" class="ltr-num font-black"></span></div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 px-4 py-2 border-t border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-slate-800">
-                        <div>اسم المشروع / الورشة: <span id="print-ws-name" class="text-indigo-900 font-black"></span></div>
-                        <div id="print-ws-desc-wrap" class="hidden">الموقع / الوصف: <span id="print-ws-desc" class="text-slate-700"></span></div>
-                        <div>نطاق التقرير: <span id="print-scope-label" class="text-slate-700"></span></div>
-                    </div>
+            <div class="p-4 sm:p-6">
+                <div id="no-workshop-selected" class="h-72 flex flex-col items-center justify-center text-center text-slate-400 px-4">
+                    <div class="w-20 h-20 rounded-3xl bg-slate-100 border-2 border-slate-300 flex items-center justify-center text-4xl mb-3 shadow-inner">🏗️</div>
+                    <p class="font-extrabold text-base text-slate-700">اختر ورشة من القسم الثاني أعلاه لعرض حساباتها وبنودها</p>
+                    <p class="text-xs font-bold mt-1 text-slate-500">أو قم بإضافة ورشة جديدة للبدء فوراً في التسجيل</p>
                 </div>
 
-                <!-- ترويسة الورشة في واجهة الشاشة -->
-                <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-4">
-                    <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 id="ws-title" class="text-xl sm:text-2xl font-black text-slate-900"></h2>
-                            <button onclick="renameCurrentWorkshop()" id="btn-rename-ws" title="تعديل اسم ووصف الورشة" class="text-slate-500 hover:text-indigo-600 p-1 rounded-lg transition text-sm">✏️</button>
-                            <span id="ws-status-badge" class="px-3 py-0.5 rounded-full text-xs font-extrabold"></span>
+                <div id="workshop-details-content" class="hidden space-y-5">
+
+                    <!-- الترويسة الرسمية لشركات البناء والمقاولات (تظهر حصراً عند الطباعة وتصدير PDF) -->
+                    <div class="official-print-header border-2 border-slate-800 rounded-xl overflow-hidden">
+                        <div class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                            <div>
+                                <div class="text-base font-black">كشف حساب ومستخلص أعمال ورشة / مشروع</div>
+                                <div class="text-[11px] text-slate-300 font-bold mt-0.5">إدارة المشاريع الهندسية والمقاولات العامة - السجل المالي المعتمد</div>
+                            </div>
+                            <div class="text-left text-[11px] font-bold">
+                                <div>تاريخ الإصدار: <span id="print-issue-date" class="ltr-num font-black"></span></div>
+                                <div class="mt-0.5">رقم المرجع: <span id="print-ref-code" class="ltr-num font-black"></span></div>
+                            </div>
                         </div>
-                        <p id="ws-description-display" class="text-xs sm:text-sm font-bold text-indigo-700 mt-1 hidden"></p>
-                        <p id="print-filter-subtitle" class="text-xs font-bold text-slate-500 mt-1">كشف شامل | البند: الكل | العملة: الكل</p>
+                        <div class="bg-slate-50 px-4 py-2 border-t border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-slate-800">
+                            <div>اسم المشروع / الورشة: <span id="print-ws-name" class="text-indigo-900 font-black"></span></div>
+                            <div id="print-ws-desc-wrap" class="hidden">الموقع / الوصف: <span id="print-ws-desc" class="text-slate-700"></span></div>
+                            <div>نطاق التقرير: <span id="print-scope-label" class="text-slate-700"></span></div>
+                        </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <button onclick="toggleWorkshopActive()" id="btn-toggle-active" class="px-3 py-2 rounded-xl text-xs font-extrabold transition"></button>
-                        <button id="btn-manage-categories" onclick="openCategoriesModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border-2 border-indigo-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            🏷️ إدارة التصنيفات
+                    <!-- ترويسة الورشة في واجهة الشاشة (زر التفعيل يبقى أخضر زاهي خارج التدرج الرمادي) -->
+                    <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-4">
+                        <div class="ws-gray-target">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h2 id="ws-title" class="text-xl sm:text-2xl font-black text-slate-900"></h2>
+                                <button onclick="renameCurrentWorkshop()" id="btn-rename-ws" title="تعديل اسم ووصف الورشة" class="text-slate-500 hover:text-indigo-600 p-1 rounded-lg transition text-sm">✏️</button>
+                                <span id="ws-status-badge" class="px-3 py-0.5 rounded-full text-xs font-extrabold"></span>
+                            </div>
+                            <p id="ws-description-display" class="text-xs sm:text-sm font-bold text-indigo-700 mt-1 hidden"></p>
+                            <p id="print-filter-subtitle" class="text-xs font-bold text-slate-500 mt-1">كشف شامل | البند: الكل | العملة: الكل</p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <button onclick="toggleWorkshopActive()" id="btn-toggle-active" class="px-3.5 py-2 rounded-xl text-xs font-extrabold transition"></button>
+                            <button id="btn-manage-categories" onclick="openCategoriesModal()" class="ws-gray-target bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border-2 border-indigo-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                🏷️ إدارة التصنيفات
+                            </button>
+                            <button id="btn-export-excel" onclick="exportExcelStyled()" class="ws-gray-target bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                📗 Excel
+                            </button>
+                            <button id="btn-export-pdf" onclick="exportPDF()" class="ws-gray-target bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                📄 PDF (A4)
+                            </button>
+                            <button id="btn-print-ws" onclick="printWorkshopSorted()" class="ws-gray-target bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                🖨 طباعة
+                            </button>
+                            <button id="btn-export-ws-json" onclick="exportSingleWorkshop()" class="ws-gray-target bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                تصدير
+                            </button>
+                            <button onclick="deleteCurrentWorkshop()" id="btn-delete-ws" class="ws-gray-target bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- صناديق الورشة (تتلوّن بالأخضر للموجب وبالأحمر للسالب مع شارة عملة بارزة وكبيرة) -->
+                    <div class="ws-gray-target print-boxes-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- صندوق الدولار -->
+                        <div id="ws-usd-box-card" class="print-box-compact rounded-2xl p-4 border-2 shadow-xs transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                            <div class="flex items-center justify-between gap-2">
+                                <span id="ws-usd-box-title" class="text-xs sm:text-sm font-black text-slate-900">صندوق الدولار الأمريكي</span>
+                                <span class="px-3 py-1 rounded-xl bg-slate-900 text-amber-300 font-black text-sm sm:text-base shadow-xs border border-slate-700">USD $</span>
+                            </div>
+                            <div id="ws-usd-net" class="box-main-val text-2xl sm:text-3xl font-black text-emerald-700 mt-2.5 ltr-num">$ 0</div>
+                            <div id="ws-usd-sub-row" class="box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-emerald-200">
+                                <span class="text-emerald-800">الإيرادات: <span id="ws-usd-in" class="ltr-num">$ 0</span></span>
+                                <span class="text-rose-700">المصروفات: <span id="ws-usd-out" class="ltr-num">$ 0</span></span>
+                            </div>
+                        </div>
+
+                        <!-- صندوق الليرة السورية -->
+                        <div id="ws-syp-box-card" class="print-box-compact rounded-2xl p-4 border-2 shadow-xs transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                            <div class="flex items-center justify-between gap-2">
+                                <span id="ws-syp-box-title" class="text-xs sm:text-sm font-black text-slate-900">صندوق الليرة السورية</span>
+                                <span class="px-3 py-1 rounded-xl bg-blue-900 text-cyan-200 font-black text-sm sm:text-base shadow-xs border border-blue-700">SYP ل.س</span>
+                            </div>
+                            <div id="ws-syp-net" class="box-main-val text-2xl sm:text-3xl font-black text-emerald-700 mt-2.5 ltr-num">0 ل.س</div>
+                            <div id="ws-syp-sub-row" class="box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-emerald-200">
+                                <span class="text-emerald-800">الإيرادات: <span id="ws-syp-in" class="ltr-num">0 ل.س</span></span>
+                                <span class="text-rose-700">المصروفات: <span id="ws-syp-out" class="ltr-num">0 ل.س</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تنبيه إقفال الورشة غير النشطة -->
+                    <div id="ws-locked-banner" class="hidden no-print bg-slate-300 border-2 border-slate-500 text-slate-900 px-4 py-3 rounded-2xl text-xs font-extrabold flex items-center justify-between">
+                        <span>🔒 هذه الورشة متوقفة (غير نشطة) ومقفلة عن التعديل والإضافة. اضغط على زر "▶ تفعيل الورشة" الأخضر أعلاه لإعادة تفعيلها.</span>
+                    </div>
+
+                    <!-- الأزرار الثلاثة لإضافة (إيراد / مصروف / تحويل) بنوافذ عائمة نظيفة -->
+                    <div id="ws-forms-container" class="no-print grid grid-cols-3 gap-2 sm:gap-3 pt-1">
+                        <button type="button" onclick="openTxModal('income')" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-emerald-600/20 transition transform active:scale-[0.98]">
+                            <span class="text-base sm:text-lg leading-none">+</span>
+                            <span>إضافة إيراد</span>
                         </button>
-                        <button id="btn-export-excel" onclick="exportExcelStyled()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            📗 Excel
+                        <button type="button" onclick="openTxModal('expense')" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-rose-600/20 transition transform active:scale-[0.98]">
+                            <span class="text-base sm:text-lg leading-none">-</span>
+                            <span>إضافة مصروف</span>
                         </button>
-                        <button id="btn-export-pdf" onclick="exportPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            📄 PDF (A4)
-                        </button>
-                        <button id="btn-print-ws" onclick="printWorkshopSorted()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            🖨 طباعة
-                        </button>
-                        <button id="btn-export-ws-json" onclick="exportSingleWorkshop()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            تصدير
-                        </button>
-                        <button onclick="deleteCurrentWorkshop()" id="btn-delete-ws" class="bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                            🗑️
+                        <button type="button" onclick="openExchangeModal()" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-amber-500/20 transition transform active:scale-[0.98]">
+                            <span class="text-base sm:text-lg leading-none">⇄</span>
+                            <span>إضافة تحويل</span>
                         </button>
                     </div>
-                </div>
 
-                <!-- صناديق الورشة (تتحول لتدرجات الرمادي عند إيقاف الورشة، وتظهر مربعة مدمجة جنب بعض في الطباعة والـ PDF) -->
-                <div class="print-boxes-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="print-box-compact bg-gradient-to-br from-emerald-50 via-white to-emerald-50/30 rounded-2xl p-4 border-2 border-emerald-400 shadow-xs" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
-                        <div class="flex items-center justify-between">
-                            <span class="bg-emerald-600 text-white text-xs font-extrabold px-3 py-0.5 rounded-full shadow-xs">صندوق الدولار الأمريكي</span>
-                            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">$</span>
+                    <!-- شريط البحث والفلترة بإطار واضح -->
+                    <div id="filter-bar-card" class="ws-gray-target no-print bg-slate-100/90 rounded-2xl p-3.5 border-2 border-slate-400 space-y-2.5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                            <select id="filter-type" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                                <option value="ALL">كل الحركات (إيرادات + مصروفات + صرافة)</option>
+                                <option value="income">الإيرادات فقط (+)</option>
+                                <option value="expense">المصروفات فقط (-)</option>
+                                <option value="exchange">عمليات الصرافة فقط (⇄)</option>
+                            </select>
+
+                            <select id="filter-category" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                                <option value="ALL">كل البنود والتصنيفات</option>
+                            </select>
+
+                            <select id="filter-currency" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                                <option value="ALL">كل العملات ($ و ل.س)</option>
+                                <option value="USD">الدولار الأمريكي ($)</option>
+                                <option value="SYP">الليرة السورية (ل.س)</option>
+                            </select>
+
+                            <input type="text" id="filter-search" oninput="renderWorkshopDetails()" placeholder="بحث في البيان أو التاريخ..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
                         </div>
-                        <div id="ws-usd-net" class="box-main-val text-2xl sm:text-3xl font-black text-slate-900 mt-2.5 ltr-num">$ 0</div>
-                        <div class="box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-emerald-200">
-                            <span class="text-emerald-700">الإيرادات: <span id="ws-usd-in" class="ltr-num">$ 0</span></span>
-                            <span class="text-rose-600">المصروفات: <span id="ws-usd-out" class="ltr-num">$ 0</span></span>
-                        </div>
-                    </div>
 
-                    <div class="print-box-compact bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-2xl p-4 border-2 border-blue-400 shadow-xs" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
-                        <div class="flex items-center justify-between">
-                            <span class="bg-blue-600 text-white text-xs font-extrabold px-3 py-0.5 rounded-full shadow-xs">صندوق الليرة السورية</span>
-                            <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 font-black text-[11px] flex items-center justify-center">ل.س</span>
-                        </div>
-                        <div id="ws-syp-net" class="box-main-val text-2xl sm:text-3xl font-black text-slate-900 mt-2.5 ltr-num">0 ل.س</div>
-                        <div class="box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-blue-200">
-                            <span class="text-emerald-700">الإيرادات: <span id="ws-syp-in" class="ltr-num">0 ل.س</span></span>
-                            <span class="text-rose-600">المصروفات: <span id="ws-syp-out" class="ltr-num">0 ل.س</span></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تنبيه إقفال الورشة غير النشطة -->
-                <div id="ws-locked-banner" class="hidden no-print bg-slate-200 border-2 border-slate-400 text-slate-900 px-4 py-3 rounded-2xl text-xs font-extrabold flex items-center justify-between">
-                    <span>🔒 هذه الورشة متوقفة (غير نشطة) ومقفلة عن التعديل والإضافة. قم بتفعيلها لإجراء حركات جديدة.</span>
-                </div>
-
-                <!-- الأزرار الثلاثة لإضافة (إيراد / مصروف / تحويل) بنوافذ عائمة نظيفة -->
-                <div id="ws-forms-container" class="no-print grid grid-cols-3 gap-2 sm:gap-3 pt-1">
-                    <button type="button" onclick="openTxModal('income')" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-emerald-600/20 transition transform active:scale-[0.98]">
-                        <span class="text-base sm:text-lg leading-none">+</span>
-                        <span>إضافة إيراد</span>
-                    </button>
-                    <button type="button" onclick="openTxModal('expense')" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-rose-600/20 transition transform active:scale-[0.98]">
-                        <span class="text-base sm:text-lg leading-none">-</span>
-                        <span>إضافة مصروف</span>
-                    </button>
-                    <button type="button" onclick="openExchangeModal()" class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 px-2 sm:px-4 rounded-2xl text-xs sm:text-sm font-black shadow-md shadow-amber-500/20 transition transform active:scale-[0.98]">
-                        <span class="text-base sm:text-lg leading-none">⇄</span>
-                        <span>إضافة تحويل</span>
-                    </button>
-                </div>
-
-                <!-- شريط البحث والفلترة بإطار واضح -->
-                <div id="filter-bar-card" class="no-print bg-slate-100/90 rounded-2xl p-3.5 border-2 border-slate-300 space-y-2.5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                        <select id="filter-type" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
-                            <option value="ALL">كل الحركات (إيرادات + مصروفات + صرافة)</option>
-                            <option value="income">الإيرادات فقط (+)</option>
-                            <option value="expense">المصروفات فقط (-)</option>
-                            <option value="exchange">عمليات الصرافة فقط (⇄)</option>
-                        </select>
-
-                        <select id="filter-category" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
-                            <option value="ALL">كل البنود والتصنيفات</option>
-                        </select>
-
-                        <select id="filter-currency" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
-                            <option value="ALL">كل العملات ($ و ل.س)</option>
-                            <option value="USD">الدولار الأمريكي ($)</option>
-                            <option value="SYP">الليرة السورية (ل.س)</option>
-                        </select>
-
-                        <input type="text" id="filter-search" oninput="renderWorkshopDetails()" placeholder="بحث في البيان أو التاريخ..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center pt-1">
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-300">
-                            <span class="text-xs font-bold text-slate-500 whitespace-nowrap">من تاريخ:</span>
-                            <input type="date" id="filter-date-from" onchange="renderWorkshopDetails()" class="w-full text-xs font-bold text-slate-800 outline-none">
-                        </div>
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-300">
-                            <span class="text-xs font-bold text-slate-500 whitespace-nowrap">إلى تاريخ:</span>
-                            <input type="date" id="filter-date-to" onchange="renderWorkshopDetails()" class="w-full text-xs font-bold text-slate-800 outline-none">
-                        </div>
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-700 px-1">
-                            <span>عدد الحركات المعروضة: <strong id="filtered-count" class="text-indigo-700">0</strong></span>
-                            <button onclick="resetFilters()" class="text-indigo-600 hover:underline font-extrabold">إعادة ضبط الفلاتر</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center pt-1">
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-300">
+                                <span class="text-xs font-bold text-slate-500 whitespace-nowrap">من تاريخ:</span>
+                                <input type="date" id="filter-date-from" onchange="renderWorkshopDetails()" class="w-full text-xs font-bold text-slate-800 outline-none">
+                            </div>
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-300">
+                                <span class="text-xs font-bold text-slate-500 whitespace-nowrap">إلى تاريخ:</span>
+                                <input type="date" id="filter-date-to" onchange="renderWorkshopDetails()" class="w-full text-xs font-bold text-slate-800 outline-none">
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-700 px-1">
+                                <span>عدد الحركات المعروضة: <strong id="filtered-count" class="text-indigo-700">0</strong></span>
+                                <button onclick="resetFilters()" class="text-indigo-600 hover:underline font-extrabold">إعادة ضبط الفلاتر</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- جدول الحركات بإطار غامق وصفوف ملونة وفواصل واضحة -->
-                <div class="overflow-x-auto rounded-2xl border-2 border-slate-400 shadow-xs">
-                    <table class="w-full text-right border-collapse min-w-[620px]">
-                        <thead>
-                            <tr class="bg-slate-900 text-white text-xs font-extrabold">
-                                <th class="py-3 px-3 border-l border-slate-700">التاريخ</th>
-                                <th class="py-3 px-3 border-l border-slate-700">النوع</th>
-                                <th class="py-3 px-3 border-l border-slate-700">البند / التصنيف</th>
-                                <th class="py-3 px-3 border-l border-slate-700">البيان / الوصف</th>
-                                <th class="py-3 px-3 border-l border-slate-700">المبلغ والعملة</th>
-                                <th class="py-3 px-3 no-print text-center border-l border-slate-700">مرفق</th>
-                                <th class="py-3 px-3 no-print text-center">إجراء</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactions-tbody" class="divide-y-2 divide-slate-300 text-xs sm:text-sm font-bold bg-white"></tbody>
-                    </table>
-                </div>
+                    <!-- جدول الحركات بإطار غامق وصفوف ملونة وفواصل واضحة -->
+                    <div class="ws-gray-target overflow-x-auto rounded-2xl border-2 border-slate-500 shadow-xs">
+                        <table class="w-full text-right border-collapse min-w-[620px]">
+                            <thead>
+                                <tr class="bg-slate-900 text-white text-xs font-extrabold">
+                                    <th class="py-3 px-3 border-l border-slate-700">التاريخ</th>
+                                    <th class="py-3 px-3 border-l border-slate-700">النوع</th>
+                                    <th class="py-3 px-3 border-l border-slate-700">البند / التصنيف</th>
+                                    <th class="py-3 px-3 border-l border-slate-700">البيان / الوصف</th>
+                                    <th class="py-3 px-3 border-l border-slate-700">المبلغ والعملة</th>
+                                    <th class="py-3 px-3 no-print text-center border-l border-slate-700">مرفق</th>
+                                    <th class="py-3 px-3 no-print text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-tbody" class="divide-y-2 divide-slate-300 text-xs sm:text-sm font-bold bg-white"></tbody>
+                        </table>
+                    </div>
 
-                <!-- تذييل التوقيعات الرسمي للطباعة وتصدير PDF -->
-                <div class="official-print-header pt-4 mt-3 border-t-2 border-slate-300">
-                    <div class="grid grid-cols-3 gap-4 text-center text-xs font-extrabold text-slate-700">
-                        <div>توقيع المحاسب المسؤول<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
-                        <div>توقيع مهندس / مدير الورشة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
-                        <div>اعتماد الإدارة العامة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                    <!-- تذييل التوقيعات الرسمي للطباعة وتصدير PDF -->
+                    <div class="official-print-header pt-4 mt-3 border-t-2 border-slate-300">
+                        <div class="grid grid-cols-3 gap-4 text-center text-xs font-extrabold text-slate-700">
+                            <div>توقيع المحاسب المسؤول<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                            <div>توقيع مهندس / مدير الورشة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                            <div>اعتماد الإدارة العامة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -683,7 +727,7 @@
         </div>
     </div>
 
-    <!-- نافذة عائمة: إضافة / تعديل تحويل / صرافة بمربعين وسهم وسعر الصرف -->
+    <!-- نافذة عائمة: إضافة / تعديل تحويل / صرافة بمربعين وسهم هندسي عصري وسعر الصرف -->
     <div id="exchange-modal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" onclick="closeExchangeModal()">
         <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border-2 border-slate-300 my-auto space-y-4" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
@@ -700,16 +744,16 @@
             <form id="ex-form" onsubmit="saveExchange(event)" class="space-y-4">
                 <input type="hidden" id="ex-edit-id">
 
-                <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-2.5 text-center">
-                    <span class="text-[11px] font-bold text-amber-800 block">اتجاه التحويل الحالي (اضغط على السهم للتبديل):</span>
-                    <span id="ex-direction-label" class="text-xs sm:text-sm font-black text-amber-950 mt-0.5 block">من الدولار الأمريكي ($) ⬅️ إلى الليرة السورية (ل.س)</span>
+                <div class="bg-gradient-to-l from-indigo-50 via-slate-50 to-amber-50 border border-indigo-200 rounded-2xl p-2.5 text-center">
+                    <span class="text-[11px] font-bold text-slate-500 block">اتجاه التحويل الحالي (اضغط على أيقونة السهم لتبديل الاتجاه):</span>
+                    <span id="ex-direction-label" class="text-xs sm:text-sm font-black text-indigo-950 mt-0.5 block">من الدولار الأمريكي (USD $) ⟵ إلى الليرة السورية (SYP ل.س)</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-11 gap-2.5 items-center">
                     <div id="ex-box-usd" class="sm:col-span-5 p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all">
                         <div class="flex items-center justify-between mb-1.5">
-                            <span class="font-black text-xs text-slate-900 flex items-center gap-1">
-                                <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black">$</span>
+                            <span class="font-black text-xs text-slate-900 flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-amber-300 text-xs font-black">$</span>
                                 دولار أمريكي
                             </span>
                             <span id="ex-usd-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">المصروف (-)</span>
@@ -717,16 +761,20 @@
                         <input type="text" inputmode="decimal" id="ex-usd-amount" required oninput="formatNumericInputLive(this); onExchangeInputChange('USD')" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
                     </div>
 
+                    <!-- زر السهم العصري المتناسق مع واجهة النظام -->
                     <div class="sm:col-span-1 flex justify-center">
-                        <button type="button" onclick="toggleExchangeDirection()" title="اضغط لتبديل اتجاه التحويل" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xl shadow-md flex items-center justify-center transition transform active:scale-90">
-                            <span id="ex-arrow-icon">⬅️</span>
+                        <button type="button" onclick="toggleExchangeDirection()" title="اضغط لتبديل اتجاه التحويل" class="group w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-900 to-indigo-700 hover:from-indigo-800 hover:to-blue-600 text-white shadow-lg shadow-indigo-900/25 border-2 border-indigo-400/50 flex items-center justify-center transition-all duration-300 transform active:scale-90">
+                            <svg id="ex-arrow-svg" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-amber-300 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 12H5"/>
+                                <path d="M12 19l-7-7 7-7"/>
+                            </svg>
                         </button>
                     </div>
 
                     <div id="ex-box-syp" class="sm:col-span-5 p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all">
                         <div class="flex items-center justify-between mb-1.5">
-                            <span class="font-black text-xs text-slate-900 flex items-center gap-1">
-                                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">ل.س</span>
+                            <span class="font-black text-xs text-slate-900 flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-lg bg-blue-900 text-cyan-200 text-[10px] font-black">ل.س</span>
                                 ليرة سورية
                             </span>
                             <span id="ex-syp-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">المستلم (+)</span>
@@ -999,6 +1047,46 @@
         }
 
         // ==========================================
+        // تلوين الصناديق تلقائياً حسب الرصيد (أخضر للموجب / أحمر للسالب)
+        // ==========================================
+        function applyBalanceBoxTheme(cardEl, valEl, subRowOrNoteEl, netAmount, isCompactPrintBox = false) {
+            if (!cardEl || !valEl) return;
+            const isNegative = Number(netAmount) < 0;
+
+            if (isNegative) {
+                cardEl.className = isCompactPrintBox
+                    ? 'print-box-compact rounded-2xl p-4 border-2 shadow-sm transition-all bg-gradient-to-br from-rose-100 via-rose-50 to-white border-rose-600'
+                    : 'rounded-2xl p-4 sm:p-5 shadow-sm border-2 transition-all bg-gradient-to-br from-rose-100 via-rose-50 to-white border-rose-600 border-r-8 border-r-rose-700';
+                valEl.className = isCompactPrintBox
+                    ? 'box-main-val text-2xl sm:text-3xl font-black text-rose-700 mt-2.5 ltr-num'
+                    : 'text-2xl sm:text-3xl font-black text-rose-700 mt-2 ltr-num';
+                if (subRowOrNoteEl) {
+                    if (isCompactPrintBox) {
+                        subRowOrNoteEl.className = 'box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-rose-300';
+                    } else {
+                        subRowOrNoteEl.className = 'text-[11px] font-black text-rose-800 mt-1';
+                        subRowOrNoteEl.textContent = '⚠️ تنبيه: الرصيد العام بالسالب (عجز)';
+                    }
+                }
+            } else {
+                cardEl.className = isCompactPrintBox
+                    ? 'print-box-compact rounded-2xl p-4 border-2 shadow-xs transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500'
+                    : 'rounded-2xl p-4 sm:p-5 shadow-sm border-2 transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-emerald-500 border-r-8 border-r-emerald-600';
+                valEl.className = isCompactPrintBox
+                    ? 'box-main-val text-2xl sm:text-3xl font-black text-emerald-700 mt-2.5 ltr-num'
+                    : 'text-2xl sm:text-3xl font-black text-emerald-700 mt-2 ltr-num';
+                if (subRowOrNoteEl) {
+                    if (isCompactPrintBox) {
+                        subRowOrNoteEl.className = 'box-sub-row flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-2.5 pt-2 border-t border-emerald-200';
+                    } else {
+                        subRowOrNoteEl.className = 'text-[11px] font-extrabold text-emerald-800 mt-1';
+                        subRowOrNoteEl.textContent = 'صافي رصيد جميع الورشات المتاحة (موجب)';
+                    }
+                }
+            }
+        }
+
+        // ==========================================
         // دالة التوافق الدائم والمستقبلي لهيكل بيانات الورشات
         // ==========================================
         function normalizeWorkshopData(ws) {
@@ -1218,7 +1306,6 @@
                     let loadedWorkshops = [];
                     let totalBytes = new TextEncoder().encode(rawPayload).length;
 
-                    // إذا كانت البيانات مخزنة بنظام التوزيع السحابي (1 GB) نجلب مستند كل ورشة على حدة
                     if (parsed.shardedMode && Array.isArray(parsed.workshopIds)) {
                         const wsDocs = await Promise.all(parsed.workshopIds.map(async (wid) => {
                             try {
@@ -1279,7 +1366,6 @@
 
                 let totalBytes = 0;
 
-                // 1. حفظ كل ورشة في مستند مستقل خاص بها لتجنب حد 1MB للمستند الواحد والوصول لسعة 1GB
                 await Promise.all(window.appData.workshops.map(async (ws) => {
                     const wsPayloadStr = JSON.stringify(ws);
                     totalBytes += new TextEncoder().encode(wsPayloadStr).length;
@@ -1297,7 +1383,6 @@
                     if (!wRes.ok) throw new Error('HTTP ' + wRes.status);
                 }));
 
-                // 2. حفظ الفهرس الرئيسي وبيانات الحسابات في cloud_master_v8
                 const masterIndexPayload = JSON.stringify({
                     schemaVersion: CURRENT_SCHEMA_VERSION,
                     shardedMode: true,
@@ -1899,7 +1984,7 @@
             const boxSyp = document.getElementById('ex-box-syp');
             const usdBadge = document.getElementById('ex-usd-role-badge');
             const sypBadge = document.getElementById('ex-syp-role-badge');
-            const arrowIcon = document.getElementById('ex-arrow-icon');
+            const arrowSvg = document.getElementById('ex-arrow-svg');
             const dirLabel = document.getElementById('ex-direction-label');
 
             if (exchangeFromCurrency === 'USD') {
@@ -1909,8 +1994,8 @@
                 usdBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
                 sypBadge.textContent = 'المستلم (+)';
                 sypBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
-                arrowIcon.textContent = '⬅️';
-                dirLabel.textContent = 'من الدولار الأمريكي ($) ⬅️ إلى الليرة السورية (ل.س)';
+                if (arrowSvg) arrowSvg.style.transform = 'rotate(0deg)';
+                dirLabel.textContent = 'من الدولار الأمريكي (USD $) ⟵ إلى الليرة السورية (SYP ل.س)';
             } else {
                 boxUsd.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all';
                 boxSyp.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all';
@@ -1918,8 +2003,8 @@
                 usdBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 sypBadge.textContent = 'المصروف (-)';
                 sypBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
-                arrowIcon.textContent = '➡️';
-                dirLabel.textContent = 'من الليرة السورية (ل.س) ➡️ إلى الدولار الأمريكي ($)';
+                if (arrowSvg) arrowSvg.style.transform = 'rotate(180deg)';
+                dirLabel.textContent = 'من الليرة السورية (SYP ل.س) ⟶ إلى الدولار الأمريكي (USD $)';
             }
         }
 
@@ -2234,8 +2319,25 @@
                 });
             });
 
-            document.getElementById('global-usd-balance').textContent = `$ ${formatNum(totalUsd)}`;
-            document.getElementById('global-syp-balance').textContent = `${formatNum(totalSyp)} ل.س`;
+            const usdValEl = document.getElementById('global-usd-balance');
+            const sypValEl = document.getElementById('global-syp-balance');
+            usdValEl.textContent = `$ ${formatNum(totalUsd)}`;
+            sypValEl.textContent = `${formatNum(totalSyp)} ل.س`;
+
+            applyBalanceBoxTheme(
+                document.getElementById('global-usd-card'),
+                usdValEl,
+                document.getElementById('global-usd-status-note'),
+                totalUsd,
+                false
+            );
+            applyBalanceBoxTheme(
+                document.getElementById('global-syp-card'),
+                sypValEl,
+                document.getElementById('global-syp-status-note'),
+                totalSyp,
+                false
+            );
         }
 
         function renderWorkshopsList() {
@@ -2283,30 +2385,41 @@
                 const sypNet = sypIn - sypOut;
                 const lastDate = txs.length > 0 ? txs[0].date : 'بدون حركات';
 
+                const usdCardClass = usdNet < 0 ? 'bg-rose-50/95 border-rose-400' : 'bg-emerald-50/90 border-emerald-300';
+                const usdTextClass = usdNet < 0 ? 'text-rose-700' : 'text-emerald-800';
+                const sypCardClass = sypNet < 0 ? 'bg-rose-50/95 border-rose-400' : 'bg-emerald-50/90 border-emerald-300';
+                const sypTextClass = sypNet < 0 ? 'text-rose-700' : 'text-emerald-800';
+
                 return `
                     <div onclick="selectWorkshop('${w.id}')" class="cursor-pointer p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between ${!w.active ? 'workshop-card-inactive' : (isSelected ? 'bg-gradient-to-l from-indigo-50/95 to-white border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'bg-white border-slate-300 hover:border-indigo-400 hover:shadow-sm')}">
-                        <div>
+                        <div class="${!w.active ? 'ws-gray-area' : ''}">
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
                                     <div class="font-black text-slate-900 text-sm sm:text-base truncate">${w.name}</div>
                                     ${w.description ? `<div class="text-xs font-bold text-indigo-700/90 mt-0.5 line-clamp-1">${w.description}</div>` : ''}
-                                    <div class="text-[11px] font-bold text-slate-400 mt-0.5">
-                                        الحركات: <span class="text-slate-600">${txs.length}</span> | آخر تحديث: <span class="ltr-num">${lastDate}</span>
+                                    <div class="text-[11px] font-bold text-slate-500 mt-0.5">
+                                        الحركات: <span class="text-slate-700">${txs.length}</span> | آخر تحديث: <span class="ltr-num">${lastDate}</span>
                                     </div>
                                 </div>
-                                <span class="text-[11px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 ${w.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-300 text-slate-700'}">
+                                <span class="text-[11px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 ${w.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-400 text-slate-900'}">
                                     ${w.active ? '● نشطة' : '⏸ متوقفة'}
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-200">
-                                <div class="bg-emerald-50/90 rounded-xl p-2 border border-emerald-200">
-                                    <div class="text-[10px] font-extrabold text-emerald-700">الرصيد الصافي ($)</div>
-                                    <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">$ ${formatNum(usdNet)}</div>
+                                <div class="${usdCardClass} rounded-xl p-2 border">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-extrabold text-slate-700">الرصيد الصافي</span>
+                                        <span class="px-1.5 py-0.2 rounded bg-slate-900 text-amber-300 text-[10px] font-black">$</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm font-black ${usdTextClass} ltr-num mt-0.5">$ ${formatNum(usdNet)}</div>
                                 </div>
-                                <div class="bg-blue-50/90 rounded-xl p-2 border border-blue-200">
-                                    <div class="text-[10px] font-extrabold text-blue-700">الرصيد الصافي (ل.س)</div>
-                                    <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">${formatNum(sypNet)} ل.س</div>
+                                <div class="${sypCardClass} rounded-xl p-2 border">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-extrabold text-slate-700">الرصيد الصافي</span>
+                                        <span class="px-1.5 py-0.2 rounded bg-blue-900 text-cyan-200 text-[9px] font-black">ل.س</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm font-black ${sypTextClass} ltr-num mt-0.5">${formatNum(sypNet)} ل.س</div>
                                 </div>
                             </div>
                         </div>
@@ -2314,17 +2427,17 @@
                         ${(canManageWs || canPrintExport) ? `
                         <div class="flex items-center justify-end gap-1.5 mt-2.5 pt-2 border-t border-slate-200" onclick="event.stopPropagation()">
                             ${canManageWs ? `
-                            <button onclick="quickToggleWorkshop('${w.id}')" title="${w.active ? 'إيقاف الورشة' : 'تفعيل الورشة'}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${w.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}">
+                            <button onclick="quickToggleWorkshop('${w.id}')" title="${w.active ? 'إيقاف الورشة' : 'تفعيل الورشة'}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${w.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300' : 'btn-activate-vivid'}">
                                 ${w.active ? '⏸ إيقاف' : '▶ تفعيل'}
                             </button>
                             ` : ''}
                             ${canPrintExport ? `
-                            <button onclick="quickExportWorkshop('${w.id}')" title="تصدير ملف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300">
+                            <button onclick="quickExportWorkshop('${w.id}')" title="تصدير ملف الورشة" class="${!w.active ? 'ws-gray-area' : ''} px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300">
                                 📤 تصدير
                             </button>
                             ` : ''}
                             ${canManageWs ? `
-                            <button onclick="quickDeleteWorkshop('${w.id}')" title="حذف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200">
+                            <button onclick="quickDeleteWorkshop('${w.id}')" title="حذف الورشة" class="${!w.active ? 'ws-gray-area' : ''} px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200">
                                 🗑️
                             </button>
                             ` : ''}
@@ -2362,7 +2475,7 @@
             emptyState.classList.add('hidden');
             detailsEl.classList.remove('hidden');
 
-            // تطبيق تدرجات الرمادي على كامل الورشة وصناديقها عند إيقاف نشاطها
+            // تطبيق تدرجات الرمادي على الورشة المتوقفة مع إبقاء زر التفعيل ملوناً بالأخضر الزاهي
             workspaceSection.classList.toggle('workspace-inactive-gray', !ws.active);
 
             if (stickyWsName) stickyWsName.textContent = ws.name;
@@ -2416,14 +2529,14 @@
                 statusBadge.textContent = '● نشطة';
                 statusBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800';
                 toggleBtn.textContent = '⏸ إيقاف الورشة';
-                toggleBtn.className = 'px-3 py-2 rounded-xl text-xs font-extrabold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition';
+                toggleBtn.className = 'px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition';
                 document.getElementById('ws-locked-banner').classList.add('hidden');
                 document.getElementById('ws-forms-container').classList.toggle('hidden', !canEditTx);
             } else {
                 statusBadge.textContent = '⏸ متوقفة';
                 statusBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-slate-300 text-slate-800';
                 toggleBtn.textContent = '▶ تفعيل الورشة';
-                toggleBtn.className = 'px-3 py-2 rounded-xl text-xs font-extrabold bg-slate-800 hover:bg-slate-900 text-white transition';
+                toggleBtn.className = 'btn-activate-vivid px-4 py-2 rounded-xl text-xs font-black transition';
                 document.getElementById('ws-locked-banner').classList.remove('hidden');
                 document.getElementById('ws-forms-container').classList.add('hidden');
             }
@@ -2443,13 +2556,33 @@
                 }
             });
 
-            document.getElementById('ws-usd-net').textContent = `$ ${formatNum(usdIn - usdOut)}`;
+            const wsUsdNet = usdIn - usdOut;
+            const wsSypNet = sypIn - sypOut;
+
+            const wsUsdNetEl = document.getElementById('ws-usd-net');
+            const wsSypNetEl = document.getElementById('ws-syp-net');
+            wsUsdNetEl.textContent = `$ ${formatNum(wsUsdNet)}`;
             document.getElementById('ws-usd-in').textContent = `$ ${formatNum(usdIn)}`;
             document.getElementById('ws-usd-out').textContent = `$ ${formatNum(usdOut)}`;
 
-            document.getElementById('ws-syp-net').textContent = `${formatNum(sypIn - sypOut)} ل.س`;
+            wsSypNetEl.textContent = `${formatNum(wsSypNet)} ل.س`;
             document.getElementById('ws-syp-in').textContent = `${formatNum(sypIn)} ل.س`;
             document.getElementById('ws-syp-out').textContent = `${formatNum(sypOut)} ل.س`;
+
+            applyBalanceBoxTheme(
+                document.getElementById('ws-usd-box-card'),
+                wsUsdNetEl,
+                document.getElementById('ws-usd-sub-row'),
+                wsUsdNet,
+                true
+            );
+            applyBalanceBoxTheme(
+                document.getElementById('ws-syp-box-card'),
+                wsSypNetEl,
+                document.getElementById('ws-syp-sub-row'),
+                wsSypNet,
+                true
+            );
 
             const catSelect = document.getElementById('filter-category');
             const prevCat = catSelect.value;
