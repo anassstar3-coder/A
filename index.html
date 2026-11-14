@@ -13,22 +13,6 @@
         .inactive-workshop-theme { filter: grayscale(90%); opacity: 0.85; background-color: #e2e8f0 !important; }
         .swap-btn-anim { transition: transform 0.25s ease; }
         .swap-btn-anim:active { transform: rotate(180deg) scale(0.95); }
-        @media (max-width: 768px) {
-            body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; }
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            .inactive-workshop-theme { filter: none !important; opacity: 1 !important; background-color: #fff !important; }
-            .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: none !important; }
-            #workshop-workspace { border: none !important; padding: 4px !important; margin: 0 !important; width: 100% !important; overflow-x: visible !important; }
-            .overflow-x-auto { overflow-x: visible !important; }
-            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; table-layout: fixed !important; }
-            th, td { border: 1px solid #cbd5e1 !important; padding: 6px 4px !important; text-align: right !important; word-wrap: break-word !important; overflow: hidden !important; }
-            th:nth-child(1), td:nth-child(1) { width: 18% !important; }
-            th:nth-child(2), td:nth-child(2) { width: 15% !important; }
-            th:nth-child(3), td:nth-child(3) { width: 18% !important; }
-            th:nth-child(4), td:nth-child(4) { width: 22% !important; }
-            th:nth-child(5), td:nth-child(5) { width: 27% !important; }
-        }
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
@@ -50,9 +34,9 @@
                 </div>
                 <h1 class="text-2xl font-extrabold text-slate-800">محاسبة الورشات</h1>
                 <p class="text-sm text-slate-500 mt-1">إدارة الصناديق المزدوجة (ل.س / $) والفواتير</p>
-                <div id="login-cloud-badge" class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                    <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="login-cloud-text">جاري جلب البيانات من السحابة...</span>
+                <div id="login-cloud-badge" class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                    <span id="login-cloud-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span id="login-cloud-text">النظام جاهز للدخول</span>
                 </div>
             </div>
 
@@ -122,7 +106,7 @@
         <!-- المحتوى الرئيسي -->
         <main class="max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-5">
 
-            <!-- الصندوق العام (إجمالي صناديق جميع الورشات النشطة) -->
+            <!-- الصندوق العام -->
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 no-print">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-sm sm:text-base font-extrabold text-slate-700 flex items-center gap-2">
@@ -208,7 +192,6 @@
 
                 <!-- صناديق الورشة -->
                 <div id="ws-boxes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- صندوق الدولار -->
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
                         <div>
                             <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg">صندوق الدولار الأمريكي</span>
@@ -221,7 +204,6 @@
                         <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold text-xl">$</div>
                     </div>
 
-                    <!-- صندوق الليرة السورية -->
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
                         <div>
                             <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-lg">صندوق الليرة السورية</span>
@@ -258,7 +240,6 @@
                         </select>
                     </div>
 
-                    <!-- ملخص الفلتر الحالي -->
                     <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-600 pt-1 border-t border-slate-200">
                         <span>عدد الحركات المعروضة: <strong id="filtered-count" class="text-slate-900">0</strong></span>
                     </div>
@@ -266,7 +247,7 @@
 
                 <!-- جدول الحركات المالية -->
                 <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-right border-collapse mobile-compact-table">
+                    <table class="w-full text-right border-collapse">
                         <thead>
                             <tr class="bg-slate-900 text-white text-xs">
                                 <th class="p-3">التاريخ</th>
@@ -275,7 +256,7 @@
                                 <th class="p-3">البيان / الوصف</th>
                                 <th class="p-3">المبلغ والعملة</th>
                                 <th class="p-3 no-print">مرفق</th>
-                                <th class="p-3 no-print action-col">إجراء</th>
+                                <th class="p-3 no-print">إجراء</th>
                             </tr>
                         </thead>
                         <tbody id="transactions-tbody" class="divide-y divide-slate-200 text-xs sm:text-sm bg-white"></tbody>
@@ -456,7 +437,6 @@
                 <button onclick="closeModal('users-modal')" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
             </div>
 
-            <!-- القسم 1: تعديل بيانات المدير الأساسي -->
             <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-4">
                 <h4 class="text-sm font-extrabold text-blue-900 mb-3">🔐 تعديل بيانات الحساب الأساسي (المدير)</h4>
                 <form onsubmit="updateOwnerCredentials(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
@@ -472,7 +452,6 @@
                 </form>
             </div>
 
-            <!-- القسم 2: إضافة أو تعديل مستخدم فرعي -->
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
                 <h4 id="subuser-form-title" class="text-sm font-extrabold text-slate-800 mb-3">➕ إضافة مستخدم فرعي جديد</h4>
                 <form onsubmit="saveSubUser(event)" class="space-y-3">
@@ -488,7 +467,6 @@
                         </div>
                     </div>
 
-                    <!-- الصلاحيات -->
                     <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
                         <p class="text-xs font-extrabold text-slate-700">الصلاحيات الممنوحة للمستخدم:</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-600">
@@ -507,7 +485,6 @@
                         </div>
                     </div>
 
-                    <!-- تحديد الورشات الظاهرة للمستخدم -->
                     <div class="bg-white p-3 rounded-xl border border-slate-200">
                         <p class="text-xs font-extrabold text-slate-700 mb-2">الورشات التي تظهر لهذا المستخدم:</p>
                         <div id="subuser-workshops-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto text-xs font-bold"></div>
@@ -520,7 +497,6 @@
                 </form>
             </div>
 
-            <!-- القسم 3: قائمة المستخدمين الحاليين -->
             <div>
                 <h4 class="text-sm font-extrabold text-slate-800 mb-2">قائمة المستخدمين المسجلين</h4>
                 <div id="subusers-list" class="space-y-2"></div>
@@ -536,7 +512,6 @@
                 <button onclick="closeModal('storage-archive-modal')" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
             </div>
 
-            <!-- عداد السعة -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <div class="flex justify-between text-xs font-bold mb-1.5">
                     <span class="text-slate-700">المساحة المستخدمة (1 GB مجانية دائمة):</span>
@@ -547,14 +522,12 @@
                 </div>
             </div>
 
-            <!-- أرشفة الورشات غير النشطة -->
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
                 <h4 class="text-xs font-extrabold text-amber-900">📦 أرشفة وتفريغ الورشات غير النشطة</h4>
                 <p class="text-[11px] text-amber-800">يتم تحميل ملف نسخة احتياطية لجميع الورشات غير النشطة ثم حذفها من النظام لتوفير المساحة.</p>
                 <button onclick="backupAndDeleteInactiveWorkshops()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs shadow">⬇ تنزيل نسخة للورشات غير النشطة وحذفها</button>
             </div>
 
-            <!-- منطقة الخطر -->
             <div id="danger-zone-box" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
                 <h4 class="text-xs font-extrabold text-rose-900">⚠️ تصفير وحذف جميع الورشات</h4>
                 <p class="text-[11px] text-rose-700">سيتم حذف كافة الورشات من السحابة والجهاز نهائياً.</p>
@@ -576,14 +549,12 @@
         </div>
     </div>
 
-    <!-- ربط سحابي مباشر 100% لجميع المتصفحات والأجهزة -->
     <script>
-        const CLOUD_DB_URL = 'https://anas-alasfar-default-rtdb.firebaseio.com/workshops_cloud_v6.json';
-        const LOCAL_CACHE_KEY = 'workshops_accounting_v5_data';
-        const SESSION_USER_KEY = 'ws_session_user_v6';
-        const SESSION_WS_KEY = 'ws_session_selected_ws_v6';
+        const CLOUD_DB_URL = 'https://anas-alasfar-default-rtdb.firebaseio.com/workshops_cloud_v7.json';
+        const LOCAL_CACHE_KEY = 'workshops_accounting_v7_data';
+        const SESSION_USER_KEY = 'ws_session_user_v7';
+        const SESSION_WS_KEY = 'ws_session_selected_ws_v7';
 
-        // توحيد وتثبيت بيانات الدخول الرئيسية الافتراضية (anas / 123)
         window.appData = {
             owner: { username: 'anas', password: '123' },
             subUsers: [],
@@ -591,14 +562,24 @@
             lastUpdated: 0
         };
 
+        // استرداد الورشات السابقة إن وجدت من المفاتيح القديمة مع إبقاء كلمة السر (anas / 123)
         try {
-            const cached = localStorage.getItem(LOCAL_CACHE_KEY);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                if (parsed) {
-                    if (parsed.owner && parsed.owner.username) window.appData.owner = parsed.owner;
-                    if (Array.isArray(parsed.subUsers)) window.appData.subUsers = parsed.subUsers;
-                    if (Array.isArray(parsed.workshops)) window.appData.workshops = parsed.workshops;
+            const oldKeys = ['workshops_accounting_v7_data', 'workshops_accounting_v5_data'];
+            for (const k of oldKeys) {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed) {
+                        if (k === 'workshops_accounting_v7_data' && parsed.owner && parsed.owner.username) {
+                            window.appData.owner = parsed.owner;
+                        }
+                        if (Array.isArray(parsed.subUsers) && parsed.subUsers.length > 0) {
+                            window.appData.subUsers = parsed.subUsers;
+                        }
+                        if (Array.isArray(parsed.workshops) && parsed.workshops.length > 0 && window.appData.workshops.length === 0) {
+                            window.appData.workshops = parsed.workshops;
+                        }
+                    }
                 }
             }
         } catch (e) {}
@@ -608,7 +589,6 @@
         let pendingImportedWorkshop = null;
         let currentTxImages = [];
         let wipeTimerInterval = null;
-        let isCloudReady = false;
         let isSavingCloud = false;
 
         function setCloudStatusUI(state, text) {
@@ -628,9 +608,9 @@
                 if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
                 if (headerText) headerText.textContent = text || 'جاري المزامنة...';
             } else {
-                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
-                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
-                if (loginText) loginText.textContent = text || 'جاهز للدخول (مزامنة تلقائية)';
+                if (loginBadge) loginBadge.className = 'mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+                if (loginDot) loginDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+                if (loginText) loginText.textContent = 'النظام جاهز للدخول';
                 if (headerDot) headerDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
                 if (headerText) headerText.textContent = 'متصل محلياً';
             }
@@ -639,7 +619,7 @@
         async function fetchFromCloud(silent = false) {
             if (isSavingCloud) return false;
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
             try {
                 const res = await fetch(CLOUD_DB_URL + '?t=' + Date.now(), {
                     cache: 'no-store',
@@ -650,52 +630,37 @@
                 const cloudData = await res.json();
 
                 if (cloudData && typeof cloudData === 'object') {
-                    // توحيد كلمة المرور الرئيسية إلى (anas / 123) مرة واحدة في السحابة ثم اعتماد أي تعديل لاحق لك
-                    if (!cloudData.unifiedResetV1) {
-                        window.appData.owner = { username: 'anas', password: '123' };
-                        window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : window.appData.subUsers;
-                        window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops : window.appData.workshops;
-                        window.appData.unifiedResetV1 = true;
-                        await pushToCloud(true);
-                    } else {
-                        if (cloudData.owner && cloudData.owner.username) {
-                            window.appData.owner = cloudData.owner;
-                        }
-                        window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
-                        window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
-                            ...w,
-                            active: typeof w.active === 'boolean' ? w.active : true,
-                            categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
-                            transactions: Array.isArray(w.transactions) ? w.transactions : []
-                        })) : [];
-                        window.appData.unifiedResetV1 = true;
-                        window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
+                    if (cloudData.owner && cloudData.owner.username) {
+                        window.appData.owner = cloudData.owner;
                     }
+                    window.appData.subUsers = Array.isArray(cloudData.subUsers) ? cloudData.subUsers : [];
+                    window.appData.workshops = Array.isArray(cloudData.workshops) ? cloudData.workshops.map(w => ({
+                        ...w,
+                        active: typeof w.active === 'boolean' ? w.active : true,
+                        categories: Array.isArray(w.categories) && w.categories.length ? w.categories : ['عام', 'مواد', 'أجور', 'كهرباء', 'نقل'],
+                        transactions: Array.isArray(w.transactions) ? w.transactions : []
+                    })) : [];
+                    window.appData.lastUpdated = cloudData.lastUpdated || Date.now();
                     try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
                 } else {
-                    window.appData.owner = { username: 'anas', password: '123' };
-                    window.appData.unifiedResetV1 = true;
-                    await pushToCloud(true);
+                    await pushToCloud();
                 }
 
-                isCloudReady = true;
                 setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
                 if (typeof updateStorageQuotaUI === 'function') updateStorageQuotaUI();
                 if (window.currentUser && typeof renderAll === 'function') renderAll();
                 return true;
             } catch (err) {
                 clearTimeout(timeoutId);
-                console.warn('Cloud fetch fallback:', err);
-                if (!silent) setCloudStatusUI('error', 'جاهز للدخول (مزامنة تلقائية)');
+                if (!silent) setCloudStatusUI('error', 'النظام جاهز للدخول');
                 return false;
             }
         }
 
-        async function pushToCloud(isInit = false) {
+        async function pushToCloud() {
             isSavingCloud = true;
             setCloudStatusUI('syncing', 'جاري الحفظ بالسحابة...');
             window.appData.lastUpdated = Date.now();
-            window.appData.unifiedResetV1 = true;
             try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(window.appData)); } catch (e) {}
 
             try {
@@ -705,11 +670,9 @@
                     body: JSON.stringify(window.appData)
                 });
                 if (!res.ok) throw new Error('Failed to save');
-                isCloudReady = true;
                 setCloudStatusUI('ok', 'متصل بالسحابة الموحدة');
                 if (typeof updateStorageQuotaUI === 'function') updateStorageQuotaUI();
             } catch (err) {
-                console.error('Cloud save error:', err);
                 setCloudStatusUI('error', 'تم الحفظ محلياً');
             } finally {
                 isSavingCloud = false;
@@ -717,7 +680,7 @@
         }
 
         window.saveGlobalAndLocal = function() {
-            pushToCloud(false);
+            pushToCloud();
         };
 
         setInterval(async () => {
@@ -743,10 +706,7 @@
                 } catch (e) {}
             }
         }, 5000);
-    </script>
 
-    <!-- منطق التطبيق -->
-    <script>
         function getTodayStr() {
             return new Date().toISOString().split('T')[0];
         }
@@ -755,7 +715,7 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold text-white transition-all transform translate-y-0 ${type === 'error' ? 'bg-rose-600' : 'bg-emerald-700'}`;
+            toast.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold text-white transition-all ${type === 'error' ? 'bg-rose-600' : 'bg-emerald-700'}`;
             toast.textContent = msg;
             container.appendChild(toast);
             setTimeout(() => {
@@ -790,16 +750,24 @@
         }
 
         function authenticateUser(username, password, isRestore = false) {
-            if (username === window.appData.owner.username && password === window.appData.owner.password) {
+            const cleanUser = String(username || '').trim().toLowerCase();
+            const cleanPass = String(password || '').trim();
+            const ownerUser = String(window.appData.owner.username || 'anas').trim().toLowerCase();
+            const ownerPass = String(window.appData.owner.password || '123').trim();
+
+            if (cleanUser === ownerUser && cleanPass === ownerPass) {
                 window.currentUser = { role: 'owner', username: window.appData.owner.username };
             } else {
-                const sub = window.appData.subUsers.find(u => u.username === username && u.password === password);
+                const sub = window.appData.subUsers.find(u =>
+                    String(u.username || '').trim().toLowerCase() === cleanUser &&
+                    String(u.password || '').trim() === cleanPass
+                );
                 if (!sub) return false;
                 window.currentUser = { role: 'sub', ...sub };
             }
 
             if (!isRestore) {
-                sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify({ username, password }));
+                sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify({ username: cleanUser, password: cleanPass }));
             }
 
             document.getElementById('login-screen').classList.add('hidden');
@@ -815,15 +783,20 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('login-username').value.trim();
-            const p = document.getElementById('login-password').value.trim();
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
             const errEl = document.getElementById('login-error');
             const btn = document.getElementById('btn-login-submit');
 
-            btn.disabled = true;
-            btn.textContent = 'جاري التحقق من البيانات...';
             errEl.classList.add('hidden');
 
+            if (authenticateUser(u, p, false)) {
+                fetchFromCloud(true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق من السحابة...';
             await fetchFromCloud(true);
             btn.disabled = false;
             btn.textContent = 'تسجيل الدخول';
@@ -1483,7 +1456,7 @@
             const p = document.getElementById('owner-edit-password').value.trim();
             if (!u || !p) return;
             window.appData.owner = { username: u, password: p };
-            sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify({ username: u, password: p }));
+            sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify({ username: u.toLowerCase(), password: p }));
             window.currentUser.username = u;
             saveGlobalAndLocal();
             applyUserPermissionsUI();
@@ -1753,7 +1726,6 @@
             document.getElementById('imported-preview-banner').classList.add('hidden');
         }
 
-        // ==================== طباعة وتصدير PDF ملون ومنسق واحترافي ====================
         function exportWorkshopPDF() {
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws) return;
@@ -1897,9 +1869,8 @@
             el.classList.remove('flex');
         }
 
-        // بدء التشغيل بجلب البيانات مباشرة من السحابة
-        (async function bootApp() {
-            await fetchFromCloud(false);
+        (function bootApp() {
+            fetchFromCloud(false);
             const savedSession = sessionStorage.getItem(SESSION_USER_KEY);
             if (savedSession) {
                 try {
