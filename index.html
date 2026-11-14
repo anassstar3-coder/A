@@ -70,12 +70,13 @@
             }
             table {
                 width: 100% !important;
+                min-width: 100% !important;
                 border-collapse: collapse !important;
             }
             th, td {
                 border: 1px solid #cbd5e1 !important;
-                padding: 8px 6px !important;
-                font-size: 12px !important;
+                padding: 7px 6px !important;
+                font-size: 11px !important;
             }
             thead th {
                 background-color: #0f172a !important;
@@ -90,6 +91,19 @@
         .pdf-export-mode .workshop-inactive {
             filter: none !important;
             opacity: 1 !important;
+        }
+        .pdf-export-mode #workshop-workspace {
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 12px !important;
+        }
+        .pdf-export-mode table {
+            min-width: 100% !important;
+            width: 100% !important;
+        }
+        .pdf-export-mode th, .pdf-export-mode td {
+            padding: 6px 5px !important;
+            font-size: 11px !important;
         }
     </style>
 </head>
@@ -132,7 +146,7 @@
         </div>
     </div>
 
-    <!-- الشريط العلوي للإعدادات (يتحرك مع الصفحة ولا يأخذ مساحة ثابتة عند التصفح) -->
+    <!-- الشريط العلوي للإعدادات -->
     <header class="no-print bg-gradient-to-l from-slate-950 via-slate-900 to-indigo-950 text-white shadow-lg border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -185,7 +199,7 @@
         </div>
     </header>
 
-    <!-- شريط الورشة الحالية المستقل (يثبت وحده عند النزول في الصفحة بدون بقية الإعدادات) -->
+    <!-- شريط الورشة الحالية المستقل (يثبت وحده عند النزول في الصفحة) -->
     <div id="sticky-active-workshop-bar" class="hidden no-print sticky top-0 z-30 bg-indigo-950/95 backdrop-blur-md text-white shadow-md border-b border-indigo-700/60 transition-all">
         <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2 flex items-center justify-between gap-3">
             <div class="flex items-center gap-2 min-w-0">
@@ -227,7 +241,7 @@
             </div>
         </section>
 
-        <!-- قسم الورشات والمشاريع (بطاقات متجاورة على اللابتوب ومنظمة على الجوال) -->
+        <!-- قسم الورشات والمشاريع -->
         <section id="workshops-section" class="no-print bg-white rounded-3xl p-4 sm:p-6 shadow-md border border-slate-200/90 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2.5">
@@ -318,7 +332,7 @@
                         <button id="btn-export-pdf" onclick="exportPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                             📄 PDF (A4)
                         </button>
-                        <button id="btn-print-ws" onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
+                        <button id="btn-print-ws" onclick="printWorkshopSorted()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                             🖨 طباعة
                         </button>
                         <button id="btn-export-ws-json" onclick="exportSingleWorkshop()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
@@ -527,43 +541,72 @@
         </div>
     </div>
 
-    <!-- نافذة عائمة: إضافة تحويل / صرافة -->
+    <!-- نافذة عائمة: إضافة / تعديل تحويل / صرافة بمربعين وسهم وسعر الصرف -->
     <div id="exchange-modal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" onclick="closeExchangeModal()">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 my-auto space-y-4" onclick="event.stopPropagation()">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 my-auto space-y-4" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
                     <span class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg bg-amber-100 text-amber-700">⇄</span>
                     <div>
-                        <h3 class="text-base sm:text-lg font-black text-slate-900">إضافة تحويل / صرافة عملة</h3>
+                        <h3 id="ex-modal-title" class="text-base sm:text-lg font-black text-slate-900">إضافة تحويل / صرافة عملة</h3>
                         <p id="ex-modal-ws-subtitle" class="text-[11px] font-bold text-slate-500"></p>
                     </div>
                 </div>
                 <button type="button" onclick="closeExchangeModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex items-center justify-center">✕</button>
             </div>
 
-            <form id="ex-form" onsubmit="saveExchange(event)" class="space-y-3.5">
+            <form id="ex-form" onsubmit="saveExchange(event)" class="space-y-4">
+                <input type="hidden" id="ex-edit-id">
+
+                <!-- شريط الاتجاه التفاعلي -->
+                <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-2.5 text-center">
+                    <span class="text-[11px] font-bold text-amber-800 block">اتجاه التحويل الحالي (اضغط على السهم للتبديل):</span>
+                    <span id="ex-direction-label" class="text-xs sm:text-sm font-black text-amber-950 mt-0.5 block">من الدولار الأمريكي ($) ⬅️ إلى الليرة السورية (ل.س)</span>
+                </div>
+
+                <!-- مربعين (دولار / ليرة) وبينهما سهم تفاعلي -->
+                <div class="grid grid-cols-1 sm:grid-cols-11 gap-2.5 items-center">
+                    <!-- مربع الدولار -->
+                    <div id="ex-box-usd" class="sm:col-span-5 p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-black text-xs text-slate-900 flex items-center gap-1">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black">$</span>
+                                دولار أمريكي
+                            </span>
+                            <span id="ex-usd-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">المصروف (-)</span>
+                        </div>
+                        <input type="number" step="any" min="0.01" id="ex-usd-amount" required oninput="onExchangeInputChange('USD')" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
+                    </div>
+
+                    <!-- زر السهم الأوسط لتحديد اتجاه التحويل -->
+                    <div class="sm:col-span-1 flex justify-center">
+                        <button type="button" onclick="toggleExchangeDirection()" title="اضغط لتبديل اتجاه التحويل" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xl shadow-md flex items-center justify-center transition transform active:scale-90">
+                            <span id="ex-arrow-icon">⬅️</span>
+                        </button>
+                    </div>
+
+                    <!-- مربع الليرة السورية -->
+                    <div id="ex-box-syp" class="sm:col-span-5 p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-black text-xs text-slate-900 flex items-center gap-1">
+                                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">ل.س</span>
+                                ليرة سورية
+                            </span>
+                            <span id="ex-syp-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">المستلم (+)</span>
+                        </div>
+                        <input type="number" step="any" min="0.01" id="ex-syp-amount" required oninput="onExchangeInputChange('SYP')" placeholder="0" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
+                    </div>
+                </div>
+
+                <!-- سعر الصرف (قيمة الدولار مقابل السوري) + التاريخ -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-extrabold text-slate-700 mb-1">تحويل من عملة</label>
-                        <select id="ex-from-curr" onchange="syncExchangeCurrencies()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm font-bold outline-none">
-                            <option value="USD">دولار أمريكي ($)</option>
-                            <option value="SYP">ليرة سورية (ل.س)</option>
-                        </select>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">سعر الصرف (قيمة 1$ بالليرة السورية)</label>
+                        <input type="number" step="any" min="0.01" id="ex-rate" oninput="onExchangeInputChange('RATE')" placeholder="مثال: 14500" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm font-black ltr-num outline-none focus:border-amber-500">
                     </div>
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ</label>
                         <input type="date" id="ex-date" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-extrabold text-rose-700 mb-1">المبلغ المصروف (-)</label>
-                        <input type="number" step="any" min="0.01" id="ex-from-amount" required placeholder="0.00" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-black outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-emerald-700 mb-1">المبلغ المستلم بالعملة المقابلة (+)</label>
-                        <input type="number" step="any" min="0.01" id="ex-to-amount" required placeholder="0.00" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-black outline-none">
                     </div>
                 </div>
 
@@ -574,7 +617,7 @@
 
                 <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                     <button type="button" onclick="closeExchangeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold">إلغاء</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-extrabold shadow">
+                    <button type="submit" id="ex-submit-btn" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-extrabold shadow">
                         تنفيذ التحويل في السحابة
                     </button>
                 </div>
@@ -785,6 +828,8 @@
         let wsSidebarFilter = 'ALL';
         let masterWipeTimer = null;
         let actualCloudBytesFromServer = null;
+        let isPrintSortAscending = false;
+        let exchangeFromCurrency = 'USD'; // 'USD' أو 'SYP'
 
         function hasPermission(permKey) {
             if (!window.currentUser) return false;
@@ -1236,7 +1281,8 @@
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
             const rows = [['التاريخ', 'النوع', 'البند', 'البيان', 'المبلغ دولار', 'المبلغ سوري']];
-            (ws.transactions || []).forEach(tx => {
+            const sortedTxs = [...(ws.transactions || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            sortedTxs.forEach(tx => {
                 if (tx.type === 'income') {
                     rows.push([tx.date, 'إيراد', tx.category || 'عام', tx.note || '', tx.currency === 'USD' ? tx.amount : 0, tx.currency === 'SYP' ? tx.amount : 0]);
                 } else if (tx.type === 'expense') {
@@ -1312,22 +1358,125 @@
             document.getElementById('tx-modal').classList.add('hidden');
         }
 
+        // ==========================================
+        // نظام الصرافة / التحويل التفاعلي بمربعين وسهم وسعر الصرف
+        // ==========================================
+        function updateExchangeDirectionUI() {
+            const boxUsd = document.getElementById('ex-box-usd');
+            const boxSyp = document.getElementById('ex-box-syp');
+            const usdBadge = document.getElementById('ex-usd-role-badge');
+            const sypBadge = document.getElementById('ex-syp-role-badge');
+            const arrowIcon = document.getElementById('ex-arrow-icon');
+            const dirLabel = document.getElementById('ex-direction-label');
+
+            if (exchangeFromCurrency === 'USD') {
+                boxUsd.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all';
+                boxSyp.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all';
+                usdBadge.textContent = 'المصروف (-)';
+                usdBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+                sypBadge.textContent = 'المستلم (+)';
+                sypBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+                arrowIcon.textContent = '⬅️';
+                dirLabel.textContent = 'من الدولار الأمريكي ($) ⬅️ إلى الليرة السورية (ل.س)';
+            } else {
+                boxUsd.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 transition-all';
+                boxSyp.className = 'sm:col-span-5 p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/40 transition-all';
+                usdBadge.textContent = 'المستلم (+)';
+                usdBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+                sypBadge.textContent = 'المصروف (-)';
+                sypBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+                arrowIcon.textContent = '➡️';
+                dirLabel.textContent = 'من الليرة السورية (ل.س) ➡️ إلى الدولار الأمريكي ($)';
+            }
+        }
+
+        function toggleExchangeDirection() {
+            exchangeFromCurrency = exchangeFromCurrency === 'USD' ? 'SYP' : 'USD';
+            updateExchangeDirectionUI();
+        }
+
+        function onExchangeInputChange(source) {
+            const usdEl = document.getElementById('ex-usd-amount');
+            const sypEl = document.getElementById('ex-syp-amount');
+            const rateEl = document.getElementById('ex-rate');
+
+            const usd = parseFloat(usdEl.value);
+            const syp = parseFloat(sypEl.value);
+            const rate = parseFloat(rateEl.value);
+
+            if (source === 'USD') {
+                if (!isNaN(usd) && usd > 0 && !isNaN(rate) && rate > 0) {
+                    sypEl.value = Math.round((usd * rate) * 100) / 100;
+                } else if (!isNaN(usd) && usd > 0 && !isNaN(syp) && syp > 0) {
+                    rateEl.value = Math.round((syp / usd) * 100) / 100;
+                }
+            } else if (source === 'SYP') {
+                if (!isNaN(syp) && syp > 0 && !isNaN(rate) && rate > 0) {
+                    usdEl.value = Math.round((syp / rate) * 100) / 100;
+                } else if (!isNaN(syp) && syp > 0 && !isNaN(usd) && usd > 0) {
+                    rateEl.value = Math.round((syp / usd) * 100) / 100;
+                }
+            } else if (source === 'RATE') {
+                if (!isNaN(rate) && rate > 0) {
+                    if (exchangeFromCurrency === 'USD' && !isNaN(usd) && usd > 0) {
+                        sypEl.value = Math.round((usd * rate) * 100) / 100;
+                    } else if (exchangeFromCurrency === 'SYP' && !isNaN(syp) && syp > 0) {
+                        usdEl.value = Math.round((syp / rate) * 100) / 100;
+                    } else if (!isNaN(usd) && usd > 0) {
+                        sypEl.value = Math.round((usd * rate) * 100) / 100;
+                    } else if (!isNaN(syp) && syp > 0) {
+                        usdEl.value = Math.round((syp / rate) * 100) / 100;
+                    }
+                }
+            }
+        }
+
         function openExchangeModal() {
             if (!hasPermission('editTx')) return;
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
+            document.getElementById('ex-edit-id').value = '';
             document.getElementById('ex-form').reset();
             document.getElementById('ex-date').value = getTodayStr();
+            document.getElementById('ex-modal-title').textContent = 'إضافة تحويل / صرافة عملة';
+            document.getElementById('ex-submit-btn').textContent = 'تنفيذ التحويل في السحابة';
+            document.getElementById('ex-modal-ws-subtitle').textContent = `الورشة: ${ws.name}`;
+            exchangeFromCurrency = 'USD';
+            updateExchangeDirectionUI();
+            document.getElementById('exchange-modal').classList.remove('hidden');
+        }
+
+        function editExchangeTransaction(txId) {
+            if (!hasPermission('editTx')) return;
+            const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
+            if (!ws || !ws.active) return;
+            const tx = ws.transactions.find(t => t.id === txId);
+            if (!tx || tx.type !== 'exchange') return;
+
+            document.getElementById('ex-edit-id').value = tx.id;
+            exchangeFromCurrency = tx.fromCurrency || 'USD';
+            updateExchangeDirectionUI();
+
+            const usdVal = tx.fromCurrency === 'USD' ? tx.fromAmount : tx.toAmount;
+            const sypVal = tx.fromCurrency === 'SYP' ? tx.fromAmount : tx.toAmount;
+
+            document.getElementById('ex-usd-amount').value = usdVal;
+            document.getElementById('ex-syp-amount').value = sypVal;
+            document.getElementById('ex-rate').value = tx.rate || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : '');
+            document.getElementById('ex-date').value = tx.date;
+            document.getElementById('ex-note').value = tx.note || '';
+
+            document.getElementById('ex-modal-title').textContent = 'تعديل عملية التحويل / الصرافة';
+            document.getElementById('ex-submit-btn').textContent = 'حفظ تعديلات الصرافة';
             document.getElementById('ex-modal-ws-subtitle').textContent = `الورشة: ${ws.name}`;
             document.getElementById('exchange-modal').classList.remove('hidden');
         }
 
         function closeExchangeModal() {
+            document.getElementById('ex-edit-id').value = '';
             document.getElementById('exchange-modal').classList.add('hidden');
         }
-
-        function syncExchangeCurrencies() {}
 
         function previewAttachmentName(input) {
             const span = document.getElementById('tx-image-name');
@@ -1413,7 +1562,11 @@
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
             const tx = ws.transactions.find(t => t.id === txId);
-            if (!tx || tx.type === 'exchange') return;
+            if (!tx) return;
+            if (tx.type === 'exchange') {
+                editExchangeTransaction(txId);
+                return;
+            }
 
             document.getElementById('tx-edit-id').value = tx.id;
             document.getElementById('tx-type').value = tx.type;
@@ -1434,29 +1587,54 @@
             const ws = window.appData.workshops.find(w => w.id === selectedWorkshopId);
             if (!ws || !ws.active) return;
 
-            const fromCurr = document.getElementById('ex-from-curr').value;
-            const toCurr = fromCurr === 'USD' ? 'SYP' : 'USD';
-            const fromAmount = parseFloat(document.getElementById('ex-from-amount').value);
-            const toAmount = parseFloat(document.getElementById('ex-to-amount').value);
+            const editId = document.getElementById('ex-edit-id').value;
+            const usdVal = parseFloat(document.getElementById('ex-usd-amount').value);
+            const sypVal = parseFloat(document.getElementById('ex-syp-amount').value);
+            const rateVal = parseFloat(document.getElementById('ex-rate').value) || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : 0);
             const date = document.getElementById('ex-date').value;
-            const note = document.getElementById('ex-note').value.trim();
+            const rawNote = document.getElementById('ex-note').value.trim();
 
-            ws.transactions.unshift({
-                id: 'ex_' + Date.now(),
-                type: 'exchange',
-                fromCurrency: fromCurr,
-                toCurrency: toCurr,
-                fromAmount,
-                toAmount,
-                category: 'صرافة',
-                date,
-                note
-            });
+            const fromCurr = exchangeFromCurrency;
+            const toCurr = fromCurr === 'USD' ? 'SYP' : 'USD';
+            const fromAmount = fromCurr === 'USD' ? usdVal : sypVal;
+            const toAmount = fromCurr === 'USD' ? sypVal : usdVal;
+
+            if (editId) {
+                const idx = ws.transactions.findIndex(t => t.id === editId);
+                if (idx !== -1) {
+                    ws.transactions[idx] = {
+                        ...ws.transactions[idx],
+                        type: 'exchange',
+                        fromCurrency: fromCurr,
+                        toCurrency: toCurr,
+                        fromAmount,
+                        toAmount,
+                        rate: rateVal,
+                        category: 'صرافة',
+                        date,
+                        note: rawNote
+                    };
+                }
+                showToast('تم تعديل عملية الصرافة في السحابة');
+            } else {
+                ws.transactions.unshift({
+                    id: 'ex_' + Date.now(),
+                    type: 'exchange',
+                    fromCurrency: fromCurr,
+                    toCurrency: toCurr,
+                    fromAmount,
+                    toAmount,
+                    rate: rateVal,
+                    category: 'صرافة',
+                    date,
+                    note: rawNote
+                });
+                showToast('تم تسجيل عملية الصرافة في السحابة');
+            }
 
             closeExchangeModal();
             renderAll();
             pushToCloud();
-            showToast('تم تسجيل عملية الصرافة في السحابة');
         }
 
         function deleteTransaction(txId) {
@@ -1620,7 +1798,6 @@
             emptyState.classList.add('hidden');
             detailsEl.classList.remove('hidden');
 
-            // تحديث الشريط المستقل الثابت باسم الورشة ووصفها وحالتها
             if (stickyBar) {
                 stickyBar.classList.remove('hidden');
                 document.getElementById('sticky-ws-name').textContent = ws.name;
@@ -1722,7 +1899,7 @@
             const typeLabel = fType === 'ALL' ? 'كشف شامل' : (fType === 'income' ? 'كشف الإيرادات' : (fType === 'expense' ? 'كشف المصروفات' : 'كشف الصرافة'));
             document.getElementById('print-filter-subtitle').textContent = `${typeLabel} | البند: ${fCat === 'ALL' ? 'الكل' : fCat} | العملة: ${fCurr === 'ALL' ? 'الكل' : fCurr}`;
 
-            const filtered = (ws.transactions || []).filter(tx => {
+            let filtered = (ws.transactions || []).filter(tx => {
                 if (fType !== 'ALL' && tx.type !== fType) return false;
                 if (fCat !== 'ALL' && (tx.category || 'عام') !== fCat) return false;
                 if (fDateFrom && tx.date < fDateFrom) return false;
@@ -1739,6 +1916,11 @@
                 return true;
             });
 
+            // عند الطباعة أو PDF يتم الترتيب تصاعدياً (الأقدم بالتاريخ أولاً ثم الأحدث)
+            if (isPrintSortAscending) {
+                filtered = [...filtered].reverse().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            }
+
             if (!document.getElementById('category-breakdown-panel').classList.contains('hidden')) {
                 renderCategoryBreakdown();
             }
@@ -1752,7 +1934,7 @@
             }
 
             tbody.innerHTML = filtered.map(tx => {
-                let typeBadge = '', amountHtml = '';
+                let typeBadge = '', amountHtml = '', noteDisplay = tx.note || '—';
                 if (tx.type === 'income') {
                     typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-100 text-emerald-800">إيراد</span>`;
                     const currLabel = tx.currency === 'USD' ? `$ ${formatNum(tx.amount)}` : `${formatNum(tx.amount)} ل.س`;
@@ -1765,6 +1947,8 @@
                     typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-amber-100 text-amber-800">⇄ صرافة</span>`;
                     const fromStr = tx.fromCurrency === 'USD' ? `$ ${formatNum(tx.fromAmount)}` : `${formatNum(tx.fromAmount)} ل.س`;
                     const toStr = tx.toCurrency === 'USD' ? `$ ${formatNum(tx.toAmount)}` : `${formatNum(tx.toAmount)} ل.س`;
+                    const rateBadge = tx.rate ? `<span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 ltr-num">سعر الصرف: ${formatNum(tx.rate)}</span>` : '';
+                    noteDisplay = `${tx.note ? tx.note + ' ' : ''}${rateBadge}` || '—';
                     amountHtml = `
                         <div class="flex flex-col gap-0.5 text-xs">
                             <span class="text-rose-700 font-bold ltr-num">- ${fromStr}</span>
@@ -1780,7 +1964,7 @@
                 let actionsHtml = `<span class="text-slate-300 text-xs">مقفل</span>`;
                 if (ws.active && (canEditTx || canDeleteTx)) {
                     actionsHtml = `<div class="flex items-center justify-center gap-1.5">
-                        ${(canEditTx && tx.type !== 'exchange') ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold">تعديل</button>` : ''}
+                        ${canEditTx ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold">تعديل</button>` : ''}
                         ${canDeleteTx ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold">حذف</button>` : ''}
                     </div>`;
                 }
@@ -1790,7 +1974,7 @@
                         <td class="py-3 px-3 whitespace-nowrap ltr-num text-slate-600">${tx.date}</td>
                         <td class="py-3 px-3 whitespace-nowrap">${typeBadge}</td>
                         <td class="py-3 px-3 font-extrabold text-slate-800">${tx.category || 'عام'}</td>
-                        <td class="py-3 px-3 text-slate-600">${tx.note || '—'}</td>
+                        <td class="py-3 px-3 text-slate-600">${noteDisplay}</td>
                         <td class="py-3 px-3 whitespace-nowrap">${amountHtml}</td>
                         <td class="py-3 px-3 no-print text-center">${attachHtml}</td>
                         <td class="py-3 px-3 no-print text-center">${actionsHtml}</td>
@@ -1800,27 +1984,48 @@
         }
 
         // ==========================================
-        // تصدير PDF (A4) الملون والمنظم
+        // الطباعة وتصدير PDF (A4) بالترتيب التصاعدي (الأقدم أولاً)
         // ==========================================
+        function printWorkshopSorted() {
+            if (!hasPermission('printExport')) return;
+            isPrintSortAscending = true;
+            renderWorkshopDetails();
+            setTimeout(() => {
+                window.print();
+                isPrintSortAscending = false;
+                renderWorkshopDetails();
+            }, 120);
+        }
+
         function exportPDF() {
             if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
+
+            isPrintSortAscending = true;
+            renderWorkshopDetails();
+
             const element = document.getElementById('workshop-workspace');
             document.body.classList.add('pdf-export-mode');
 
             const opt = {
-                margin: [10, 10, 10, 10],
+                margin: [8, 8, 8, 8],
                 filename: `كشف_حساب_${ws.name}_${getTodayStr()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
+                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
                 document.body.classList.remove('pdf-export-mode');
-                showToast('تم تصدير ملف PDF بنجاح');
+                isPrintSortAscending = false;
+                renderWorkshopDetails();
+                showToast('تم تصدير ملف PDF مرتباً من الأقدم للأحدث بنجاح');
+            }).catch(() => {
+                document.body.classList.remove('pdf-export-mode');
+                isPrintSortAscending = false;
+                renderWorkshopDetails();
             });
         }
 
