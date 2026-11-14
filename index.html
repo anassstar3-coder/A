@@ -296,7 +296,7 @@
     <!-- ==================== 2. MAIN APPLICATION ==================== -->
     <div id="appContainer" class="hidden flex-1 flex flex-col">
 
-        <!-- TOP MAIN HEADER (Scrolls away normally so Sticky Workshop Bar stays clean) -->
+        <!-- TOP MAIN HEADER -->
         <header class="no-print bg-gradient-to-l from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-indigo-500/30 shadow-xl">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3.5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -323,7 +323,6 @@
 
                     <!-- Cloud Capacity Meter (1 GB Multi-Doc) & Action Buttons -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Real Cloud Capacity Meter -->
                         <div class="bg-slate-800/90 border border-slate-700 rounded-2xl px-3 py-1.5 flex items-center gap-2.5">
                             <div class="text-right">
                                 <div class="text-[10px] font-bold text-slate-400">المتبقي بالسحابة (1 GB)</div>
@@ -364,7 +363,7 @@
             </div>
         </header>
 
-        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR (Remains Sticky Alone When Scrolling + Live Cloud Badge) -->
+        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR -->
         <div id="stickyWorkshopBar" class="no-print sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b-2 border-indigo-500/50 shadow-lg">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-2.5 min-w-0 flex-1">
@@ -375,7 +374,6 @@
                     <span id="stickyWorkshopDesc" class="hidden md:inline text-xs font-semibold text-slate-300 truncate border-r border-slate-700 pr-2.5"></span>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <!-- Live Cloud Status Indicator on Sticky Bar -->
                     <div id="stickyCloudIndicator" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[11px] font-extrabold">
                         <span id="stickyCloudDot" class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
                         <span id="stickyCloudLabel">متصل بالسحابة</span>
@@ -441,7 +439,6 @@
                         <h2 class="text-sm sm:text-base font-black text-white">الورشات والمشاريع</h2>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Reorder Workshops Toggle Button -->
                         <button id="btnToggleReorderWs" onclick="toggleWorkshopReorderMode()"
                             class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-amber-300 text-xs font-extrabold border border-amber-400/30 transition flex items-center gap-1.5">
                             <span>↕️</span>
@@ -475,7 +472,7 @@
                         </div>
                     </form>
 
-                    <!-- Reorder Mode Banner (Visible only when Reorder is Active) -->
+                    <!-- Reorder Mode Banner -->
                     <div id="reorderBanner" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border-2 border-amber-400/50 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-2 text-amber-200 text-xs sm:text-sm font-extrabold">
                             <span class="text-lg">🖐️</span>
@@ -507,10 +504,10 @@
                 </div>
             </section>
 
-            <!-- ==================== SECTION 3: ACTIVE WORKSHOP WORKSPACE (DAYLIGHT THEME AS REQUESTED) ==================== -->
+            <!-- ==================== SECTION 3: ACTIVE WORKSHOP WORKSPACE (DAYLIGHT THEME) ==================== -->
             <section id="activeWorkshopSection" class="hidden rounded-3xl border-2 border-slate-500/80 bg-white shadow-xl overflow-hidden transition-all">
                 
-                <!-- OFFICIAL CONSTRUCTION COMPANY PRINT / PDF HEADER (Visible Only When Printing/PDF) -->
+                <!-- OFFICIAL CONSTRUCTION COMPANY PRINT / PDF HEADER -->
                 <div class="print-only mb-3">
                     <div class="bg-slate-900 text-white p-3.5 rounded-xl flex items-center justify-between border-b-4 border-amber-400">
                         <div>
@@ -546,7 +543,6 @@
 
                     <!-- Workshop Management Controls -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Bright Green Activate Button when Inactive (Immune to Grayscale) -->
                         <button id="btnToggleWsStatus" onclick="toggleCurrentWorkshopStatus()"
                             class="no-grayscale-btn px-3.5 py-2 rounded-xl text-xs font-black shadow transition flex items-center gap-1.5">
                         </button>
@@ -568,7 +564,7 @@
                 <!-- Active Workshop Body -->
                 <div id="activeWorkshopBody" class="p-4 sm:p-6 space-y-6 text-slate-800">
 
-                    <!-- Workshop Dynamic Cashboxes (Updates to Filtered Totals Automatically in Print/PDF!) -->
+                    <!-- Workshop Dynamic Cashboxes -->
                     <div class="print-boxes-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <!-- Workshop USD Box -->
                         <div id="wsUsdBox" class="print-box-compact rounded-2xl border-2 p-5 transition-all shadow-sm">
@@ -603,7 +599,7 @@
                         </div>
                     </div>
 
-                    <!-- Clean 3-Button Action Bar (Opens Floating Modals) -->
+                    <!-- Clean 3-Button Action Bar -->
                     <div id="txActionButtonsBar" class="no-print grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <button onclick="openTxModal('income')"
                             class="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
@@ -629,7 +625,6 @@
                                 <span>🔎</span>
                                 <span>تصفية الحركات وتصدير التقارير</span>
                             </span>
-                            <!-- Export & Print Buttons -->
                             <div id="exportPrintGroup" class="flex flex-wrap items-center gap-2">
                                 <button onclick="exportWorkshopExcel()"
                                     class="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
@@ -650,12 +645,10 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
-                            <!-- Search Text -->
                             <div class="lg:col-span-2">
                                 <input type="text" id="txSearchInput" oninput="renderTransactionsTable()" placeholder="بحث في البيان أو البند..."
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-bold bg-white">
                             </div>
-                            <!-- Type Filter (Includes New Combined Income+IncomingExchange & Expense+OutgoingExchange) -->
                             <div>
                                 <select id="txFilterType" onchange="renderTransactionsTable()"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
@@ -667,14 +660,12 @@
                                     <option value="exchange">الصرافة / التحويل فقط</option>
                                 </select>
                             </div>
-                            <!-- Category Filter -->
                             <div>
                                 <select id="txFilterCategory" onchange="renderTransactionsTable()"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
                                     <option value="all">كل البنود</option>
                                 </select>
                             </div>
-                            <!-- Currency Filter -->
                             <div>
                                 <select id="txFilterCurrency" onchange="renderTransactionsTable()"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
@@ -683,7 +674,6 @@
                                     <option value="SYP">ليرة سورية (ل.س)</option>
                                 </select>
                             </div>
-                            <!-- Reset Filters -->
                             <div>
                                 <button type="button" onclick="resetTxFilters()"
                                     class="w-full py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-extrabold transition">
@@ -692,7 +682,6 @@
                             </div>
                         </div>
 
-                        <!-- Date Range Filter -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[11px] font-extrabold text-slate-500 shrink-0">من:</span>
@@ -792,7 +781,6 @@
                 <input type="hidden" id="txEditId">
                 <input type="hidden" id="txFixedType">
 
-                <!-- Type Switcher (Shown ONLY when Editing an existing transaction) -->
                 <div id="txEditTypeWrapper" class="hidden">
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">نوع الحركة (تعديل)</label>
                     <select id="txEditTypeSelect" onchange="updateTxModalTheme(this.value)"
@@ -802,7 +790,6 @@
                     </select>
                 </div>
 
-                <!-- Amount & Currency -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ *</label>
@@ -819,7 +806,6 @@
                     </div>
                 </div>
 
-                <!-- Closed Category Dropdown + Quick Add Category Button -->
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">البند / التصنيف *</label>
                     <div class="flex items-center gap-2">
@@ -834,14 +820,12 @@
                     </div>
                 </div>
 
-                <!-- Date -->
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ *</label>
                     <input type="date" id="txDate" required
                         class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-bold bg-slate-50">
                 </div>
 
-                <!-- Mandatory Description / Statement -->
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">البيان / الوصف التفصيلي (إجباري) *</label>
                     <textarea id="txDescription" rows="2" required placeholder="اكتب تفاصيل الحركة بوضوح..."
@@ -860,7 +844,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: ADD / EDIT CURRENCY EXCHANGE (VERTICAL ARROW: EXPENSE -> INCOME) -->
+    <!-- MODAL 2: ADD / EDIT CURRENCY EXCHANGE -->
     <div id="exchangeModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-amber-200 overflow-hidden my-auto text-slate-800">
             <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3.5 text-slate-950 flex items-center justify-between">
@@ -874,7 +858,6 @@
             <form id="exchangeForm" onsubmit="saveExchangeTransaction(event)" class="p-5 space-y-3.5">
                 <input type="hidden" id="exEditId">
 
-                <!-- Top Box: USD -->
                 <div id="exUsdCard" class="p-3.5 rounded-2xl border-2 transition-all">
                     <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
@@ -887,7 +870,6 @@
                         class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-black bg-white text-left" dir="ltr">
                 </div>
 
-                <!-- Vertical Flip Arrow Button (Points from Expense to Income) -->
                 <div class="flex justify-center -my-2 relative z-10">
                     <button type="button" onclick="flipExchangeDirection()" title="عكس اتجاه التحويل"
                         class="w-11 h-11 rounded-2xl bg-gradient-to-b from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white shadow-lg border-2 border-white flex items-center justify-center transition-transform duration-300 active:scale-90">
@@ -897,7 +879,6 @@
                     </button>
                 </div>
 
-                <!-- Bottom Box: SYP -->
                 <div id="exSypCard" class="p-3.5 rounded-2xl border-2 transition-all">
                     <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
@@ -910,7 +891,6 @@
                         class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-black bg-white text-left" dir="ltr">
                 </div>
 
-                <!-- Exchange Rate & Date -->
                 <div class="grid grid-cols-2 gap-3 pt-1">
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">سعر الصرف ($1) *</label>
@@ -924,7 +904,6 @@
                     </div>
                 </div>
 
-                <!-- Optional Note -->
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">ملاحظات (اختياري)</label>
                     <input type="text" id="exDescription" placeholder="مثال: تصريف بسعر اليوم..."
@@ -999,9 +978,7 @@
                     </button>
                 </form>
 
-                <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="categoriesListContainer">
-                    <!-- Categories rendered here -->
-                </div>
+                <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="categoriesListContainer"></div>
             </div>
         </div>
     </div>
@@ -1036,7 +1013,7 @@
         </div>
     </div>
 
-    <!-- MODAL 6: ACCOUNTS & GRANULAR PERMISSIONS MANAGER (WIDE RESPONSIVE) -->
+    <!-- MODAL 6: ACCOUNTS & GRANULAR PERMISSIONS MANAGER -->
     <div id="usersModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border-2 border-slate-200 overflow-hidden my-auto text-slate-800">
             <div class="bg-gradient-to-l from-indigo-950 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
@@ -1048,7 +1025,6 @@
             </div>
 
             <div class="p-4 sm:p-6 space-y-6 max-h-[82vh] overflow-y-auto">
-                <!-- Admin Credentials Section -->
                 <div class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
                     <h4 class="text-sm font-black text-indigo-950 mb-3 flex items-center gap-2">
                         <span>🛡️</span>
@@ -1078,7 +1054,6 @@
                     </form>
                 </div>
 
-                <!-- Add / Edit Sub-User Form -->
                 <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-300">
                     <div class="flex items-center justify-between mb-3">
                         <h4 id="subUserFormTitle" class="text-sm font-black text-slate-900">➕ إضافة مستخدم فرعي جديد وتحديد صلاحياته</h4>
@@ -1104,7 +1079,6 @@
                             </div>
                         </div>
 
-                        <!-- Granular Permissions Checkboxes -->
                         <div>
                             <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم:</label>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
@@ -1135,7 +1109,6 @@
                             </div>
                         </div>
 
-                        <!-- Allowed Workshops Selection -->
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
                                 <label class="text-xs font-black text-slate-800">الورشات المسموح له بالوصول إليها:</label>
@@ -1145,9 +1118,7 @@
                                     <button type="button" onclick="toggleAllSubUserWorkshops(false)" class="text-slate-500 hover:underline">إلغاء الكل</button>
                                 </div>
                             </div>
-                            <div id="subUserWorkshopsCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold">
-                                <!-- Workshop checkboxes injected here -->
-                            </div>
+                            <div id="subUserWorkshopsCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold"></div>
                         </div>
 
                         <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm shadow transition">
@@ -1156,12 +1127,9 @@
                     </form>
                 </div>
 
-                <!-- Existing Sub-Users List -->
                 <div>
                     <h4 class="text-sm font-black text-slate-900 mb-2.5">📋 قائمة الحسابات الفرعية المسجلة</h4>
-                    <div id="subUsersListContainer" class="space-y-2.5">
-                        <!-- Sub-users cards rendered here -->
-                    </div>
+                    <div id="subUsersListContainer" class="space-y-2.5"></div>
                 </div>
             </div>
         </div>
@@ -1175,7 +1143,6 @@
                 <button type="button" onclick="closeBackupModalSafe()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
             <div class="p-5 space-y-5">
-                <!-- Full Cloud Backup Export / Restore -->
                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-300 space-y-3">
                     <h4 class="text-sm font-black text-slate-900">📦 نسخة احتياطية شاملة لكل الورشات والحسابات</h4>
                     <p class="text-xs font-bold text-slate-500">تصدير أو استعادة كافة بيانات السحابة كملف JSON متوافق مع جميع الإصدارات.</p>
@@ -1192,7 +1159,6 @@
                     </div>
                 </div>
 
-                <!-- Danger Zone: Single Button with 10s Countdown -> Confirm 1 -> 5s Countdown -> Confirm 2 -->
                 <div class="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 space-y-3">
                     <h4 class="text-sm font-black text-rose-900 flex items-center gap-1.5">
                         <span>⚠️</span>
@@ -1222,7 +1188,7 @@
         </div>
     </div>
 
-    <!-- CUSTOM CONFIRMATION MODAL (Replaces native confirm()) -->
+    <!-- CUSTOM CONFIRMATION MODAL -->
     <div id="customConfirmModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-slate-200 p-5 text-center space-y-4 text-slate-800">
             <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-black">⚠️</div>
@@ -1265,12 +1231,12 @@
             workshops: []
         };
 
-        let currentUser = null; // { role: 'admin'|'sub', username, fullName, permissions, allowedWorkshops }
+        let currentUser = null;
         let activeWorkshopId = null;
         let workshopFilterStatus = 'all';
         let isReorderMode = false;
         let draggedWorkshopId = null;
-        let exchangeDirection = 'USD_TO_SYP'; // 'USD_TO_SYP' (USD Expense -> SYP Income) or 'SYP_TO_USD' (SYP Expense -> USD Income)
+        let exchangeDirection = 'USD_TO_SYP';
 
         let cloudConnected = false;
         let isSavingToCloud = false;
@@ -1361,7 +1327,7 @@
             openModal('customConfirmModal');
         }
 
-        // ==================== 4. DATA NORMALIZATION (FUTURE-PROOF COMPATIBILITY) ====================
+        // ==================== 4. DATA NORMALIZATION (COMPATIBLE WITH ALL PREVIOUS CLOUD SCHEMAS) ====================
         function normalizeWorkshopData(ws, index = 0) {
             const safeCategories = Array.isArray(ws.categories) ? [...ws.categories] : [];
             if (!safeCategories.includes('عام')) {
@@ -1407,16 +1373,30 @@
         }
 
         function normalizeFullState(raw) {
-            const adminObj = raw && raw.admin ? {
-                username: raw.admin.username || 'anas',
-                password: raw.admin.password || '123',
-                fullName: raw.admin.fullName || ''
-            } : { username: 'anas', password: '123', fullName: '' };
+            // Support all possible admin credential formats stored in cloud_master_v8
+            let adminUsername = 'anas';
+            let adminPassword = '123';
+            let adminFullName = '';
 
-            const subUsersArr = Array.isArray(raw?.subUsers) ? raw.subUsers.map(u => ({
-                username: u.username || '',
-                password: u.password || '',
-                fullName: u.fullName || '',
+            if (raw && raw.admin) {
+                adminUsername = raw.admin.username || raw.admin.user || 'anas';
+                adminPassword = raw.admin.password || raw.admin.pass || '123';
+                adminFullName = raw.admin.fullName || raw.admin.name || '';
+            } else if (raw && (raw.adminUser || raw.adminUsername)) {
+                adminUsername = raw.adminUser || raw.adminUsername || 'anas';
+                adminPassword = raw.adminPass || raw.adminPassword || '123';
+                adminFullName = raw.adminFullName || '';
+            }
+
+            // Support both subUsers and legacy users arrays
+            const rawSubs = Array.isArray(raw?.subUsers)
+                ? raw.subUsers
+                : (Array.isArray(raw?.users) ? raw.users.filter(u => u.role !== 'admin') : []);
+
+            const subUsersArr = rawSubs.map(u => ({
+                username: u.username || u.user || '',
+                password: u.password || u.pass || '',
+                fullName: u.fullName || u.name || '',
                 allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
                 permissions: {
                     addEditTx: u.permissions?.addEditTx !== false,
@@ -1426,7 +1406,7 @@
                     printExport: u.permissions?.printExport !== false,
                     manageCats: u.permissions?.manageCats !== false
                 }
-            })) : [];
+            }));
 
             const workshopsArr = Array.isArray(raw?.workshops)
                 ? raw.workshops.map((w, idx) => normalizeWorkshopData(w, idx))
@@ -1435,7 +1415,11 @@
             workshopsArr.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
             return {
-                admin: adminObj,
+                admin: {
+                    username: String(adminUsername).trim(),
+                    password: String(adminPassword).trim(),
+                    fullName: String(adminFullName).trim()
+                },
                 subUsers: subUsersArr,
                 workshops: workshopsArr
             };
@@ -1489,7 +1473,6 @@
         async function fetchFromCloud(isBackgroundPoll = false) {
             if (isSavingToCloud) return false;
             try {
-                // Fetch master document + any split workshop documents in collection
                 const res = await fetch(`${FIRESTORE_BASE_URL}?pageSize=300`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
@@ -1520,7 +1503,6 @@
                 }
 
                 if (masterPayload) {
-                    // Merge split workshop docs if newer/present while preserving legacy workshops in masterPayload
                     const mergedWorkshops = [];
                     const seenIds = new Set();
 
@@ -1541,8 +1523,7 @@
                     }
 
                     const normalized = normalizeFullState({
-                        admin: masterPayload.admin,
-                        subUsers: masterPayload.subUsers,
+                        ...masterPayload,
                         workshops: mergedWorkshops
                     });
 
@@ -1557,7 +1538,6 @@
                         }
                     }
                 } else {
-                    // First time initialization if cloud is completely empty
                     updateCloudCapacityMeter();
                 }
 
@@ -1574,7 +1554,6 @@
             isSavingToCloud = true;
             updateCloudStatusUI(true, 'جاري الحفظ بالسحابة...');
             try {
-                // Save lightweight workshop metadata in master doc + full workshop data in dedicated doc (for 1GB scalability)
                 const masterCompact = {
                     admin: appState.admin,
                     subUsers: appState.subUsers,
@@ -1585,7 +1564,6 @@
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
-                        // Keep transactions in master doc too if total size < 750KB for 100% backward compatibility
                         transactions: JSON.stringify(appState).length < 750000 ? w.transactions : []
                     })),
                     updatedAt: Date.now()
@@ -1593,7 +1571,6 @@
 
                 const requests = [];
 
-                // 1. Always update cloud_master_v8
                 requests.push(
                     fetch(`${FIRESTORE_BASE_URL}/${MASTER_DOC_ID}`, {
                         method: 'PATCH',
@@ -1607,7 +1584,6 @@
                     })
                 );
 
-                // 2. If a specific workshop was modified/added, save its dedicated document (ws_doc_{id})
                 if (specificWorkshopIdToSync) {
                     const targetWs = appState.workshops.find(w => w.id === specificWorkshopIdToSync);
                     if (targetWs) {
@@ -1625,7 +1601,6 @@
                         );
                     }
                 } else {
-                    // Sync all workshops to their dedicated docs
                     for (const ws of appState.workshops) {
                         requests.push(
                             fetch(`${FIRESTORE_BASE_URL}/ws_doc_${ws.id}`, {
@@ -1642,7 +1617,6 @@
                     }
                 }
 
-                // 3. If a workshop was deleted, delete its dedicated doc
                 if (deletedWorkshopId) {
                     requests.push(
                         fetch(`${FIRESTORE_BASE_URL}/ws_doc_${deletedWorkshopId}`, {
@@ -1697,10 +1671,13 @@
             btn.disabled = false;
             btn.innerHTML = '<span>تسجيل الدخول إلى النظام</span>';
 
-            if (u === appState.admin.username && p === appState.admin.password) {
+            const adminU = String(appState.admin.username || 'anas').trim();
+            const adminP = String(appState.admin.password || '123').trim();
+
+            if (u === adminU && p === adminP) {
                 currentUser = {
                     role: 'admin',
-                    username: appState.admin.username,
+                    username: adminU,
                     fullName: appState.admin.fullName || '',
                     permissions: {
                         addEditTx: true,
@@ -1716,7 +1693,9 @@
                 return;
             }
 
-            const subIdx = appState.subUsers.findIndex(sub => sub.username === u && sub.password === p);
+            const subIdx = appState.subUsers.findIndex(sub =>
+                String(sub.username).trim() === u && String(sub.password).trim() === p
+            );
             if (subIdx !== -1) {
                 const sub = appState.subUsers[subIdx];
                 currentUser = {
@@ -1742,7 +1721,6 @@
             applyRolePermissionsUI();
             updateCurrentUserHeaderBadge();
 
-            // Select first accessible workshop automatically if none selected
             const accessible = getAccessibleWorkshops();
             if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
                 activeWorkshopId = accessible[0].id;
@@ -1750,12 +1728,10 @@
 
             refreshAllViewsAfterSync();
 
-            // Check if user has a personal name saved in cloud; if not, require entering it before proceeding
             if (!currentUser.fullName || !currentUser.fullName.trim()) {
                 openMandatoryProfileNameModal();
             }
 
-            // Quiet background sync every 12 seconds (only applies if hash changed & no modal open)
             clearInterval(syncIntervalHandle);
             syncIntervalHandle = setInterval(() => {
                 if (currentUser && !isModalOpen && !isReorderMode && !isSavingToCloud) {
@@ -1873,15 +1849,12 @@
                     else sypOut += Number(tx.amount) || 0;
                 } else if (tx.type === 'exchange') {
                     if (filterMode === 'income_with_in_exchange') {
-                        // Count ONLY incoming side of exchange
                         if (tx.toCurrency === 'USD') usdIn += Number(tx.toAmount) || 0;
                         else sypIn += Number(tx.toAmount) || 0;
                     } else if (filterMode === 'expense_with_out_exchange') {
-                        // Count ONLY outgoing side of exchange
                         if (tx.fromCurrency === 'USD') usdOut += Number(tx.fromAmount) || 0;
                         else sypOut += Number(tx.fromAmount) || 0;
                     } else {
-                        // Full exchange (both sides)
                         if (tx.fromCurrency === 'USD') {
                             usdOut += Number(tx.fromAmount) || 0;
                             sypIn += Number(tx.toAmount) || 0;
@@ -2058,13 +2031,12 @@
                 return;
             }
 
-            grid.innerHTML = filtered.map((ws, idx) => {
+            grid.innerHTML = filtered.map((ws) => {
                 const totals = calculateWorkshopTotals(ws);
                 const isSelected = ws.id === activeWorkshopId;
                 const isInactive = ws.active === false;
                 const canManage = currentUser.permissions.manageWs;
 
-                // Distinct High-Contrast Selected Workshop Styling
                 let cardClasses = 'relative rounded-2xl p-4 transition-all border-2 flex flex-col justify-between ';
                 if (isReorderMode) {
                     cardClasses += 'ws-draggable-card border-amber-400/70 bg-slate-800 shadow-lg ';
@@ -2084,7 +2056,6 @@
                         ${isReorderMode ? `draggable="true" ondragstart="handleWsDragStart(event, '${ws.id}')" ondragover="handleWsDragOver(event, this)" ondragleave="handleWsDragLeave(this)" ondrop="handleWsDrop(event, '${ws.id}', this)"` : `onclick="selectWorkshop('${ws.id}')"`}>
                         
                         <div>
-                            <!-- Top Row: Selected Badge / Status Badge / Reorder Handle -->
                             <div class="flex items-center justify-between gap-2 mb-2.5">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     ${isSelected ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black shadow">✓ الورشة المختارة</span>` : ''}
@@ -2104,12 +2075,10 @@
                                 `}
                             </div>
 
-                            <!-- Workshop Name & Description -->
                             <h3 class="text-base font-black ${isSelected ? 'text-amber-300' : 'text-white'} truncate">${escapeHtml(ws.name)}</h3>
                             <p class="text-xs font-semibold text-slate-400 mt-0.5 truncate min-h-[18px]">${escapeHtml(ws.description || 'بدون وصف إضافي')}</p>
                         </div>
 
-                        <!-- Mini Balances -->
                         <div class="grid grid-cols-2 gap-2 my-3 pt-3 border-t border-slate-700/80">
                             <div class="bg-slate-900/80 rounded-xl p-2 border border-slate-700/60">
                                 <div class="text-[10px] font-bold text-slate-400">الصافي ($)</div>
@@ -2125,7 +2094,6 @@
                             </div>
                         </div>
 
-                        <!-- Quick Card Actions -->
                         ${(!isReorderMode && canManage) ? `
                             <div class="flex items-center justify-end gap-1.5 pt-1" onclick="event.stopPropagation()">
                                 <button type="button" onclick="toggleWorkshopStatusById('${ws.id}')"
@@ -2274,7 +2242,6 @@
             section.classList.remove('hidden');
             btnJump.classList.remove('hidden');
 
-            // Update Sticky Bar
             stickyName.textContent = ws.name;
             stickyStatus.classList.remove('hidden');
             if (ws.active === false) {
@@ -2292,7 +2259,6 @@
                 stickyDesc.classList.add('hidden');
             }
 
-            // Apply Full Grayscale on Workshop Body if Inactive, while keeping Activate Button Bright Green!
             const wsBody = document.getElementById('activeWorkshopBody');
             const toggleBtn = document.getElementById('btnToggleWsStatus');
             if (ws.active === false) {
@@ -2308,7 +2274,6 @@
             document.getElementById('activeWsTitle').textContent = ws.name;
             document.getElementById('activeWsDescription').textContent = ws.description || 'لا يوجد وصف إضافي لهذه الورشة';
 
-            // Populate Category Filter Dropdown
             const catFilter = document.getElementById('txFilterCategory');
             const prevCat = catFilter.value;
             const cats = ws.categories && ws.categories.length ? ws.categories : ['عام'];
@@ -2377,7 +2342,6 @@
             if (!catName || catName === 'عام') return;
 
             ws.categories.splice(idx, 1);
-            // Reassign transactions using deleted category to 'عام'
             ws.transactions.forEach(tx => {
                 if (tx.category === catName) tx.category = 'عام';
             });
@@ -2419,20 +2383,17 @@
             const dTo = document.getElementById('txFilterDateTo').value;
 
             const list = (ws.transactions || []).filter(tx => {
-                // Type filter logic
                 if (fType === 'income' && tx.type !== 'income') return false;
                 if (fType === 'expense' && tx.type !== 'expense') return false;
                 if (fType === 'exchange' && tx.type !== 'exchange') return false;
                 if (fType === 'income_with_in_exchange' && tx.type !== 'income' && tx.type !== 'exchange') return false;
                 if (fType === 'expense_with_out_exchange' && tx.type !== 'expense' && tx.type !== 'exchange') return false;
 
-                // Category filter
                 if (fCat !== 'all') {
                     const txCat = tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام');
                     if (txCat !== fCat) return false;
                 }
 
-                // Currency filter
                 if (fCurr !== 'all') {
                     if (tx.type === 'exchange') {
                         if (fType === 'income_with_in_exchange') {
@@ -2447,11 +2408,9 @@
                     }
                 }
 
-                // Date range filter
                 if (dFrom && tx.date < dFrom) return false;
                 if (dTo && tx.date > dTo) return false;
 
-                // Text search
                 if (searchQ) {
                     const descMatch = (tx.description || '').toLowerCase().includes(searchQ);
                     const catMatch = (tx.category || '').toLowerCase().includes(searchQ);
@@ -2461,7 +2420,6 @@
                 return true;
             });
 
-            // Sort: Ascending (Oldest first) when printing/PDF/Excel, Descending (Newest first) on screen
             list.sort((a, b) => {
                 if (a.date !== b.date) {
                     return forceAscending ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
@@ -2490,7 +2448,6 @@
             const filtered = getFilteredTransactions(ws, forceAscending);
             document.getElementById('txFilteredCount').textContent = filtered.length;
 
-            // Update Workshop Cashboxes dynamically based on visible filtered items
             const isFiltered = (
                 fType !== 'all' ||
                 document.getElementById('txFilterCategory').value !== 'all' ||
@@ -2564,15 +2521,12 @@
                     const toDec = tx.toCurrency === 'USD' ? 2 : 0;
 
                     if (fType === 'income_with_in_exchange') {
-                        // Show ONLY incoming side of exchange with special badge
                         typeBadge = `<span class="inline-block px-2 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-black">⇄ تحويل وارد</span>`;
                         amountColHtml = `<div class="text-emerald-900 font-black" dir="ltr">+ ${formatNum(tx.toAmount, toDec)} ${toSym}</div>`;
                     } else if (fType === 'expense_with_out_exchange') {
-                        // Show ONLY outgoing side of exchange with special badge
                         typeBadge = `<span class="inline-block px-2 py-1 rounded-lg bg-orange-700 text-white text-[11px] font-black">⇄ تحويل صادر</span>`;
                         amountColHtml = `<div class="text-rose-900 font-black" dir="ltr">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</div>`;
                     } else {
-                        // Normal full exchange display
                         typeBadge = `<span class="inline-block px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-black">⇄ صرافة</span>`;
                         amountColHtml = `
                             <div class="text-rose-900 font-black text-xs" dir="ltr">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</div>
@@ -2732,7 +2686,7 @@
             );
         }
 
-        // ==================== 12. CURRENCY EXCHANGE MODAL (VERTICAL ARROW EXPENSE -> INCOME) ====================
+        // ==================== 12. CURRENCY EXCHANGE MODAL ====================
         function updateExchangeVisuals() {
             const usdCard = document.getElementById('exUsdCard');
             const sypCard = document.getElementById('exSypCard');
@@ -2741,7 +2695,6 @@
             const arrowSvg = document.getElementById('exVerticalArrowIcon');
 
             if (exchangeDirection === 'USD_TO_SYP') {
-                // Top (USD) is Expense (-), Bottom (SYP) is Income (+), Arrow points DOWN
                 usdCard.className = 'p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50/80 transition-all';
                 usdBadge.textContent = 'المصروف (-)';
                 usdBadge.className = 'text-[11px] font-black px-2.5 py-0.5 rounded-full bg-rose-200 text-rose-900';
@@ -2752,7 +2705,6 @@
 
                 arrowSvg.style.transform = 'rotate(0deg)';
             } else {
-                // Bottom (SYP) is Expense (-), Top (USD) is Income (+), Arrow points UP
                 usdCard.className = 'p-3.5 rounded-2xl border-2 border-emerald-300 bg-emerald-50/80 transition-all';
                 usdBadge.textContent = 'الإيراد / المستلم (+)';
                 usdBadge.className = 'text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900';
@@ -2900,7 +2852,6 @@
                 ? '📄 تصدير PDF الآن'
                 : '🖨 طباعة الآن';
 
-            // Auto-fill person's name from user's cloud profile if empty
             const personInput = document.getElementById('printInputPerson');
             if (!personInput.value.trim() && currentUser?.fullName) {
                 personInput.value = currentUser.fullName;
@@ -2947,7 +2898,6 @@
             closeModal('printDetailsModal');
             preparePrintHeaderData();
 
-            // Render table in Ascending Order (Oldest -> Newest) before Print/PDF
             renderTransactionsTable(true);
 
             if (mode === 'print') {
@@ -2956,7 +2906,6 @@
                     renderTransactionsTable(false);
                 }, 200);
             } else {
-                // PDF Export Mode (Centered A4, Zero Clipping, Zero Split Rows)
                 document.body.classList.add('pdf-exporting');
                 const element = document.getElementById('activeWorkshopSection');
 
@@ -2995,11 +2944,10 @@
             if (!ws) return;
 
             const fType = document.getElementById('txFilterType').value;
-            const rows = getFilteredTransactions(ws, true); // Ascending chronological order
+            const rows = getFilteredTransactions(ws, true);
 
             let trHtml = '';
-            rows.forEach((tx, index) => {
-                const excelRowNum = index + 4;
+            rows.forEach((tx) => {
                 let typeText = '';
                 let catText = tx.category || 'عام';
                 let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
@@ -3040,7 +2988,6 @@
 
             const lastDataRow = rows.length + 3;
             const totalRow = lastDataRow + 1;
-            const netRow = lastDataRow + 2;
 
             const excelHtml = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -3123,7 +3070,6 @@
                     if (!rawWs || !rawWs.name) throw new Error('Invalid workshop file');
 
                     const normalizedWs = normalizeWorkshopData(rawWs, appState.workshops.length);
-                    // Assign a fresh unique ID so it never collides with existing workshops
                     normalizedWs.id = generateId('ws');
                     normalizedWs.order = appState.workshops.length;
 
@@ -3321,9 +3267,9 @@
             }).join('');
         }
 
-        // ==================== 16. FULL BACKUP & DOUBLE-COUNTDOWN FACTORY RESET (10s -> Confirm -> 5s -> Confirm) ====================
+        // ==================== 16. FULL BACKUP & DOUBLE-COUNTDOWN FACTORY RESET ====================
         let resetTimerHandle = null;
-        let resetStage = 0; // 0: idle, 1: counting 10s, 2: confirm 1 ready, 3: counting 5s, 4: confirm 2 ready
+        let resetStage = 0;
 
         function openBackupModal() {
             cancelFactoryReset();
@@ -3402,7 +3348,6 @@
 
         async function advanceFactoryResetStep() {
             if (resetStage === 2) {
-                // Start 5-second second countdown
                 resetStage = 3;
                 let secondsLeft = 5;
                 document.getElementById('btnResetStepConfirm').classList.add('hidden');
@@ -3422,7 +3367,6 @@
                     }
                 }, 1000);
             } else if (resetStage === 4) {
-                // Execute full reset while preserving admin credentials
                 const oldWorkshopIds = appState.workshops.map(w => w.id);
                 appState.workshops = [];
                 activeWorkshopId = null;
@@ -3452,7 +3396,6 @@
             renderActiveWorkshopWorkspace();
         }
 
-        // Pre-connect to Cloud immediately on page load so Login Screen shows Live Green Status
         window.addEventListener('DOMContentLoaded', () => {
             fetchFromCloud(false);
         });
