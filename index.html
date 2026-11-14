@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>نظام إدارة محاسبة الورشات والمشاريع | السحابة الموحدة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -10,8 +10,9 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #f1f5f9;
+            background-color: #eef2f6;
             color: #0f172a;
+            overflow-x: hidden;
         }
         .ltr-num {
             direction: ltr;
@@ -22,6 +23,21 @@
             filter: grayscale(100%);
             opacity: 0.72;
             transition: all 0.25s ease;
+        }
+        /* تحسين التمرير على الجوال والكمبيوتر */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
         @media print {
             body {
@@ -63,7 +79,7 @@
                 font-size: 12px !important;
             }
             thead th {
-                background-color: #1e293b !important;
+                background-color: #0f172a !important;
                 color: #ffffff !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -80,44 +96,57 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-7 border border-slate-200">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg text-2xl font-black">
-                    ERP
+    <!-- شاشة تسجيل الدخول الفاخرة -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 border border-white/20 my-auto">
+            <div class="text-center mb-5">
+                <!-- أيقونة البيت الهندسية الفاخرة -->
+                <div class="w-20 h-20 bg-gradient-to-tr from-indigo-700 via-indigo-600 to-blue-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-3.5 shadow-xl shadow-indigo-500/30 ring-4 ring-indigo-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-11 h-11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/>
+                    </svg>
                 </div>
-                <h1 class="text-2xl font-black text-slate-900">نظام محاسبة الورشات</h1>
-                <p class="text-xs font-bold text-slate-500 mt-1">مزامنة سحابية فورية 100% بين جميع الأجهزة</p>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">نظام محاسبة الورشات والمشاريع</h1>
+                <p class="text-xs font-bold text-slate-500 mt-1">الإدارة المالية السحابية المتكاملة</p>
+
+                <!-- مؤشر الاتصال السحابي الحي على شاشة الدخول -->
+                <div class="mt-3 flex justify-center">
+                    <span id="login-cloud-status-badge" class="inline-flex items-center gap-2 text-xs font-extrabold px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                        جاري الاتصال بالسحابة وجلب البيانات...
+                    </span>
+                </div>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1.5">اسم المستخدم</label>
-                    <input type="text" id="login-username" required autocomplete="username" placeholder="أدخل اسم المستخدم..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm">
+                    <input type="text" id="login-username" required autocomplete="username" placeholder="أدخل اسم المستخدم..." class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/70 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition">
                 </div>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1.5">كلمة المرور</label>
-                    <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm">
+                    <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/70 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition">
                 </div>
                 <div id="login-error" class="hidden text-xs font-extrabold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3 text-center"></div>
-                <button type="submit" id="login-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition">
-                    دخول إلى النظام
+                <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-indigo-700 to-blue-600 hover:from-indigo-800 hover:to-blue-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-indigo-600/25 transition transform active:scale-[0.99]">
+                    تسجيل الدخول إلى النظام
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- الشريط العلوي -->
-    <header class="no-print bg-slate-900 text-white shadow-lg sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <!-- الشريط العلوي الفاخر -->
+    <header class="no-print bg-gradient-to-l from-slate-950 via-slate-900 to-indigo-950 text-white shadow-xl sticky top-0 z-30 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-sm shadow">
-                    ERP
+                <div class="w-11 h-11 bg-gradient-to-tr from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/>
+                    </svg>
                 </div>
                 <div>
-                    <h1 class="font-black text-base sm:text-lg leading-tight">نظام إدارة محاسبة الورشات</h1>
-                    <div class="flex items-center gap-2 mt-0.5">
+                    <h1 class="font-black text-base sm:text-lg leading-tight tracking-tight">نظام إدارة محاسبة الورشات</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-1">
                         <span id="cloud-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                             متصل بالسحابة الموحدة
@@ -127,59 +156,93 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-                <button onclick="forceCloudRefresh()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-bold border border-slate-700 transition">
-                    🔄 تحديث السحابة
-                </button>
-                <button id="btn-users-modal" onclick="openUsersModal()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition">
-                    👥 المستخدمين والحساب
-                </button>
-                <button id="btn-backup-modal" onclick="openBackupModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-bold border border-slate-700 transition">
-                    🗄️ النسخ الاحتياطي والأرشيف
-                </button>
-                <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition">
-                    خروج
-                </button>
+            <!-- عداد سعة السحابة المتبقية + أزرار التحكم -->
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                <!-- مؤشر سعة السحابة -->
+                <div class="bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2.5 min-w-[165px]">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center text-[10px] font-extrabold mb-1">
+                            <span class="text-slate-300">المتبقي بالسحابة:</span>
+                            <span id="cloud-remaining-text" class="text-emerald-400 ltr-num">100%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div id="cloud-capacity-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 2%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <button onclick="forceCloudRefresh()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold border border-slate-700 transition">
+                        🔄 تحديث
+                    </button>
+                    <button id="btn-users-modal" onclick="openUsersModal()" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold shadow transition">
+                        👥 إدارة الحسابات
+                    </button>
+                    <button id="btn-backup-modal" onclick="openBackupModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold border border-slate-700 transition">
+                        🗄️ الأرشيف والتصفير
+                    </button>
+                    <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold shadow transition">
+                        خروج
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- المحتوى الرئيسي -->
-    <main id="app-main-layout" class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+    <main id="app-main-layout" class="max-w-7xl w-full mx-auto px-3 sm:px-5 py-5 sm:py-6 flex-1 space-y-5 sm:space-y-6">
 
-        <!-- ملخص الصندوق العام للورشات -->
-        <section id="global-summary-section" class="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <div class="text-xs font-extrabold text-slate-500">الصندوق العام (دولار $)</div>
-                <div id="global-usd-balance" class="text-2xl font-black text-emerald-600 mt-1 ltr-num">$ 0</div>
-                <div class="text-[11px] font-bold text-slate-400 mt-1">صافي رصيد جميع الورشات النشطة</div>
+        <!-- ملخص الصندوق العام للورشات (بألوان متميزة لكل بطاقة) -->
+        <section id="global-summary-section" class="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+            <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 rounded-2xl p-4 shadow-sm border border-emerald-200/80 border-r-4 border-r-emerald-600">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-emerald-900">الصندوق العام (دولار $)</div>
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-xs">$</span>
+                </div>
+                <div id="global-usd-balance" class="text-2xl font-black text-emerald-700 mt-1.5 ltr-num">$ 0</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات</div>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <div class="text-xs font-extrabold text-slate-500">الصندوق العام (ليرة سورية)</div>
-                <div id="global-syp-balance" class="text-2xl font-black text-blue-600 mt-1 ltr-num">0 ل.س</div>
-                <div class="text-[11px] font-bold text-slate-400 mt-1">صافي رصيد جميع الورشات النشطة</div>
+
+            <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/40 rounded-2xl p-4 shadow-sm border border-blue-200/80 border-r-4 border-r-blue-600">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-blue-900">الصندوق العام (ليرة سورية)</div>
+                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-black text-[10px]">ل.س</span>
+                </div>
+                <div id="global-syp-balance" class="text-2xl font-black text-blue-700 mt-1.5 ltr-num">0 ل.س</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">صافي رصيد جميع الورشات</div>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <div class="text-xs font-extrabold text-slate-500">الورشات النشطة</div>
-                <div id="global-active-count" class="text-2xl font-black text-slate-800 mt-1">0</div>
-                <div class="text-[11px] font-bold text-slate-400 mt-1">ورشات قيد العمل حالياً</div>
+
+            <div class="bg-gradient-to-br from-indigo-50 via-white to-indigo-50/40 rounded-2xl p-4 shadow-sm border border-indigo-200/80 border-r-4 border-r-indigo-600">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-indigo-900">الورشات النشطة</div>
+                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs">▶</span>
+                </div>
+                <div id="global-active-count" class="text-2xl font-black text-indigo-800 mt-1.5">0</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">ورشات قيد العمل حالياً</div>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <div class="text-xs font-extrabold text-slate-500">الورشات المتوقفة</div>
-                <div id="global-inactive-count" class="text-2xl font-black text-slate-500 mt-1">0</div>
-                <div class="text-[11px] font-bold text-slate-400 mt-1">مؤرشفة ومقفلة عن التعديل</div>
+
+            <div class="bg-gradient-to-br from-slate-100 via-white to-slate-100/60 rounded-2xl p-4 shadow-sm border border-slate-300/80 border-r-4 border-r-slate-500">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-slate-700">الورشات المتوقفة</div>
+                    <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">⏸</span>
+                </div>
+                <div id="global-inactive-count" class="text-2xl font-black text-slate-600 mt-1.5">0</div>
+                <div class="text-[11px] font-bold text-slate-500 mt-1">مؤرشفة ومقفلة عن التعديل</div>
             </div>
         </section>
 
         <!-- تقسيم القائمة الجانبية ومساحة العمل -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
             <!-- القائمة الجانبية للورشات -->
             <aside id="workshops-sidebar" class="no-print lg:col-span-4 space-y-4">
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-3">
-                        <h2 class="font-black text-slate-800 text-base">الورشات والمشاريع</h2>
-                        <label id="lbl-import-single-ws" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition">
+                <div class="bg-white rounded-3xl p-4 shadow-md border border-slate-200/90">
+                    <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-6 bg-indigo-600 rounded-full"></span>
+                            <h2 class="font-black text-slate-900 text-base">الورشات والمشاريع</h2>
+                        </div>
+                        <label id="lbl-import-single-ws" class="cursor-pointer bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition">
                             📥 استيراد ورشة
                             <input type="file" accept=".json" onchange="handleSingleWorkshopImport(event)" class="hidden">
                         </label>
@@ -187,78 +250,78 @@
 
                     <!-- إضافة ورشة جديدة -->
                     <form id="add-workshop-form" onsubmit="addNewWorkshop(event)" class="flex gap-2 mb-3">
-                        <input type="text" id="new-workshop-name" required placeholder="اسم الورشة الجديدة..." class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold focus:border-indigo-600 outline-none">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-extrabold transition">
+                        <input type="text" id="new-workshop-name" required placeholder="اسم الورشة الجديدة..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+                        <button type="submit" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-extrabold shadow-sm transition shrink-0">
                             + إضافة
                         </button>
                     </form>
 
                     <!-- شريط بحث وفلترة الورشات -->
-                    <div class="space-y-2 mb-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                        <input type="text" id="ws-sidebar-search" oninput="renderWorkshopsList()" placeholder="🔍 ابحث عن ورشة بالاسم..." class="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold outline-none focus:border-indigo-500">
+                    <div class="space-y-2 mb-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80">
+                        <input type="text" id="ws-sidebar-search" oninput="renderWorkshopsList()" placeholder="🔍 ابحث عن ورشة بالاسم..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold outline-none focus:border-indigo-500">
                         <div class="grid grid-cols-3 gap-1.5 text-[11px] font-extrabold">
-                            <button type="button" onclick="setWorkshopSidebarFilter('ALL')" id="ws-filter-btn-ALL" class="py-1.5 rounded-lg bg-indigo-600 text-white transition">الكل (<span id="ws-count-all">0</span>)</button>
-                            <button type="button" onclick="setWorkshopSidebarFilter('ACTIVE')" id="ws-filter-btn-ACTIVE" class="py-1.5 rounded-lg bg-white text-slate-700 border border-slate-200 transition">نشطة (<span id="ws-count-active">0</span>)</button>
-                            <button type="button" onclick="setWorkshopSidebarFilter('INACTIVE')" id="ws-filter-btn-INACTIVE" class="py-1.5 rounded-lg bg-white text-slate-700 border border-slate-200 transition">متوقفة (<span id="ws-count-inactive">0</span>)</button>
+                            <button type="button" onclick="setWorkshopSidebarFilter('ALL')" id="ws-filter-btn-ALL" class="py-1.5 rounded-xl bg-indigo-600 text-white transition shadow-xs">الكل (<span id="ws-count-all">0</span>)</button>
+                            <button type="button" onclick="setWorkshopSidebarFilter('ACTIVE')" id="ws-filter-btn-ACTIVE" class="py-1.5 rounded-xl bg-white text-slate-700 border border-slate-200 transition">نشطة (<span id="ws-count-active">0</span>)</button>
+                            <button type="button" onclick="setWorkshopSidebarFilter('INACTIVE')" id="ws-filter-btn-INACTIVE" class="py-1.5 rounded-xl bg-white text-slate-700 border border-slate-200 transition">متوقفة (<span id="ws-count-inactive">0</span>)</button>
                         </div>
                     </div>
 
                     <!-- بطاقة معاينة الورشة المستوردة -->
-                    <div id="pending-import-card" class="hidden mb-4 p-3.5 rounded-xl bg-slate-200 border-2 border-dashed border-slate-400">
+                    <div id="pending-import-card" class="hidden mb-4 p-3.5 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-400">
                         <div class="text-xs font-black text-slate-700 mb-1">معاينة ورشة مستوردة:</div>
                         <div id="pending-import-name" class="text-sm font-black text-slate-900"></div>
                         <div id="pending-import-stats" class="text-xs font-bold text-slate-600 mt-1"></div>
                         <div class="flex gap-2 mt-3">
-                            <button onclick="confirmSingleWorkshopImport()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-lg text-xs font-extrabold">
+                            <button onclick="confirmSingleWorkshopImport()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-xl text-xs font-extrabold">
                                 اعتماد وإضافة رسمية
                             </button>
-                            <button onclick="cancelSingleWorkshopImport()" class="px-3 bg-slate-300 hover:bg-slate-400 text-slate-800 py-1.5 rounded-lg text-xs font-extrabold">
+                            <button onclick="cancelSingleWorkshopImport()" class="px-3 bg-slate-300 hover:bg-slate-400 text-slate-800 py-2 rounded-xl text-xs font-extrabold">
                                 إلغاء
                             </button>
                         </div>
                     </div>
 
                     <!-- قائمة الورشات -->
-                    <div id="workshops-list" class="space-y-2.5 max-h-[62vh] overflow-y-auto pr-1"></div>
+                    <div id="workshops-list" class="space-y-2.5 max-h-[62vh] overflow-y-auto pl-1"></div>
                 </div>
             </aside>
 
             <!-- مساحة عمل الورشة المحددة -->
-            <section id="workshop-workspace" class="lg:col-span-8 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 min-h-[500px]">
-                <div id="no-workshop-selected" class="h-96 flex flex-col items-center justify-center text-center text-slate-400">
-                    <div class="text-5xl mb-3">🏗️</div>
-                    <p class="font-extrabold text-base text-slate-600">اختر ورشة من القائمة لعرض حساباتها وبنودها</p>
-                    <p class="text-xs font-bold mt-1">أو قم بإضافة ورشة جديدة للبدء فوراً</p>
+            <section id="workshop-workspace" class="lg:col-span-8 bg-white rounded-3xl p-4 sm:p-6 shadow-md border border-slate-200/90 min-h-[520px]">
+                <div id="no-workshop-selected" class="h-96 flex flex-col items-center justify-center text-center text-slate-400 px-4">
+                    <div class="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center text-4xl mb-3 shadow-inner">🏗️</div>
+                    <p class="font-extrabold text-base text-slate-700">اختر ورشة من القائمة لعرض حساباتها وبنودها</p>
+                    <p class="text-xs font-bold mt-1 text-slate-500">أو قم بإضافة ورشة جديدة للبدء فوراً في التسجيل</p>
                 </div>
 
                 <div id="workshop-details-content" class="hidden space-y-5">
                     <!-- ترويسة الورشة -->
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <h2 id="ws-title" class="text-xl sm:text-2xl font-black text-slate-900"></h2>
                                 <button onclick="renameCurrentWorkshop()" id="btn-rename-ws" title="تعديل اسم الورشة" class="no-print text-slate-400 hover:text-indigo-600 p-1 rounded-lg transition text-sm">✏️</button>
-                                <span id="ws-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold"></span>
+                                <span id="ws-status-badge" class="px-3 py-0.5 rounded-full text-xs font-extrabold"></span>
                             </div>
                             <p id="print-filter-subtitle" class="text-xs font-bold text-slate-500 mt-1">كشف شامل | البند: الكل | العملة: الكل</p>
                         </div>
 
-                        <div class="no-print flex flex-wrap items-center gap-2">
+                        <div class="no-print flex flex-wrap items-center gap-1.5 sm:gap-2">
                             <button onclick="toggleWorkshopActive()" id="btn-toggle-active" class="px-3 py-2 rounded-xl text-xs font-extrabold transition"></button>
                             <button onclick="toggleCategoryBreakdown()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 📊 ملخص البنود
                             </button>
                             <button onclick="exportExcelCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                                📗 تصدير Excel
+                                📗 Excel
                             </button>
                             <button onclick="exportPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                                📄 حفظ PDF (A4)
+                                📄 PDF (A4)
                             </button>
                             <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 🖨 طباعة
                             </button>
                             <button onclick="exportSingleWorkshop()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-extrabold transition">
-                                تصدير الورشة
+                                تصدير
                             </button>
                             <button onclick="deleteCurrentWorkshop()" id="btn-delete-ws" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs font-extrabold transition">
                                 🗑️
@@ -267,9 +330,9 @@
                     </div>
 
                     <!-- ملخص تفصيلي لكل بند في الورشة -->
-                    <div id="category-breakdown-panel" class="hidden no-print bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+                    <div id="category-breakdown-panel" class="hidden no-print bg-indigo-50/50 rounded-2xl p-4 border border-indigo-200/80 space-y-3">
                         <div class="flex items-center justify-between">
-                            <h3 class="font-black text-slate-800 text-sm">📊 كشف مجاميع البنود والتصنيفات لهذه الورشة</h3>
+                            <h3 class="font-black text-indigo-950 text-sm">📊 كشف مجاميع البنود والتصنيفات لهذه الورشة</h3>
                             <button onclick="toggleCategoryBreakdown()" class="text-xs font-bold text-slate-500 hover:text-slate-800">إخفاء ✕</button>
                         </div>
                         <div id="category-breakdown-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
@@ -277,71 +340,71 @@
 
                     <!-- صناديق الورشة (الدولار والسوري) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-4 border border-emerald-200 shadow-xs">
+                        <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/30 rounded-2xl p-4 border border-emerald-200 shadow-xs">
                             <div class="flex items-center justify-between">
-                                <span class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full">صندوق الدولار الأمريكي</span>
-                                <span class="w-9 h-9 rounded-xl bg-emerald-200/70 text-emerald-800 font-black flex items-center justify-center">$</span>
+                                <span class="bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">صندوق الدولار الأمريكي</span>
+                                <span class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center">$</span>
                             </div>
                             <div id="ws-usd-net" class="text-2xl sm:text-3xl font-black text-slate-900 mt-3 ltr-num">$ 0</div>
-                            <div class="flex items-center justify-between text-xs font-extrabold mt-3 pt-2 border-t border-emerald-100">
-                                <span class="text-emerald-700">مجموع الإيرادات: <span id="ws-usd-in" class="ltr-num">$ 0</span></span>
-                                <span class="text-rose-600">مجموع المصروفات: <span id="ws-usd-out" class="ltr-num">$ 0</span></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-3 pt-2.5 border-t border-emerald-100">
+                                <span class="text-emerald-700">الإيرادات: <span id="ws-usd-in" class="ltr-num">$ 0</span></span>
+                                <span class="text-rose-600">المصروفات: <span id="ws-usd-out" class="ltr-num">$ 0</span></span>
                             </div>
                         </div>
 
-                        <div class="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-4 border border-blue-200 shadow-xs">
+                        <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-2xl p-4 border border-blue-200 shadow-xs">
                             <div class="flex items-center justify-between">
-                                <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-3 py-1 rounded-full">صندوق الليرة السورية</span>
-                                <span class="w-9 h-9 rounded-xl bg-blue-200/70 text-blue-800 font-black text-xs flex items-center justify-center">ل.س</span>
+                                <span class="bg-blue-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">صندوق الليرة السورية</span>
+                                <span class="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 font-black text-xs flex items-center justify-center">ل.س</span>
                             </div>
                             <div id="ws-syp-net" class="text-2xl sm:text-3xl font-black text-slate-900 mt-3 ltr-num">0 ل.س</div>
-                            <div class="flex items-center justify-between text-xs font-extrabold mt-3 pt-2 border-t border-blue-100">
-                                <span class="text-emerald-700">مجموع الإيرادات: <span id="ws-syp-in" class="ltr-num">0 ل.س</span></span>
-                                <span class="text-rose-600">مجموع المصروفات: <span id="ws-syp-out" class="ltr-num">0 ل.س</span></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold mt-3 pt-2.5 border-t border-blue-100">
+                                <span class="text-emerald-700">الإيرادات: <span id="ws-syp-in" class="ltr-num">0 ل.س</span></span>
+                                <span class="text-rose-600">المصروفات: <span id="ws-syp-out" class="ltr-num">0 ل.س</span></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- تنبيه إقفال الورشة غير النشطة -->
-                    <div id="ws-locked-banner" class="hidden no-print bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-xl text-xs font-extrabold flex items-center justify-between">
+                    <div id="ws-locked-banner" class="hidden no-print bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-2xl text-xs font-extrabold flex items-center justify-between">
                         <span>🔒 هذه الورشة متوقفة (غير نشطة) ومقفلة عن التعديل والإضافة. قم بتفعيلها لإجراء حركات جديدة.</span>
                     </div>
 
                     <!-- نماذج الإضافة (حركة مالية / صرافة) -->
                     <div id="ws-forms-container" class="no-print space-y-4">
-                        <div class="flex gap-2 border-b border-slate-200 pb-2">
-                            <button type="button" onclick="switchFormTab('tx')" id="tab-btn-tx" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white">
+                        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-2.5">
+                            <button type="button" onclick="switchFormTab('tx')" id="tab-btn-tx" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-xs">
                                 + إضافة إيراد / مصروف
                             </button>
-                            <button type="button" onclick="switchFormTab('ex')" id="tab-btn-ex" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700">
+                            <button type="button" onclick="switchFormTab('ex')" id="tab-btn-ex" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200">
                                 ⇄ عملية صرافة / تحويل عملة
                             </button>
                         </div>
 
                         <!-- نموذج إيراد / مصروف -->
-                        <form id="tx-form" onsubmit="saveTransaction(event)" class="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <form id="tx-form" onsubmit="saveTransaction(event)" class="bg-slate-50/90 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             <input type="hidden" id="tx-edit-id">
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">نوع الحركة</label>
-                                <select id="tx-type" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <select id="tx-type" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                                     <option value="income">إيراد (+)</option>
                                     <option value="expense">مصروف (-)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ</label>
-                                <input type="number" step="any" min="0.01" id="tx-amount" required placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="number" step="any" min="0.01" id="tx-amount" required placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">العملة</label>
-                                <select id="tx-currency" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <select id="tx-currency" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                                     <option value="USD">دولار أمريكي ($)</option>
                                     <option value="SYP">ليرة سورية (ل.س)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">البند / التصنيف</label>
-                                <input type="text" id="tx-category" list="categories-list" placeholder="مثال: مواد، أجور، دفعة..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="text" id="tx-category" list="categories-list" placeholder="مثال: مواد، أجور، دفعة..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                                 <datalist id="categories-list">
                                     <option value="عام">
                                     <option value="مواد بناء">
@@ -353,14 +416,14 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ</label>
-                                <input type="date" id="tx-date" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="date" id="tx-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">البيان / الوصف</label>
-                                <input type="text" id="tx-note" placeholder="تفاصيل إضافية..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="text" id="tx-note" placeholder="تفاصيل إضافية..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div class="sm:col-span-2 lg:col-span-3 flex flex-wrap items-center justify-between gap-3 pt-1">
-                                <label class="cursor-pointer inline-flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-300">
+                                <label class="cursor-pointer inline-flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-50">
                                     📎 إرفاق صورة فاتورة (اختياري)
                                     <input type="file" id="tx-image" accept="image/*" class="hidden" onchange="previewAttachmentName(this)">
                                     <span id="tx-image-name" class="text-indigo-600"></span>
@@ -375,29 +438,29 @@
                         </form>
 
                         <!-- نموذج صرافة -->
-                        <form id="ex-form" onsubmit="saveExchange(event)" class="hidden bg-amber-50/70 p-4 rounded-2xl border border-amber-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <form id="ex-form" onsubmit="saveExchange(event)" class="hidden bg-amber-50/80 p-4 rounded-2xl border border-amber-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">تحويل من عملة</label>
-                                <select id="ex-from-curr" onchange="syncExchangeCurrencies()" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <select id="ex-from-curr" onchange="syncExchangeCurrencies()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                                     <option value="USD">دولار أمريكي ($)</option>
                                     <option value="SYP">ليرة سورية (ل.س)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ المصروف</label>
-                                <input type="number" step="any" min="0.01" id="ex-from-amount" required placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="number" step="any" min="0.01" id="ex-from-amount" required placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ المستلم بالعملة المقابلة</label>
-                                <input type="number" step="any" min="0.01" id="ex-to-amount" required placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="number" step="any" min="0.01" id="ex-to-amount" required placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ</label>
-                                <input type="date" id="ex-date" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="date" id="ex-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-extrabold text-slate-700 mb-1">ملاحظات الصرافة</label>
-                                <input type="text" id="ex-note" placeholder="مثال: تصريف بسعر 14600..." class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
+                                <input type="text" id="ex-note" placeholder="مثال: تصريف بسعر 14600..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold">
                             </div>
                             <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
                                 <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold shadow">
@@ -409,7 +472,7 @@
 
                     <!-- شريط البحث والفلترة -->
                     <div id="filter-bar-card" class="no-print bg-slate-50 rounded-2xl p-3.5 border border-slate-200 space-y-2.5">
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                             <select id="filter-type" onchange="renderWorkshopDetails()" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
                                 <option value="ALL">كل الحركات (إيرادات + مصروفات + صرافة)</option>
                                 <option value="income">الإيرادات فقط (+)</option>
@@ -447,8 +510,8 @@
                     </div>
 
                     <!-- جدول الحركات -->
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
-                        <table class="w-full text-right border-collapse">
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-xs">
+                        <table class="w-full text-right border-collapse min-w-[620px]">
                             <thead>
                                 <tr class="bg-slate-900 text-white text-xs font-extrabold">
                                     <th class="py-3 px-3">التاريخ</th>
@@ -468,75 +531,110 @@
         </div>
     </main>
 
-    <!-- نافذة إدارة المستخدمين وتغيير كلمة المرور -->
-    <div id="users-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-6">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="text-lg font-black text-slate-900">👥 إدارة المستخدمين وحساب المدير (مزامنة سحابية)</h3>
-                <button onclick="closeUsersModal()" class="text-slate-400 hover:text-slate-700 font-black text-xl">✕</button>
+    <!-- نافذة إدارة الحسابات والصلاحيات المتقدمة (عريضة ومفصلة ومتجاوبة) -->
+    <div id="users-modal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl max-h-[92vh] overflow-y-auto space-y-6 border border-slate-200 my-auto">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-black text-slate-900">👥 مركز إدارة الحسابات والصلاحيات السحابية</h3>
+                    <p class="text-xs font-bold text-slate-500 mt-0.5">التحكم الكامل بحساب المدير والمستخدمين الفرعيين وصلاحيات الوصول للورشات</p>
+                </div>
+                <button onclick="closeUsersModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-lg flex items-center justify-center transition">✕</button>
             </div>
 
-            <!-- تعديل بيانات المدير الأساسي -->
-            <form onsubmit="updateOwnerCredentials(event)" class="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-200 space-y-3">
-                <div class="text-xs font-black text-indigo-900">تحديث بيانات الدخول للمدير الأساسي (يُحفظ في السحابة فوراً):</div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم الجديد</label>
-                        <input type="text" id="owner-new-username" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور الجديدة</label>
-                        <input type="text" id="owner-new-password" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm font-bold">
-                    </div>
+            <!-- القسم الأول: حساب المدير الأساسي -->
+            <form onsubmit="updateOwnerCredentials(event)" class="bg-gradient-to-l from-indigo-50 via-white to-blue-50/70 p-4 sm:p-5 rounded-2xl border border-indigo-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs sm:text-sm font-black text-indigo-950 flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[11px]">مدير النظام المطلق</span>
+                        تحديث بيانات الدخول للمدير الأساسي
+                    </span>
                 </div>
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
-                    حفظ بيانات المدير في السحابة
-                </button>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم المستخدم للمدير</label>
+                        <input type="text" id="owner-new-username" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">كلمة المرور للمدير</label>
+                        <input type="text" id="owner-new-password" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:border-indigo-600 outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold shadow transition">
+                        💾 حفظ بيانات المدير
+                    </button>
+                </div>
             </form>
 
-            <!-- إضافة مستخدم فرعي -->
-            <form onsubmit="addSubUser(event)" class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-                <div class="text-xs font-black text-slate-800">إضافة مستخدم فرعي بصلاحيات مخصصة:</div>
+            <!-- القسم الثاني: إضافة أو تعديل مستخدم فرعي بصلاحيات دقيقة -->
+            <form onsubmit="saveSubUser(event)" class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4">
+                <input type="hidden" id="sub-edit-id">
+                <div class="flex items-center justify-between">
+                    <div id="sub-form-title" class="text-xs sm:text-sm font-black text-slate-900">➕ إنشاء حساب مستخدم فرعي جديد وتحديد صلاحياته</div>
+                    <button type="button" id="sub-cancel-edit-btn" onclick="cancelEditSubUser()" class="hidden text-xs font-extrabold text-rose-600 hover:underline">إلغاء التعديل</button>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" id="sub-username" required placeholder="اسم المستخدم" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold">
-                    <input type="text" id="sub-password" required placeholder="كلمة المرور" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold">
-                    <select id="sub-role" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold">
-                        <option value="editor">محرر (إضافة وتعديل بدون حذف عام)</option>
-                        <option value="viewer">مشاهد فقط (اطلاع وطباعة)</option>
-                    </select>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
+                        <input type="text" id="sub-username" required placeholder="مثال: ahmad" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                        <input type="text" id="sub-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">مستوى الصلاحية</label>
+                        <select id="sub-role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-bold">
+                            <option value="editor">محرر (إضافة وتعديل الحركات)</option>
+                            <option value="viewer">مشاهد فقط (اطلاع وطباعة بدون تعديل)</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <div class="text-xs font-bold text-slate-600 mb-1.5">اختر الورشات المسموح لهذا المستخدم الوصول إليها:</div>
-                    <div id="sub-user-workshops-checklist" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200 text-xs font-bold"></div>
+
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs font-extrabold text-slate-800">الورشات المسموح لهذا الحساب الوصول إليها:</span>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="toggleAllSubWorkshops(true)" class="text-[11px] font-extrabold text-indigo-600 hover:underline">تحديد الكل</button>
+                            <span class="text-slate-300">|</span>
+                            <button type="button" onclick="toggleAllSubWorkshops(false)" class="text-[11px] font-extrabold text-slate-500 hover:underline">إلغاء الكل</button>
+                        </div>
+                    </div>
+                    <div id="sub-user-workshops-checklist" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-36 overflow-y-auto pt-1 text-xs font-bold"></div>
                 </div>
-                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
-                    + إضافة المستخدم
-                </button>
+
+                <div class="flex justify-end">
+                    <button type="submit" id="sub-submit-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold shadow transition">
+                        + اعتماد وإضافة الحساب للسحابة
+                    </button>
+                </div>
             </form>
 
-            <!-- قائمة المستخدمين الفرعيين -->
-            <div>
-                <div class="text-xs font-black text-slate-700 mb-2">المستخدمون المسجلون:</div>
-                <div id="sub-users-list" class="space-y-2"></div>
+            <!-- القسم الثالث: جدول الحسابات المسجلة وتفاصيلها -->
+            <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs sm:text-sm font-black text-slate-800">📋 قائمة الحسابات المسجلة في السحابة (<span id="sub-users-count">0</span>)</h4>
+                </div>
+                <div id="sub-users-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة النسخ الاحتياطي والأرشيف -->
-    <div id="backup-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5">
+    <!-- نافذة النسخ الاحتياطي والأرشيف والحذف الكلي -->
+    <div id="backup-modal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 border border-slate-200 my-auto">
             <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="text-lg font-black text-slate-900">🗄️ النسخ الاحتياطي الكامل وأرشيف الورش</h3>
-                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-700 font-black text-xl">✕</button>
+                <h3 class="text-lg font-black text-slate-900">🗄️ النسخ الاحتياطي والأرشيف وتصفير النظام</h3>
+                <button onclick="closeBackupModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex items-center justify-center">✕</button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onclick="exportFullSystemBackup()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-2xl text-right space-y-1 shadow">
+                <button onclick="exportFullSystemBackup()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-2xl text-right space-y-1 shadow transition">
                     <div class="font-black text-sm">⬇️ نسخ احتياطي شامل</div>
                     <div class="text-[11px] opacity-90 font-bold">تنزيل كافة الورشات والمستخدمين بملف JSON</div>
                 </button>
 
-                <label class="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-2xl text-right space-y-1 shadow block">
+                <label class="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-2xl text-right space-y-1 shadow block transition">
                     <div class="font-black text-sm">⬆️ استعادة نسخة شاملة</div>
                     <div class="text-[11px] opacity-90 font-bold">رفع ملف JSON لاستعادة كافة البيانات للسحابة</div>
                     <input type="file" accept=".json" onchange="importFullSystemBackup(event)" class="hidden">
@@ -545,13 +643,29 @@
 
             <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
                 <div class="font-black text-sm text-amber-900">📦 أرشيف الورشات غير النشطة (المتوقفة)</div>
-                <p class="text-xs font-bold text-amber-800">يمكنك تصدير جميع الورشات غير النشطة في ملف واحد لحفظها، أو حذفها لتفريغ المساحة.</p>
+                <p class="text-xs font-bold text-amber-800">يمكنك تصدير جميع الورشات غير النشطة في ملف واحد لحفظها، أو حذفها لتفريغ مساحة السحابة.</p>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="exportInactiveWorkshops()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
+                    <button onclick="exportInactiveWorkshops()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition">
                         تنزيل أرشيف غير النشطة
                     </button>
-                    <button onclick="deleteInactiveWorkshops()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold">
+                    <button onclick="deleteInactiveWorkshops()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition">
                         حذف جميع غير النشطة
+                    </button>
+                </div>
+            </div>
+
+            <!-- قسم الحذف الكلي المحمي بالعد التنازلي المزدوج (10 ثواني ثم 5 ثواني) -->
+            <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="font-black text-sm text-rose-900">⚠️ منطقة الخطر: الحذف الكلي لجميع البيانات</span>
+                </div>
+                <p class="text-xs font-bold text-rose-800">سيؤدي هذا الإجراء إلى مسح كافة الورشات والحركات من السحابة نهائياً (مع الإبقاء على حساب المدير).</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btn-master-wipe" onclick="startMasterWipeSequence()" class="w-full sm:w-auto bg-rose-700 hover:bg-rose-800 text-white px-5 py-2.5 rounded-xl text-xs font-extrabold shadow transition">
+                        🗑️ حذف كلي وتصفير جميع الورشات
+                    </button>
+                    <button id="btn-cancel-master-wipe" onclick="cancelMasterWipeSequence()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-xs font-extrabold">
+                        إلغاء العملية
                     </button>
                 </div>
             </div>
@@ -580,6 +694,7 @@
         const FIRESTORE_DOC_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/workshops_system/cloud_master_v8`;
         const SESSION_USER_KEY = 'ws_cloud_active_user_v8';
         const SESSION_WS_KEY = 'ws_cloud_selected_ws_v8';
+        const CLOUD_MAX_BYTES = 1048576; // الحد الأقصى لمستند Firestore (1 ميجابايت = 1,048,576 بايت)
 
         const DEFAULT_OWNER = {
             username: 'anas',
@@ -598,6 +713,7 @@
         let isSavingCloud = false;
         let initialCloudLoaded = false;
         let wsSidebarFilter = 'ALL';
+        let masterWipeTimer = null;
 
         function setWorkshopSidebarFilter(mode) {
             wsSidebarFilter = mode;
@@ -605,9 +721,9 @@
                 const btn = document.getElementById(`ws-filter-btn-${m}`);
                 if (!btn) return;
                 if (m === mode) {
-                    btn.className = 'py-1.5 rounded-lg bg-indigo-600 text-white transition shadow-sm';
+                    btn.className = 'py-1.5 rounded-xl bg-indigo-600 text-white transition shadow-xs';
                 } else {
-                    btn.className = 'py-1.5 rounded-lg bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition';
+                    btn.className = 'py-1.5 rounded-xl bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition';
                 }
             });
             renderWorkshopsList();
@@ -630,15 +746,57 @@
             window._toastTimer = setTimeout(() => box.classList.add('hidden'), 3200);
         }
 
+        // تحديث عداد سعة السحابة المتبقية
+        function updateCloudCapacityMeter() {
+            try {
+                const jsonStr = JSON.stringify(window.appData);
+                const usedBytes = new Blob([jsonStr]).size;
+                const usedPercent = Math.min(100, (usedBytes / CLOUD_MAX_BYTES) * 100);
+                const remainingPercent = Math.max(0, 100 - usedPercent);
+                const remainingKB = Math.max(0, Math.round((CLOUD_MAX_BYTES - usedBytes) / 1024));
+
+                const textEl = document.getElementById('cloud-remaining-text');
+                const barEl = document.getElementById('cloud-capacity-bar');
+                if (textEl && barEl) {
+                    textEl.textContent = `${remainingPercent.toFixed(1)}% (${remainingKB} KB)`;
+                    barEl.style.width = `${Math.max(3, usedPercent)}%`;
+
+                    if (remainingPercent > 35) {
+                        textEl.className = 'text-emerald-400 ltr-num';
+                        barEl.className = 'h-full bg-emerald-400 rounded-full transition-all duration-500';
+                    } else if (remainingPercent > 15) {
+                        textEl.className = 'text-amber-400 ltr-num';
+                        barEl.className = 'h-full bg-amber-400 rounded-full transition-all duration-500';
+                    } else {
+                        textEl.className = 'text-rose-400 ltr-num';
+                        barEl.className = 'h-full bg-rose-500 rounded-full transition-all duration-500';
+                    }
+                }
+            } catch (e) {}
+        }
+
         function setCloudStatus(text, isOk = true) {
             const el = document.getElementById('cloud-status-badge');
-            if (!el) return;
-            if (isOk) {
-                el.className = 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ${text}`;
-            } else {
-                el.className = 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> ${text}`;
+            const loginBadge = document.getElementById('login-cloud-status-badge');
+
+            if (el) {
+                if (isOk) {
+                    el.className = 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                    el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ${text}`;
+                } else {
+                    el.className = 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                    el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> ${text}`;
+                }
+            }
+
+            if (loginBadge) {
+                if (isOk) {
+                    loginBadge.className = 'inline-flex items-center gap-2 text-xs font-extrabold px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-xs';
+                    loginBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400"></span> متصل بالسحابة وجاهز (${window.appData.workshops.length} ورشة)`;
+                } else {
+                    loginBadge.className = 'inline-flex items-center gap-2 text-xs font-extrabold px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shadow-xs';
+                    loginBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> ${text}`;
+                }
             }
         }
 
@@ -650,7 +808,6 @@
                     headers: { 'Accept': 'application/json' }
                 });
                 if (res.status === 404) {
-                    // إنشاء المستند السحابي لأول مرة
                     await pushToCloud();
                     initialCloudLoaded = true;
                     return true;
@@ -666,6 +823,7 @@
                     };
                 }
                 initialCloudLoaded = true;
+                updateCloudCapacityMeter();
                 setCloudStatus('متصل بالسحابة الموحدة 100%', true);
                 return true;
             } catch (err) {
@@ -678,6 +836,7 @@
         // حفظ كافة البيانات في السحابة الحقيقية
         async function pushToCloud() {
             isSavingCloud = true;
+            updateCloudCapacityMeter();
             setCloudStatus('جاري المزامنة مع السحابة...', false);
             try {
                 const body = {
@@ -728,7 +887,7 @@
             await fetchFromCloud();
 
             btn.disabled = false;
-            btn.textContent = 'دخول إلى النظام';
+            btn.textContent = 'تسجيل الدخول إلى النظام';
 
             if (uInput === window.appData.owner.username && pInput === window.appData.owner.password) {
                 window.currentUser = { username: uInput, role: 'owner', allowedWorkshops: 'ALL' };
@@ -739,6 +898,11 @@
 
             const sub = window.appData.subUsers.find(u => u.username === uInput && u.password === pInput);
             if (sub) {
+                if (sub.suspended) {
+                    errEl.textContent = 'تم إيقاف هذا الحساب مؤقتاً من قبل مدير النظام!';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
                 window.currentUser = {
                     username: sub.username,
                     role: sub.role,
@@ -766,6 +930,7 @@
 
             document.getElementById('tx-date').value = getTodayStr();
             document.getElementById('ex-date').value = getTodayStr();
+            updateCloudCapacityMeter();
             renderAll();
         }
 
@@ -774,6 +939,7 @@
             window.currentUser = null;
             document.getElementById('login-password').value = '';
             document.getElementById('login-screen').classList.remove('hidden');
+            fetchFromCloud();
         }
 
         // ==========================================
@@ -982,19 +1148,17 @@
             if (tab === 'tx') {
                 txForm.classList.remove('hidden');
                 exForm.classList.add('hidden');
-                btnTx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white';
-                btnEx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700';
+                btnTx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-xs';
+                btnEx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200';
             } else {
                 txForm.classList.add('hidden');
                 exForm.classList.remove('hidden');
-                btnEx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-amber-600 text-white';
-                btnTx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700';
+                btnEx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-amber-600 text-white shadow-xs';
+                btnTx.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-700 hover:bg-slate-200';
             }
         }
 
-        function syncExchangeCurrencies() {
-            // يتم التحويل تلقائياً إلى العملة المقابلة
-        }
+        function syncExchangeCurrencies() {}
 
         function previewAttachmentName(input) {
             const span = document.getElementById('tx-image-name');
@@ -1158,6 +1322,7 @@
             renderGlobalSummary();
             renderWorkshopsList();
             renderWorkshopDetails();
+            updateCloudCapacityMeter();
         }
 
         function renderGlobalSummary() {
@@ -1226,7 +1391,7 @@
                 const lastDate = txs.length > 0 ? txs[0].date : 'بدون حركات';
 
                 return `
-                    <div onclick="selectWorkshop('${w.id}')" class="cursor-pointer p-3.5 rounded-2xl border-2 transition-all ${!w.active ? 'workshop-inactive bg-slate-100 border-slate-300' : (isSelected ? 'bg-gradient-to-l from-indigo-50/90 to-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm')}">
+                    <div onclick="selectWorkshop('${w.id}')" class="cursor-pointer p-3.5 rounded-2xl border-2 transition-all ${!w.active ? 'workshop-inactive bg-slate-100 border-slate-300' : (isSelected ? 'bg-gradient-to-l from-indigo-50/95 to-white border-indigo-600 shadow-md' : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm')}">
                         <div class="flex items-start justify-between gap-2">
                             <div>
                                 <div class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-1.5">
@@ -1242,11 +1407,11 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-100">
-                            <div class="bg-emerald-50/70 rounded-xl p-2 border border-emerald-100">
+                            <div class="bg-emerald-50/80 rounded-xl p-2 border border-emerald-100">
                                 <div class="text-[10px] font-extrabold text-emerald-700">الرصيد الصافي ($)</div>
                                 <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">$ ${formatNum(usdNet)}</div>
                             </div>
-                            <div class="bg-blue-50/70 rounded-xl p-2 border border-blue-100">
+                            <div class="bg-blue-50/80 rounded-xl p-2 border border-blue-100">
                                 <div class="text-[10px] font-extrabold text-blue-700">الرصيد الصافي (ل.س)</div>
                                 <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">${formatNum(sypNet)} ل.س</div>
                             </div>
@@ -1254,13 +1419,13 @@
 
                         ${isOwner ? `
                         <div class="flex items-center justify-end gap-1.5 mt-2.5 pt-2 border-t border-slate-100" onclick="event.stopPropagation()">
-                            <button onclick="quickToggleWorkshop('${w.id}')" title="${w.active ? 'إيقاف الورشة' : 'تفعيل الورشة'}" class="px-2 py-1 rounded-lg text-[11px] font-extrabold ${w.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}">
+                            <button onclick="quickToggleWorkshop('${w.id}')" title="${w.active ? 'إيقاف الورشة' : 'تفعيل الورشة'}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${w.active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}">
                                 ${w.active ? '⏸ إيقاف' : '▶ تفعيل'}
                             </button>
-                            <button onclick="quickExportWorkshop('${w.id}')" title="تصدير ملف الورشة" class="px-2 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-700">
+                            <button onclick="quickExportWorkshop('${w.id}')" title="تصدير ملف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-slate-100 hover:bg-slate-200 text-slate-700">
                                 📤 تصدير
                             </button>
-                            <button onclick="quickDeleteWorkshop('${w.id}')" title="حذف الورشة" class="px-2 py-1 rounded-lg text-[11px] font-extrabold bg-rose-50 hover:bg-rose-100 text-rose-700">
+                            <button onclick="quickDeleteWorkshop('${w.id}')" title="حذف الورشة" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-rose-50 hover:bg-rose-100 text-rose-700">
                                 🗑️
                             </button>
                         </div>
@@ -1297,21 +1462,20 @@
 
             if (ws.active) {
                 statusBadge.textContent = '● نشطة';
-                statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800';
+                statusBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800';
                 toggleBtn.textContent = '⏸ إيقاف الورشة';
                 toggleBtn.className = 'px-3 py-2 rounded-xl text-xs font-extrabold bg-amber-100 hover:bg-amber-200 text-amber-900 transition';
                 document.getElementById('ws-locked-banner').classList.add('hidden');
                 document.getElementById('ws-forms-container').classList.toggle('hidden', !canEdit);
             } else {
                 statusBadge.textContent = '⏸ متوقفة';
-                statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700';
+                statusBadge.className = 'px-3 py-0.5 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700';
                 toggleBtn.textContent = '▶ تفعيل الورشة';
                 toggleBtn.className = 'px-3 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white transition';
                 document.getElementById('ws-locked-banner').classList.remove('hidden');
                 document.getElementById('ws-forms-container').classList.add('hidden');
             }
 
-            // حساب الصناديق
             let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
             const categoriesSet = new Set();
 
@@ -1335,14 +1499,12 @@
             document.getElementById('ws-syp-in').textContent = `${formatNum(sypIn)} ل.س`;
             document.getElementById('ws-syp-out').textContent = `${formatNum(sypOut)} ل.س`;
 
-            // تحديث قائمة فلتر البنود
             const catSelect = document.getElementById('filter-category');
             const prevCat = catSelect.value;
             catSelect.innerHTML = `<option value="ALL">كل البنود والتصنيفات</option>` +
                 Array.from(categoriesSet).map(c => `<option value="${c}">${c}</option>`).join('');
             if (Array.from(categoriesSet).includes(prevCat)) catSelect.value = prevCat;
 
-            // فلترة الحركات
             const fType = document.getElementById('filter-type').value;
             const fCat = document.getElementById('filter-category').value;
             const fCurr = document.getElementById('filter-currency').value;
@@ -1454,26 +1616,37 @@
         }
 
         // ==========================================
-        // إدارة المستخدمين والنسخ الاحتياطي
+        // إدارة الحسابات والصلاحيات المتقدمة
         // ==========================================
         function openUsersModal() {
             document.getElementById('owner-new-username').value = window.appData.owner.username;
             document.getElementById('owner-new-password').value = window.appData.owner.password;
-
-            const checklist = document.getElementById('sub-user-workshops-checklist');
-            checklist.innerHTML = window.appData.workshops.map(w => `
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" value="${w.id}" class="sub-ws-checkbox rounded text-indigo-600">
-                    <span class="truncate">${w.name}</span>
-                </label>
-            `).join('') || '<span class="text-slate-400">لا توجد ورشات</span>';
-
+            cancelEditSubUser();
+            renderSubUsersWorkshopsChecklist([]);
             renderSubUsersList();
             document.getElementById('users-modal').classList.remove('hidden');
         }
 
         function closeUsersModal() {
             document.getElementById('users-modal').classList.add('hidden');
+        }
+
+        function renderSubUsersWorkshopsChecklist(selectedIds = []) {
+            const checklist = document.getElementById('sub-user-workshops-checklist');
+            if (!window.appData.workshops.length) {
+                checklist.innerHTML = '<span class="text-slate-400 col-span-full">لا توجد ورشات مسجلة حالياً</span>';
+                return;
+            }
+            checklist.innerHTML = window.appData.workshops.map(w => `
+                <label class="flex items-center gap-2 cursor-pointer p-1.5 rounded-lg hover:bg-slate-50 border border-slate-100">
+                    <input type="checkbox" value="${w.id}" ${selectedIds.includes(w.id) ? 'checked' : ''} class="sub-ws-checkbox rounded text-indigo-600">
+                    <span class="truncate text-slate-800">${w.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function toggleAllSubWorkshops(checkedState) {
+            document.querySelectorAll('.sub-ws-checkbox').forEach(cb => cb.checked = checkedState);
         }
 
         async function updateOwnerCredentials(e) {
@@ -1489,61 +1662,230 @@
             document.getElementById('current-user-badge').textContent = `| 👤 ${newU} (مدير النظام)`;
 
             await pushToCloud();
-            showToast('تم تحديث اسم المستخدم وكلمة المرور في السحابة بنجاح');
+            showToast('تم تحديث اسم المستخدم وكلمة المرور للمدير في السحابة');
         }
 
-        async function addSubUser(e) {
+        async function saveSubUser(e) {
             e.preventDefault();
+            const editId = document.getElementById('sub-edit-id').value;
             const u = document.getElementById('sub-username').value.trim();
             const p = document.getElementById('sub-password').value.trim();
             const role = document.getElementById('sub-role').value;
             const checked = Array.from(document.querySelectorAll('.sub-ws-checkbox:checked')).map(cb => cb.value);
 
             if (!u || !p) return;
-            window.appData.subUsers.push({
-                id: 'usr_' + Date.now(),
-                username: u,
-                password: p,
-                role,
-                allowedWorkshops: checked
-            });
-            e.target.reset();
+
+            if (editId) {
+                const idx = window.appData.subUsers.findIndex(item => item.id === editId);
+                if (idx !== -1) {
+                    window.appData.subUsers[idx] = {
+                        ...window.appData.subUsers[idx],
+                        username: u,
+                        password: p,
+                        role,
+                        allowedWorkshops: checked
+                    };
+                }
+                cancelEditSubUser();
+                showToast('تم تحديث بيانات وصلاحيات الحساب في السحابة');
+            } else {
+                if (u === window.appData.owner.username || window.appData.subUsers.some(x => x.username === u)) {
+                    showToast('⚠️ اسم المستخدم هذا مستخدم مسبقاً!');
+                    return;
+                }
+                window.appData.subUsers.push({
+                    id: 'usr_' + Date.now(),
+                    username: u,
+                    password: p,
+                    role,
+                    suspended: false,
+                    allowedWorkshops: checked
+                });
+                e.target.reset();
+                renderSubUsersWorkshopsChecklist([]);
+                showToast('تم إضافة الحساب ومزامنته سحابياً');
+            }
+
             renderSubUsersList();
             await pushToCloud();
-            showToast('تم إضافة المستخدم ومزامنته سحابياً');
+        }
+
+        function editSubUser(id) {
+            const user = window.appData.subUsers.find(u => u.id === id);
+            if (!user) return;
+            document.getElementById('sub-edit-id').value = user.id;
+            document.getElementById('sub-username').value = user.username;
+            document.getElementById('sub-password').value = user.password;
+            document.getElementById('sub-role').value = user.role;
+            renderSubUsersWorkshopsChecklist(user.allowedWorkshops || []);
+
+            document.getElementById('sub-form-title').textContent = `✏️ تعديل صلاحيات الحساب: ${user.username}`;
+            document.getElementById('sub-submit-btn').textContent = '💾 حفظ التعديلات';
+            document.getElementById('sub-cancel-edit-btn').classList.remove('hidden');
+        }
+
+        function cancelEditSubUser() {
+            document.getElementById('sub-edit-id').value = '';
+            document.getElementById('sub-username').value = '';
+            document.getElementById('sub-password').value = '';
+            document.getElementById('sub-role').value = 'editor';
+            renderSubUsersWorkshopsChecklist([]);
+            document.getElementById('sub-form-title').textContent = '➕ إنشاء حساب مستخدم فرعي جديد وتحديد صلاحياته';
+            document.getElementById('sub-submit-btn').textContent = '+ اعتماد وإضافة الحساب للسحابة';
+            document.getElementById('sub-cancel-edit-btn').classList.add('hidden');
+        }
+
+        async function toggleSubUserSuspend(id) {
+            const user = window.appData.subUsers.find(u => u.id === id);
+            if (!user) return;
+            user.suspended = !user.suspended;
+            renderSubUsersList();
+            await pushToCloud();
+            showToast(user.suspended ? `تم تجميد حساب "${user.username}"` : `تم تفعيل حساب "${user.username}"`);
         }
 
         async function deleteSubUser(id) {
+            if (!confirm('هل تريد حذف هذا الحساب نهائياً؟')) return;
             window.appData.subUsers = window.appData.subUsers.filter(u => u.id !== id);
             renderSubUsersList();
             await pushToCloud();
-            showToast('تم حذف المستخدم');
+            showToast('تم حذف الحساب نهائياً');
         }
 
         function renderSubUsersList() {
             const container = document.getElementById('sub-users-list');
+            const countEl = document.getElementById('sub-users-count');
+            if (countEl) countEl.textContent = window.appData.subUsers.length;
+
             if (!window.appData.subUsers.length) {
-                container.innerHTML = `<div class="text-xs text-slate-400 font-bold">لا يوجد مستخدمون فرعيون حالياً</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-300 text-xs text-slate-400 font-bold">لا توجد حسابات فرعية مسجلة حالياً</div>`;
                 return;
             }
-            container.innerHTML = window.appData.subUsers.map(u => `
-                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-bold">
-                    <div>
-                        <span class="font-black text-slate-900">${u.username}</span>
-                        <span class="text-slate-500 mx-2">(${u.role === 'editor' ? 'محرر' : 'مشاهد'})</span>
-                        <span class="text-indigo-600">الورشات المسموحة: ${(u.allowedWorkshops || []).length}</span>
+
+            container.innerHTML = window.appData.subUsers.map(u => {
+                const wsNames = (u.allowedWorkshops || [])
+                    .map(wid => window.appData.workshops.find(w => w.id === wid)?.name)
+                    .filter(Boolean);
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl border ${u.suspended ? 'border-rose-200 bg-rose-50/30 opacity-80' : 'border-slate-200'} shadow-xs space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="font-black text-slate-900 text-sm flex items-center gap-1.5">
+                                    <span>👤 ${u.username}</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${u.role === 'editor' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-700'}">
+                                        ${u.role === 'editor' ? 'محرر' : 'مشاهد'}
+                                    </span>
+                                </div>
+                                <div class="text-[11px] font-bold text-slate-500 mt-0.5">
+                                    كلمة المرور: <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-800">${u.password}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${u.suspended ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+                                ${u.suspended ? 'مجمّد' : 'نشط'}
+                            </span>
+                        </div>
+
+                        <div class="text-[11px] font-bold text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span class="text-slate-400">الورشات المسموحة (${wsNames.length}):</span>
+                            <div class="text-slate-800 mt-0.5 line-clamp-2">${wsNames.length ? wsNames.join(' ، ') : 'لا توجد ورشات محددة'}</div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-end gap-1.5 pt-1 border-t border-slate-100">
+                            <button onclick="editSubUser('${u.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-extrabold">✏️ تعديل</button>
+                            <button onclick="toggleSubUserSuspend('${u.id}')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-extrabold">
+                                ${u.suspended ? '▶ تفعيل' : '⏸ تجميد'}
+                            </button>
+                            <button onclick="deleteSubUser('${u.id}')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-extrabold">🗑️ حذف</button>
+                        </div>
                     </div>
-                    <button onclick="deleteSubUser('${u.id}')" class="text-rose-600 hover:underline font-extrabold">حذف</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
+        // ==========================================
+        // النسخ الاحتياطي وزر الحذف الكلي بالعد التنازلي (10 ثواني ثم 5 ثواني)
+        // ==========================================
         function openBackupModal() {
+            cancelMasterWipeSequence();
             document.getElementById('backup-modal').classList.remove('hidden');
         }
 
         function closeBackupModal() {
+            cancelMasterWipeSequence();
             document.getElementById('backup-modal').classList.add('hidden');
+        }
+
+        function startMasterWipeSequence() {
+            if (!window.currentUser || window.currentUser.role !== 'owner') return;
+            const btn = document.getElementById('btn-master-wipe');
+            const cancelBtn = document.getElementById('btn-cancel-master-wipe');
+            if (btn.disabled) return;
+
+            btn.disabled = true;
+            cancelBtn.classList.remove('hidden');
+
+            let count1 = 10;
+            btn.textContent = `⏳ يرجى الانتظار (${count1}) ثوانٍ للتأكيد الأول...`;
+
+            masterWipeTimer = setInterval(() => {
+                count1--;
+                if (count1 > 0) {
+                    btn.textContent = `⏳ يرجى الانتظار (${count1}) ثوانٍ للتأكيد الأول...`;
+                } else {
+                    clearInterval(masterWipeTimer);
+                    const confirm1 = confirm('⚠️ رسالة التأكيد الأولى:\nهل أنت متأكد من رغبتك في حذف جميع الورشات والحركات من السحابة؟');
+                    if (!confirm1) {
+                        cancelMasterWipeSequence();
+                        showToast('تم إلغاء عملية الحذف الكلي');
+                        return;
+                    }
+
+                    // المرحلة الثانية: عد تنازلي 5 ثواني
+                    let count2 = 5;
+                    btn.textContent = `⏳ تأكيد نهائي خلال (${count2}) ثوانٍ...`;
+                    masterWipeTimer = setInterval(async () => {
+                        count2--;
+                        if (count2 > 0) {
+                            btn.textContent = `⏳ تأكيد نهائي خلال (${count2}) ثوانٍ...`;
+                        } else {
+                            clearInterval(masterWipeTimer);
+                            const confirm2 = confirm('🚨 رسالة التأكيد الثانية والأخيرة:\nسيتم الآن تصفير السحابة ومسح جميع الورشات نهائياً. هل تؤكد التنفيذ؟');
+                            if (!confirm2) {
+                                cancelMasterWipeSequence();
+                                showToast('تم إلغاء عملية الحذف الكلي');
+                                return;
+                            }
+
+                            // تنفيذ الحذف الكلي للورشات
+                            window.appData.workshops = [];
+                            selectedWorkshopId = null;
+                            sessionStorage.removeItem(SESSION_WS_KEY);
+                            cancelMasterWipeSequence();
+                            renderAll();
+                            await pushToCloud();
+                            closeBackupModal();
+                            showToast('تم تنفيذ الحذف الكلي وتصفير الورشات من السحابة بنجاح');
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function cancelMasterWipeSequence() {
+            if (masterWipeTimer) {
+                clearInterval(masterWipeTimer);
+                masterWipeTimer = null;
+            }
+            const btn = document.getElementById('btn-master-wipe');
+            const cancelBtn = document.getElementById('btn-cancel-master-wipe');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🗑️ حذف كلي وتصفير جميع الورشات';
+            }
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
         }
 
         function downloadJsonFile(dataObj, filename) {
@@ -1681,10 +2023,10 @@
 
             // مزامنة تلقائية كل 6 ثوانٍ لضمان تطابق جميع الأجهزة
             setInterval(async () => {
-                if (window.currentUser && !isSavingCloud) {
+                if (!isSavingCloud) {
                     const prevJson = JSON.stringify(window.appData);
                     const ok = await fetchFromCloud();
-                    if (ok && JSON.stringify(window.appData) !== prevJson) {
+                    if (ok && window.currentUser && JSON.stringify(window.appData) !== prevJson) {
                         renderAll();
                     }
                 }
