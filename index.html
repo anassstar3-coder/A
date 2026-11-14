@@ -18,11 +18,11 @@
             direction: ltr;
             display: inline-block;
             unicode-bidi: isolate;
+            font-variant-numeric: tabular-nums;
         }
-        .workshop-inactive {
-            filter: grayscale(100%);
-            opacity: 0.72;
-            transition: all 0.25s ease;
+        .workshop-card-inactive {
+            background-color: #f1f5f9 !important;
+            border-color: #94a3b8 !important;
         }
         ::-webkit-scrollbar {
             width: 6px;
@@ -38,6 +38,28 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #64748b;
         }
+
+        /* تلوين صفوف الجدول حسب نوع الحركة في الشاشة والطباعة */
+        tr.tx-row-income {
+            background-color: #ecfdf5 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        tr.tx-row-expense {
+            background-color: #fff1f2 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        tr.tx-row-exchange {
+            background-color: #fefce8 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* تنسيق رسمي للطباعة وتصدير PDF لشركات البناء والمقاولات */
+        .official-print-header {
+            display: none;
+        }
         @media print {
             body {
                 background: #ffffff !important;
@@ -46,6 +68,10 @@
             }
             .no-print {
                 display: none !important;
+            }
+            .official-print-header {
+                display: block !important;
+                margin-bottom: 14px !important;
             }
             #app-main-layout {
                 display: block !important;
@@ -60,10 +86,6 @@
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            .workshop-inactive {
-                filter: none !important;
-                opacity: 1 !important;
-            }
             tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
@@ -74,7 +96,7 @@
                 border-collapse: collapse !important;
             }
             th, td {
-                border: 1px solid #cbd5e1 !important;
+                border: 1.5px solid #94a3b8 !important;
                 padding: 7px 6px !important;
                 font-size: 11px !important;
             }
@@ -88,20 +110,23 @@
         .pdf-export-mode .no-print {
             display: none !important;
         }
-        .pdf-export-mode .workshop-inactive {
-            filter: none !important;
-            opacity: 1 !important;
+        .pdf-export-mode .official-print-header {
+            display: block !important;
+            margin-bottom: 14px !important;
         }
         .pdf-export-mode #workshop-workspace {
             box-shadow: none !important;
             border: 1px solid #cbd5e1 !important;
-            padding: 12px !important;
+            padding: 14px !important;
+            background: #ffffff !important;
         }
         .pdf-export-mode table {
             min-width: 100% !important;
             width: 100% !important;
+            border-collapse: collapse !important;
         }
         .pdf-export-mode th, .pdf-export-mode td {
+            border: 1.5px solid #94a3b8 !important;
             padding: 6px 5px !important;
             font-size: 11px !important;
         }
@@ -159,7 +184,7 @@
                     <h1 class="font-black text-base sm:text-lg leading-tight tracking-tight">نظام إدارة محاسبة الورشات</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
                         <span id="cloud-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                             متصل بالسحابة الموحدة
                         </span>
                         <span id="current-user-badge" class="text-[11px] font-bold text-slate-300"></span>
@@ -167,13 +192,13 @@
                 </div>
             </div>
 
-            <!-- عداد سعة السحابة الفعلي + أزرار الإعدادات -->
+            <!-- عداد سعة السحابة الحقيقي + أزرار الإعدادات -->
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                <div class="bg-slate-800/90 border border-slate-600 px-3 py-1.5 rounded-xl flex items-center gap-2.5 min-w-[205px]" title="الحجم الحقيقي لبياناتك المخزنة في السحابة مقارنة بالسعة الكلية 1024 KB">
+                <div class="bg-slate-800/90 border border-slate-600 px-3 py-1.5 rounded-xl flex items-center gap-2.5 min-w-[215px]" title="الحجم الحقيقي لبياناتك المخزنة في السحابة مقارنة بالسعة الكلية 1024 KB">
                     <div class="flex-1">
                         <div class="flex justify-between items-center text-[10px] font-extrabold mb-1 gap-2">
                             <span class="text-slate-300">المتبقي بالسحابة:</span>
-                            <span id="cloud-remaining-text" class="text-emerald-400 ltr-num">جاري القياس...</span>
+                            <span id="cloud-remaining-text" class="text-emerald-400 ltr-num">99.9%</span>
                         </div>
                         <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <div id="cloud-capacity-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 1%"></div>
@@ -199,18 +224,23 @@
         </div>
     </header>
 
-    <!-- شريط الورشة الحالية المستقل (يثبت وحده عند النزول في الصفحة) -->
-    <div id="sticky-active-workshop-bar" class="hidden no-print sticky top-0 z-30 bg-indigo-950/95 backdrop-blur-md text-white shadow-md border-b-2 border-indigo-600/80 transition-all">
-        <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2 flex items-center justify-between gap-3">
+    <!-- شريط الورشة الحالية + إشارة الاتصال بالسحابة (يثبت وحده عند النزول في الصفحة) -->
+    <div id="sticky-active-workshop-bar" class="no-print sticky top-0 z-30 bg-indigo-950/95 backdrop-blur-md text-white shadow-md border-b-2 border-indigo-600/80 transition-all">
+        <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 shrink-0"></span>
                 <span class="text-xs font-bold text-indigo-300 shrink-0">الورشة الحالية:</span>
-                <span id="sticky-ws-name" class="text-sm sm:text-base font-black text-white truncate"></span>
-                <span id="sticky-ws-desc" class="hidden sm:inline text-xs font-bold text-indigo-200/80 truncate border-r border-indigo-700 pr-2"></span>
+                <span id="sticky-ws-name" class="text-sm sm:text-base font-black text-white truncate">لم يتم اختيار ورشة</span>
+                <span id="sticky-ws-desc" class="hidden md:inline text-xs font-bold text-indigo-200/80 truncate border-r border-indigo-700 pr-2"></span>
+                <span id="sticky-ws-status" class="hidden text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shrink-0"></span>
             </div>
+
             <div class="flex items-center gap-2 shrink-0">
-                <span id="sticky-ws-status" class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"></span>
-                <button onclick="document.getElementById('workshop-workspace').scrollIntoView({behavior:'smooth'})" class="text-[11px] font-extrabold bg-indigo-800/90 hover:bg-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-500/60 transition">
+                <span id="sticky-cloud-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    متصل بالسحابة
+                </span>
+                <button id="sticky-scroll-top-btn" onclick="document.getElementById('workshop-workspace').scrollIntoView({behavior:'smooth'})" class="hidden text-[11px] font-extrabold bg-indigo-800/90 hover:bg-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-500/60 transition">
                     ⬆️ أعلى الورشة
                 </button>
             </div>
@@ -255,7 +285,7 @@
                     <h2 class="font-black text-slate-900 text-base sm:text-lg">الورشات والمشاريع</h2>
                 </div>
                 <label id="lbl-import-single-ws" class="cursor-pointer bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-200 px-3 py-1.5 rounded-xl text-xs font-extrabold transition">
-                    📥 استيراد ورشة
+                    📥 استيراد ورشة (متوافق مع كافة الإصدارات)
                     <input type="file" accept=".json" onchange="handleSingleWorkshopImport(event)" class="hidden">
                 </label>
             </div>
@@ -289,7 +319,7 @@
 
             <!-- بطاقة معاينة الورشة المستوردة -->
             <div id="pending-import-card" class="hidden p-4 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-500">
-                <div class="text-xs font-black text-slate-700 mb-1">معاينة ورشة مستوردة:</div>
+                <div class="text-xs font-black text-slate-700 mb-1">معاينة ورشة مستوردة (تمت تهيئتها وتحديث بنيتها تلقائياً):</div>
                 <div id="pending-import-name" class="text-sm font-black text-slate-900"></div>
                 <div id="pending-import-stats" class="text-xs font-bold text-slate-600 mt-1"></div>
                 <div class="flex flex-wrap gap-2 mt-3">
@@ -315,19 +345,39 @@
             </div>
 
             <div id="workshop-details-content" class="hidden space-y-5">
-                <!-- ترويسة الورشة -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-4">
+
+                <!-- الترويسة الرسمية لشركات البناء والمقاولات (تظهر حصراً عند الطباعة وتصدير PDF) -->
+                <div class="official-print-header border-2 border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="bg-slate-900 text-white px-5 py-3 flex items-center justify-between" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                        <div>
+                            <div class="text-lg font-black tracking-wide">كشف حساب ومستخلص أعمال ورشة / مشروع</div>
+                            <div class="text-xs text-slate-300 font-bold mt-0.5">إدارة المشاريع الهندسية والمقاولات العامة - السجل المالي المعتمد</div>
+                        </div>
+                        <div class="text-left text-xs font-bold">
+                            <div>تاريخ الإصدار: <span id="print-issue-date" class="ltr-num font-black"></span></div>
+                            <div class="mt-0.5">رقم المرجع: <span id="print-ref-code" class="ltr-num font-black"></span></div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-5 py-2.5 border-t border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-slate-800">
+                        <div>اسم المشروع / الورشة: <span id="print-ws-name" class="text-indigo-900 font-black text-sm"></span></div>
+                        <div id="print-ws-desc-wrap" class="hidden">الموقع / الوصف: <span id="print-ws-desc" class="text-slate-700"></span></div>
+                        <div>نطاق التقرير: <span id="print-scope-label" class="text-slate-700"></span></div>
+                    </div>
+                </div>
+
+                <!-- ترويسة الورشة في واجهة الشاشة -->
+                <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-4">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <h2 id="ws-title" class="text-xl sm:text-2xl font-black text-slate-900"></h2>
-                            <button onclick="renameCurrentWorkshop()" id="btn-rename-ws" title="تعديل اسم ووصف الورشة" class="no-print text-slate-500 hover:text-indigo-600 p-1 rounded-lg transition text-sm">✏️</button>
+                            <button onclick="renameCurrentWorkshop()" id="btn-rename-ws" title="تعديل اسم ووصف الورشة" class="text-slate-500 hover:text-indigo-600 p-1 rounded-lg transition text-sm">✏️</button>
                             <span id="ws-status-badge" class="px-3 py-0.5 rounded-full text-xs font-extrabold"></span>
                         </div>
                         <p id="ws-description-display" class="text-xs sm:text-sm font-bold text-indigo-700 mt-1 hidden"></p>
                         <p id="print-filter-subtitle" class="text-xs font-bold text-slate-500 mt-1">كشف شامل | البند: الكل | العملة: الكل</p>
                     </div>
 
-                    <div class="no-print flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <button onclick="toggleWorkshopActive()" id="btn-toggle-active" class="px-3 py-2 rounded-xl text-xs font-extrabold transition"></button>
                         <button id="btn-manage-categories" onclick="openCategoriesModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border-2 border-indigo-200 px-3 py-2 rounded-xl text-xs font-extrabold transition">
                             🏷️ إدارة التصنيفات
@@ -350,9 +400,9 @@
                     </div>
                 </div>
 
-                <!-- صناديق الورشة (الدولار والسوري) -->
+                <!-- صناديق الورشة (تبقى ملونة دائماً حتى لو كانت الورشة متوقفة) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/30 rounded-2xl p-4 border-2 border-emerald-300 shadow-xs">
+                    <div class="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/30 rounded-2xl p-4 border-2 border-emerald-400 shadow-xs" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
                         <div class="flex items-center justify-between">
                             <span class="bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">صندوق الدولار الأمريكي</span>
                             <span class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center">$</span>
@@ -364,7 +414,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-2xl p-4 border-2 border-blue-300 shadow-xs">
+                    <div class="bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-2xl p-4 border-2 border-blue-400 shadow-xs" style="-webkit-print-color-adjust:exact; print-color-adjust:exact;">
                         <div class="flex items-center justify-between">
                             <span class="bg-blue-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">صندوق الليرة السورية</span>
                             <span class="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 font-black text-xs flex items-center justify-center">ل.س</span>
@@ -437,22 +487,31 @@
                     </div>
                 </div>
 
-                <!-- جدول الحركات بإطار غامق -->
-                <div class="overflow-x-auto rounded-2xl border-2 border-slate-300 shadow-xs">
+                <!-- جدول الحركات بإطار غامق وصفوف ملونة وفواصل واضحة -->
+                <div class="overflow-x-auto rounded-2xl border-2 border-slate-400 shadow-xs">
                     <table class="w-full text-right border-collapse min-w-[620px]">
                         <thead>
                             <tr class="bg-slate-900 text-white text-xs font-extrabold">
-                                <th class="py-3 px-3">التاريخ</th>
-                                <th class="py-3 px-3">النوع</th>
-                                <th class="py-3 px-3">البند / التصنيف</th>
-                                <th class="py-3 px-3">البيان / الوصف</th>
-                                <th class="py-3 px-3">المبلغ والعملة</th>
-                                <th class="py-3 px-3 no-print text-center">مرفق</th>
+                                <th class="py-3 px-3 border-l border-slate-700">التاريخ</th>
+                                <th class="py-3 px-3 border-l border-slate-700">النوع</th>
+                                <th class="py-3 px-3 border-l border-slate-700">البند / التصنيف</th>
+                                <th class="py-3 px-3 border-l border-slate-700">البيان / الوصف</th>
+                                <th class="py-3 px-3 border-l border-slate-700">المبلغ والعملة</th>
+                                <th class="py-3 px-3 no-print text-center border-l border-slate-700">مرفق</th>
                                 <th class="py-3 px-3 no-print text-center">إجراء</th>
                             </tr>
                         </thead>
-                        <tbody id="transactions-tbody" class="divide-y divide-slate-200 text-xs sm:text-sm font-bold bg-white"></tbody>
+                        <tbody id="transactions-tbody" class="divide-y-2 divide-slate-300 text-xs sm:text-sm font-bold bg-white"></tbody>
                     </table>
+                </div>
+
+                <!-- تذييل التوقيعات الرسمي للطباعة وتصدير PDF -->
+                <div class="official-print-header pt-6 mt-4 border-t-2 border-slate-300">
+                    <div class="grid grid-cols-3 gap-4 text-center text-xs font-extrabold text-slate-700">
+                        <div>توقيع المحاسب المسؤول<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                        <div>توقيع مهندس / مدير الورشة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                        <div>اعتماد الإدارة العامة<br><span class="text-slate-400 font-normal mt-4 block">..................................</span></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -487,8 +546,8 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ</label>
-                        <input type="number" step="any" min="0.01" id="tx-amount" required placeholder="0.00" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-black focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ (مع فواصل الآلاف)</label>
+                        <input type="text" inputmode="decimal" id="tx-amount" oninput="formatNumericInputLive(this)" required placeholder="0.00" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-base font-black ltr-num focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">العملة</label>
@@ -598,7 +657,7 @@
                             </span>
                             <span id="ex-usd-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">المصروف (-)</span>
                         </div>
-                        <input type="number" step="any" min="0.01" id="ex-usd-amount" required oninput="onExchangeInputChange('USD')" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
+                        <input type="text" inputmode="decimal" id="ex-usd-amount" required oninput="formatNumericInputLive(this); onExchangeInputChange('USD')" placeholder="0.00" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
                     </div>
 
                     <div class="sm:col-span-1 flex justify-center">
@@ -615,14 +674,14 @@
                             </span>
                             <span id="ex-syp-role-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">المستلم (+)</span>
                         </div>
-                        <input type="number" step="any" min="0.01" id="ex-syp-amount" required oninput="onExchangeInputChange('SYP')" placeholder="0" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
+                        <input type="text" inputmode="decimal" id="ex-syp-amount" required oninput="formatNumericInputLive(this); onExchangeInputChange('SYP')" placeholder="0" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-base font-black text-slate-900 ltr-num outline-none focus:border-indigo-600">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">سعر الصرف (قيمة 1$ بالليرة السورية)</label>
-                        <input type="number" step="any" min="0.01" id="ex-rate" oninput="onExchangeInputChange('RATE')" placeholder="مثال: 14500" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm font-black ltr-num outline-none focus:border-amber-500">
+                        <input type="text" inputmode="decimal" id="ex-rate" oninput="formatNumericInputLive(this); onExchangeInputChange('RATE')" placeholder="مثال: 14,500" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm font-black ltr-num outline-none focus:border-amber-500">
                     </div>
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ</label>
@@ -824,6 +883,7 @@
         const SESSION_USER_KEY = 'ws_cloud_active_user_v8';
         const SESSION_WS_KEY = 'ws_cloud_selected_ws_v8';
         const CLOUD_MAX_BYTES = 1048576; // 1024 KB
+        const CURRENT_SCHEMA_VERSION = 2;
 
         const DEFAULT_OWNER = {
             username: 'anas',
@@ -831,6 +891,7 @@
         };
 
         window.appData = {
+            schemaVersion: CURRENT_SCHEMA_VERSION,
             owner: { ...DEFAULT_OWNER },
             subUsers: [],
             workshops: []
@@ -840,12 +901,106 @@
         let selectedWorkshopId = sessionStorage.getItem(SESSION_WS_KEY) || null;
         let pendingImportedWorkshop = null;
         let isSavingCloud = false;
-        let initialCloudLoaded = false;
+        let isFetchingCloud = false;
+        let lastCloudPayloadSnapshot = '';
         let wsSidebarFilter = 'ALL';
         let masterWipeTimer = null;
         let actualPayloadBytesFromCloud = null;
         let isPrintSortAscending = false;
         let exchangeFromCurrency = 'USD';
+
+        // ==========================================
+        // دوال تنسيق الأرقام بفواصل الآلاف (كل 3 أرقام)
+        // ==========================================
+        function formatNum(num) {
+            const n = Number(num) || 0;
+            return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+
+        function parseFormattedNumber(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            const cleaned = String(val).replace(/,/g, '').trim();
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatNumericInputLive(inputEl) {
+            if (!inputEl) return;
+            let raw = inputEl.value.replace(/[^\d.]/g, '');
+            const parts = raw.split('.');
+            if (parts.length > 2) {
+                raw = parts[0] + '.' + parts.slice(1).join('');
+            }
+            if (!raw) {
+                inputEl.value = '';
+                return;
+            }
+            const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            inputEl.value = parts.length > 1 ? `${intPart}.${parts[1]}` : intPart;
+        }
+
+        // ==========================================
+        // دالة التوافق الدائم والمستقبلي لهيكل بيانات الورشات
+        // ==========================================
+        function normalizeWorkshopData(ws) {
+            if (!ws || typeof ws !== 'object') return null;
+
+            const normalizedTxs = Array.isArray(ws.transactions) ? ws.transactions.map((tx, idx) => {
+                const baseTx = {
+                    id: tx.id || ('tx_migrated_' + Date.now() + '_' + idx),
+                    type: ['income', 'expense', 'exchange'].includes(tx.type) ? tx.type : 'expense',
+                    category: (tx.category && String(tx.category).trim()) ? String(tx.category).trim() : 'عام',
+                    date: tx.date || getTodayStr(),
+                    note: tx.note || tx.description || '',
+                    image: tx.image || null
+                };
+
+                if (baseTx.type === 'exchange') {
+                    const fromCurr = tx.fromCurrency === 'SYP' ? 'SYP' : 'USD';
+                    const toCurr = fromCurr === 'USD' ? 'SYP' : 'USD';
+                    const fromAmt = Number(tx.fromAmount) || 0;
+                    const toAmt = Number(tx.toAmount) || 0;
+                    const usdVal = fromCurr === 'USD' ? fromAmt : toAmt;
+                    const sypVal = fromCurr === 'SYP' ? fromAmt : toAmt;
+                    return {
+                        ...baseTx,
+                        category: 'صرافة',
+                        fromCurrency: fromCurr,
+                        toCurrency: toCurr,
+                        fromAmount: fromAmt,
+                        toAmount: toAmt,
+                        rate: Number(tx.rate) || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : 0)
+                    };
+                } else {
+                    return {
+                        ...baseTx,
+                        amount: Number(tx.amount) || 0,
+                        currency: tx.currency === 'SYP' ? 'SYP' : 'USD'
+                    };
+                }
+            }) : [];
+
+            const catsSet = new Set(['عام']);
+            if (Array.isArray(ws.categories)) {
+                ws.categories.forEach(c => {
+                    if (c && String(c).trim() && c !== 'صرافة') catsSet.add(String(c).trim());
+                });
+            }
+            normalizedTxs.forEach(tx => {
+                if (tx.category && tx.category !== 'صرافة') catsSet.add(tx.category);
+            });
+
+            return {
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                id: ws.id || ('ws_' + Date.now()),
+                name: (ws.name && String(ws.name).trim()) ? String(ws.name).trim() : 'ورشة مستوردة',
+                description: ws.description ? String(ws.description).trim() : '',
+                active: ws.active !== undefined ? Boolean(ws.active) : true,
+                categories: Array.from(catsSet),
+                transactions: normalizedTxs
+            };
+        }
 
         function ensureWorkshopCategories(ws) {
             if (!ws) return ['عام'];
@@ -889,11 +1044,6 @@
             renderWorkshopsList();
         }
 
-        function formatNum(num) {
-            const n = Number(num) || 0;
-            return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
-        }
-
         function getTodayStr() {
             return new Date().toISOString().split('T')[0];
         }
@@ -906,7 +1056,7 @@
             window._toastTimer = setTimeout(() => box.classList.add('hidden'), 3200);
         }
 
-        // قياس حجم البيانات الفعلية المخزنة في السحابة (UTF-8 Bytes للحمولة الفعلية)
+        // قياس سعة السحابة الحقيقي الصافي (UTF-8 Bytes)
         function updateCloudCapacityMeter() {
             try {
                 const payloadString = JSON.stringify(window.appData);
@@ -916,7 +1066,7 @@
 
                 const usedPercent = Math.min(100, (usedBytes / CLOUD_MAX_BYTES) * 100);
                 const remainingPercent = Math.max(0, 100 - usedPercent);
-                const usedKB = (usedBytes / 1024).toFixed(2);
+                const usedKB = (usedBytes / 1024).toFixed(1);
                 const totalKB = Math.round(CLOUD_MAX_BYTES / 1024);
 
                 const textEl = document.getElementById('cloud-remaining-text');
@@ -942,6 +1092,7 @@
         function setCloudStatus(text, isOk = true) {
             const el = document.getElementById('cloud-status-badge');
             const loginBadge = document.getElementById('login-cloud-status-badge');
+            const stickyBadge = document.getElementById('sticky-cloud-status-badge');
 
             if (el) {
                 if (isOk) {
@@ -950,6 +1101,16 @@
                 } else {
                     el.className = 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
                     el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> ${text}`;
+                }
+            }
+
+            if (stickyBadge) {
+                if (isOk) {
+                    stickyBadge.className = 'inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                    stickyBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> متصل بالسحابة`;
+                } else {
+                    stickyBadge.className = 'inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                    stickyBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> جاري المزامنة...`;
                 }
             }
 
@@ -964,7 +1125,20 @@
             }
         }
 
-        async function fetchFromCloud() {
+        function isAnyModalOrInputActive() {
+            const modals = ['tx-modal', 'categories-modal', 'exchange-modal', 'users-modal', 'backup-modal', 'image-preview-modal'];
+            for (const id of modals) {
+                const m = document.getElementById(id);
+                if (m && !m.classList.contains('hidden')) return true;
+            }
+            const activeTag = document.activeElement ? document.activeElement.tagName : '';
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return true;
+            return false;
+        }
+
+        async function fetchFromCloud(isBackgroundPoll = false) {
+            if (isFetchingCloud || isSavingCloud) return false;
+            isFetchingCloud = true;
             try {
                 const res = await fetch(`${FIRESTORE_DOC_URL}?t=${Date.now()}`, {
                     method: 'GET',
@@ -972,7 +1146,6 @@
                 });
                 if (res.status === 404) {
                     await pushToCloud();
-                    initialCloudLoaded = true;
                     return true;
                 }
                 if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -982,21 +1155,33 @@
                     const rawPayload = doc.fields.payload.stringValue;
                     actualPayloadBytesFromCloud = new TextEncoder().encode(rawPayload).length;
 
-                    const parsed = JSON.parse(rawPayload);
-                    window.appData = {
-                        owner: (parsed.owner && parsed.owner.username) ? parsed.owner : { ...DEFAULT_OWNER },
-                        subUsers: Array.isArray(parsed.subUsers) ? parsed.subUsers : [],
-                        workshops: Array.isArray(parsed.workshops) ? parsed.workshops : []
-                    };
+                    if (rawPayload !== lastCloudPayloadSnapshot) {
+                        const parsed = JSON.parse(rawPayload);
+                        const normalizedWorkshops = Array.isArray(parsed.workshops)
+                            ? parsed.workshops.map(normalizeWorkshopData).filter(Boolean)
+                            : [];
+
+                        window.appData = {
+                            schemaVersion: CURRENT_SCHEMA_VERSION,
+                            owner: (parsed.owner && parsed.owner.username) ? parsed.owner : { ...DEFAULT_OWNER },
+                            subUsers: Array.isArray(parsed.subUsers) ? parsed.subUsers : [],
+                            workshops: normalizedWorkshops
+                        };
+                        lastCloudPayloadSnapshot = JSON.stringify(window.appData);
+                        updateCloudCapacityMeter();
+                        setCloudStatus('متصل بالسحابة الموحدة 100%', true);
+                        return 'CHANGED';
+                    }
                 }
-                initialCloudLoaded = true;
                 updateCloudCapacityMeter();
-                setCloudStatus('متصل بالسحابة الموحدة 100%', true);
-                return true;
+                if (!isBackgroundPoll) setCloudStatus('متصل بالسحابة الموحدة 100%', true);
+                return 'UNCHANGED';
             } catch (err) {
                 console.error('Cloud fetch error:', err);
-                setCloudStatus('جاري إعادة الاتصال بالسحابة...', false);
+                if (!isBackgroundPoll) setCloudStatus('جاري إعادة الاتصال بالسحابة...', false);
                 return false;
+            } finally {
+                isFetchingCloud = false;
             }
         }
 
@@ -1004,7 +1189,12 @@
             isSavingCloud = true;
             setCloudStatus('جاري المزامنة مع السحابة...', false);
             try {
+                window.appData.schemaVersion = CURRENT_SCHEMA_VERSION;
                 const payloadStr = JSON.stringify(window.appData);
+                lastCloudPayloadSnapshot = payloadStr;
+                actualPayloadBytesFromCloud = new TextEncoder().encode(payloadStr).length;
+                updateCloudCapacityMeter();
+
                 const body = {
                     fields: {
                         payload: { stringValue: payloadStr },
@@ -1018,14 +1208,6 @@
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
 
-                const doc = await res.json();
-                if (doc && doc.fields && doc.fields.payload && doc.fields.payload.stringValue) {
-                    actualPayloadBytesFromCloud = new TextEncoder().encode(doc.fields.payload.stringValue).length;
-                } else {
-                    actualPayloadBytesFromCloud = new TextEncoder().encode(payloadStr).length;
-                }
-                updateCloudCapacityMeter();
-
                 setCloudStatus('تم الحفظ في السحابة الموحدة ✓', true);
             } catch (err) {
                 console.error('Cloud push error:', err);
@@ -1038,8 +1220,9 @@
 
         async function forceCloudRefresh() {
             setCloudStatus('جاري تحديث البيانات من السحابة...', false);
-            const ok = await fetchFromCloud();
-            if (ok) {
+            lastCloudPayloadSnapshot = '';
+            const res = await fetchFromCloud(false);
+            if (res) {
                 if (window.currentUser && window.currentUser.role !== 'owner') {
                     const freshSub = window.appData.subUsers.find(u => u.username === window.currentUser.username);
                     if (!freshSub || freshSub.suspended) {
@@ -1070,7 +1253,7 @@
             btn.disabled = true;
             btn.textContent = 'جاري التحقق من السحابة...';
 
-            await fetchFromCloud();
+            await fetchFromCloud(false);
 
             btn.disabled = false;
             btn.textContent = 'تسجيل الدخول إلى النظام';
@@ -1130,8 +1313,7 @@
             window.currentUser = null;
             document.getElementById('login-password').value = '';
             document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('sticky-active-workshop-bar').classList.add('hidden');
-            fetchFromCloud();
+            fetchFromCloud(false);
         }
 
         // ==========================================
@@ -1154,6 +1336,7 @@
             if (!name) return;
 
             const newWs = {
+                schemaVersion: CURRENT_SCHEMA_VERSION,
                 id: 'ws_' + Date.now(),
                 name,
                 description,
@@ -1228,8 +1411,14 @@
             if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === id);
             if (!ws) return;
-            downloadJsonFile({ singleWorkshop: ws }, `workshop_${ws.name}_${getTodayStr()}.json`);
-            showToast(`تم تصدير ملف ورشة "${ws.name}"`);
+            const normalized = normalizeWorkshopData(ws);
+            downloadJsonFile({
+                format: 'workshops_accounting_backup',
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                exportedAt: new Date().toISOString(),
+                singleWorkshop: normalized
+            }, `workshop_${ws.name}_${getTodayStr()}.json`);
+            showToast(`تم تصدير ملف ورشة "${ws.name}" بصيغة متوافقة`);
         }
 
         function quickDeleteWorkshop(id) {
@@ -1390,7 +1579,7 @@
         }
 
         // ==========================================
-        // تصدير Excel منسق بالكامل (HTML Table XLS مع دعم العربية والألوان)
+        // تصدير Excel مزوّد بدوال ومعادلات Excel حقيقية (=SUM)
         // ==========================================
         function exportExcelStyled() {
             if (!hasPermission('printExport')) return;
@@ -1424,69 +1613,97 @@
                 .reverse()
                 .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
-            let sumUsdIn = 0, sumUsdOut = 0, sumSypIn = 0, sumSypOut = 0;
+            // الصف 1: الترويسة، الصف 2: أسماء الأعمدة، بيانات الحركات تبدأ من الصف 3
+            const startRow = 3;
+            const endRow = startRow + Math.max(sortedTxs.length, 1) - 1;
 
-            const rowsHtml = sortedTxs.map((tx, idx) => {
-                let typeTxt = '', usdVal = 0, sypVal = 0, noteTxt = tx.note || '';
+            const rowsHtml = sortedTxs.length ? sortedTxs.map((tx) => {
+                let typeTxt = '', usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0, noteTxt = tx.note || '', rowBg = '#ffffff';
                 if (tx.type === 'income') {
                     typeTxt = 'إيراد (+)';
-                    if (tx.currency === 'USD') { usdVal = tx.amount; sumUsdIn += tx.amount; }
-                    else { sypVal = tx.amount; sumSypIn += tx.amount; }
+                    rowBg = '#ecfdf5';
+                    if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
+                    else sypIn = Number(tx.amount) || 0;
                 } else if (tx.type === 'expense') {
                     typeTxt = 'مصروف (-)';
-                    if (tx.currency === 'USD') { usdVal = -tx.amount; sumUsdOut += tx.amount; }
-                    else { sypVal = -tx.amount; sumSypOut += tx.amount; }
+                    rowBg = '#fff1f2';
+                    if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
+                    else sypOut = Number(tx.amount) || 0;
                 } else {
                     typeTxt = 'صرافة (⇄)';
+                    rowBg = '#fefce8';
                     if (tx.fromCurrency === 'USD') {
-                        usdVal = -tx.fromAmount; sumUsdOut += tx.fromAmount;
-                        sypVal = tx.toAmount; sumSypIn += tx.toAmount;
+                        usdOut = Number(tx.fromAmount) || 0;
+                        sypIn = Number(tx.toAmount) || 0;
                     } else {
-                        sypVal = -tx.fromAmount; sumSypOut += tx.fromAmount;
-                        usdVal = tx.toAmount; sumUsdIn += tx.toAmount;
+                        sypOut = Number(tx.fromAmount) || 0;
+                        usdIn = Number(tx.toAmount) || 0;
                     }
-                    if (tx.rate) noteTxt = `${noteTxt} (سعر الصرف: ${tx.rate})`.trim();
+                    if (tx.rate) noteTxt = `${noteTxt} (سعر الصرف: ${formatNum(tx.rate)})`.trim();
                 }
 
-                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
                 return `
                     <tr style="background-color:${rowBg};">
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${tx.date || ''}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; font-weight:bold;">${typeTxt}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${tx.category || 'عام'}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${noteTxt || '—'}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; color:${usdVal >= 0 ? '#047857' : '#be123c'}; font-weight:bold;">${usdVal !== 0 ? usdVal : 0}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; color:${sypVal >= 0 ? '#047857' : '#be123c'}; font-weight:bold;">${sypVal !== 0 ? sypVal : 0}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center;">${tx.date || ''}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center; font-weight:bold;">${typeTxt}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center;">${tx.category || 'عام'}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:right;">${noteTxt || '—'}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center; color:#047857; font-weight:bold; mso-number-format:'#,##0.00';">${usdIn}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center; color:#be123c; font-weight:bold; mso-number-format:'#,##0.00';">${usdOut}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center; color:#047857; font-weight:bold; mso-number-format:'#,##0';">${sypIn}</td>
+                        <td style="border:1px solid #94a3b8; padding:6px; text-align:center; color:#be123c; font-weight:bold; mso-number-format:'#,##0';">${sypOut}</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') : `
+                <tr>
+                    <td style="border:1px solid #94a3b8; padding:6px;"></td>
+                    <td style="border:1px solid #94a3b8; padding:6px;"></td>
+                    <td style="border:1px solid #94a3b8; padding:6px;"></td>
+                    <td style="border:1px solid #94a3b8; padding:6px;">لا توجد حركات</td>
+                    <td style="border:1px solid #94a3b8; padding:6px;">0</td>
+                    <td style="border:1px solid #94a3b8; padding:6px;">0</td>
+                    <td style="border:1px solid #94a3b8; padding:6px;">0</td>
+                    <td style="border:1px solid #94a3b8; padding:6px;">0</td>
+                </tr>
+            `;
 
-            const netUsd = sumUsdIn - sumUsdOut;
-            const netSyp = sumSypIn - sumSypOut;
+            const totalsRowIndex = endRow + 1;
 
             const excelHtml = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40" dir="rtl">
-                <head><meta charset="UTF-8"></head>
+                <head>
+                    <meta charset="UTF-8">
+                    <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>كشف الورشة</x:Name><x:WorksheetOptions><x:DisplayRightToLeft/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                </head>
                 <body dir="rtl" style="font-family:Arial, sans-serif;">
                     <table dir="rtl" style="border-collapse:collapse; width:100%;">
                         <tr>
-                            <th colspan="6" style="background-color:#1e1b4b; color:#ffffff; font-size:16px; padding:10px; border:1px solid #0f172a;">
-                                كشف حساب ورشة: ${ws.name} ${ws.description ? '(' + ws.description + ')' : ''} - تاريخ التصدير: ${getTodayStr()}
+                            <th colspan="8" style="background-color:#0f172a; color:#ffffff; font-size:15px; padding:10px; border:1px solid #0f172a;">
+                                كشف حساب ورشة: ${ws.name} ${ws.description ? '(' + ws.description + ')' : ''} | تاريخ التصدير: ${getTodayStr()}
                             </th>
                         </tr>
-                        <tr style="background-color:#0f172a; color:#ffffff; font-weight:bold;">
-                            <th style="border:1px solid #334155; padding:8px;">التاريخ</th>
-                            <th style="border:1px solid #334155; padding:8px;">نوع الحركة</th>
-                            <th style="border:1px solid #334155; padding:8px;">البند / التصنيف</th>
-                            <th style="border:1px solid #334155; padding:8px;">البيان / الوصف</th>
-                            <th style="border:1px solid #334155; padding:8px;">المبلغ بالدولار ($)</th>
-                            <th style="border:1px solid #334155; padding:8px;">المبلغ بالليرة السورية (ل.س)</th>
+                        <tr style="background-color:#1e293b; color:#ffffff; font-weight:bold;">
+                            <th style="border:1px solid #475569; padding:8px;">التاريخ</th>
+                            <th style="border:1px solid #475569; padding:8px;">نوع الحركة</th>
+                            <th style="border:1px solid #475569; padding:8px;">البند / التصنيف</th>
+                            <th style="border:1px solid #475569; padding:8px;">البيان / الوصف</th>
+                            <th style="border:1px solid #475569; padding:8px;">إيراد دولار ($)</th>
+                            <th style="border:1px solid #475569; padding:8px;">مصروف دولار ($)</th>
+                            <th style="border:1px solid #475569; padding:8px;">إيراد سوري (ل.س)</th>
+                            <th style="border:1px solid #475569; padding:8px;">مصروف سوري (ل.س)</th>
                         </tr>
                         ${rowsHtml}
                         <tr style="background-color:#e2e8f0; font-weight:bold;">
-                            <td colspan="4" style="border:1px solid #94a3b8; padding:8px; text-align:left;">الصافي النهائي للكشف المعروض:</td>
-                            <td style="border:1px solid #94a3b8; padding:8px; text-align:center; color:#0f172a;">${netUsd} $</td>
-                            <td style="border:1px solid #94a3b8; padding:8px; text-align:center; color:#0f172a;">${netSyp} ل.س</td>
+                            <td colspan="4" style="border:1px solid #64748b; padding:8px; text-align:left;">المجاميع (معادلات Excel تلقائية):</td>
+                            <td style="border:1px solid #64748b; padding:8px; text-align:center; color:#047857; mso-number-format:'#,##0.00';" x:fmla="=SUM(E${startRow}:E${endRow})">0</td>
+                            <td style="border:1px solid #64748b; padding:8px; text-align:center; color:#be123c; mso-number-format:'#,##0.00';" x:fmla="=SUM(F${startRow}:F${endRow})">0</td>
+                            <td style="border:1px solid #64748b; padding:8px; text-align:center; color:#047857; mso-number-format:'#,##0';" x:fmla="=SUM(G${startRow}:G${endRow})">0</td>
+                            <td style="border:1px solid #64748b; padding:8px; text-align:center; color:#be123c; mso-number-format:'#,##0';" x:fmla="=SUM(H${startRow}:H${endRow})">0</td>
+                        </tr>
+                        <tr style="background-color:#cbd5e1; font-weight:bold; font-size:13px;">
+                            <td colspan="4" style="border:1px solid #475569; padding:9px; text-align:left;">الصافي النهائي للصندوق (معادلة الفرق التلقائية):</td>
+                            <td colspan="2" style="border:1px solid #475569; padding:9px; text-align:center; color:#0f172a; mso-number-format:'#,##0.00 &quot;$&quot;';" x:fmla="=E${totalsRowIndex}-F${totalsRowIndex}">0</td>
+                            <td colspan="2" style="border:1px solid #475569; padding:9px; text-align:center; color:#0f172a; mso-number-format:'#,##0 &quot;ل.س&quot;';" x:fmla="=G${totalsRowIndex}-H${totalsRowIndex}">0</td>
                         </tr>
                     </table>
                 </body>
@@ -1500,7 +1717,7 @@
             a.download = `كشف_حساب_${ws.name}_${getTodayStr()}.xls`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('تم تصدير ملف Excel المنسق بنجاح');
+            showToast('تم تصدير ملف Excel مزوّداً بمعادلات الجمع والصافي التلقائية');
         }
 
         function resetFilters() {
@@ -1602,32 +1819,32 @@
             const sypEl = document.getElementById('ex-syp-amount');
             const rateEl = document.getElementById('ex-rate');
 
-            const usd = parseFloat(usdEl.value);
-            const syp = parseFloat(sypEl.value);
-            const rate = parseFloat(rateEl.value);
+            const usd = parseFormattedNumber(usdEl.value);
+            const syp = parseFormattedNumber(sypEl.value);
+            const rate = parseFormattedNumber(rateEl.value);
 
             if (source === 'USD') {
-                if (!isNaN(usd) && usd > 0 && !isNaN(rate) && rate > 0) {
-                    sypEl.value = Math.round((usd * rate) * 100) / 100;
-                } else if (!isNaN(usd) && usd > 0 && !isNaN(syp) && syp > 0) {
-                    rateEl.value = Math.round((syp / usd) * 100) / 100;
+                if (usd > 0 && rate > 0) {
+                    sypEl.value = formatNum(Math.round((usd * rate) * 100) / 100);
+                } else if (usd > 0 && syp > 0) {
+                    rateEl.value = formatNum(Math.round((syp / usd) * 100) / 100);
                 }
             } else if (source === 'SYP') {
-                if (!isNaN(syp) && syp > 0 && !isNaN(rate) && rate > 0) {
-                    usdEl.value = Math.round((syp / rate) * 100) / 100;
-                } else if (!isNaN(syp) && syp > 0 && !isNaN(usd) && usd > 0) {
-                    rateEl.value = Math.round((syp / usd) * 100) / 100;
+                if (syp > 0 && rate > 0) {
+                    usdEl.value = formatNum(Math.round((syp / rate) * 100) / 100);
+                } else if (syp > 0 && usd > 0) {
+                    rateEl.value = formatNum(Math.round((syp / usd) * 100) / 100);
                 }
             } else if (source === 'RATE') {
-                if (!isNaN(rate) && rate > 0) {
-                    if (exchangeFromCurrency === 'USD' && !isNaN(usd) && usd > 0) {
-                        sypEl.value = Math.round((usd * rate) * 100) / 100;
-                    } else if (exchangeFromCurrency === 'SYP' && !isNaN(syp) && syp > 0) {
-                        usdEl.value = Math.round((syp / rate) * 100) / 100;
-                    } else if (!isNaN(usd) && usd > 0) {
-                        sypEl.value = Math.round((usd * rate) * 100) / 100;
-                    } else if (!isNaN(syp) && syp > 0) {
-                        usdEl.value = Math.round((syp / rate) * 100) / 100;
+                if (rate > 0) {
+                    if (exchangeFromCurrency === 'USD' && usd > 0) {
+                        sypEl.value = formatNum(Math.round((usd * rate) * 100) / 100);
+                    } else if (exchangeFromCurrency === 'SYP' && syp > 0) {
+                        usdEl.value = formatNum(Math.round((syp / rate) * 100) / 100);
+                    } else if (usd > 0) {
+                        sypEl.value = formatNum(Math.round((usd * rate) * 100) / 100);
+                    } else if (syp > 0) {
+                        usdEl.value = formatNum(Math.round((syp / rate) * 100) / 100);
                     }
                 }
             }
@@ -1663,9 +1880,10 @@
             const usdVal = tx.fromCurrency === 'USD' ? tx.fromAmount : tx.toAmount;
             const sypVal = tx.fromCurrency === 'SYP' ? tx.fromAmount : tx.toAmount;
 
-            document.getElementById('ex-usd-amount').value = usdVal;
-            document.getElementById('ex-syp-amount').value = sypVal;
-            document.getElementById('ex-rate').value = tx.rate || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : '');
+            document.getElementById('ex-usd-amount').value = formatNum(usdVal);
+            document.getElementById('ex-syp-amount').value = formatNum(sypVal);
+            const rateNum = tx.rate || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : 0);
+            document.getElementById('ex-rate').value = rateNum ? formatNum(rateNum) : '';
             document.getElementById('ex-date').value = tx.date;
             document.getElementById('ex-note').value = tx.note || '';
 
@@ -1717,7 +1935,11 @@
                 ? document.getElementById('tx-type').value
                 : document.getElementById('tx-fixed-type').value;
 
-            const amount = parseFloat(document.getElementById('tx-amount').value);
+            const amount = parseFormattedNumber(document.getElementById('tx-amount').value);
+            if (amount <= 0) {
+                showToast('⚠️ يرجى إدخال مبلغ صحيح أكبر من الصفر');
+                return;
+            }
             const currency = document.getElementById('tx-currency').value;
             const category = document.getElementById('tx-category').value || 'عام';
             const date = document.getElementById('tx-date').value;
@@ -1777,7 +1999,7 @@
             document.getElementById('tx-type').value = tx.type;
             document.getElementById('tx-fixed-type').value = tx.type;
             document.getElementById('tx-edit-type-wrapper').classList.remove('hidden');
-            document.getElementById('tx-amount').value = tx.amount;
+            document.getElementById('tx-amount').value = formatNum(tx.amount);
             document.getElementById('tx-currency').value = tx.currency;
             populateTxCategoryDropdown(tx.category || 'عام');
             document.getElementById('tx-date').value = tx.date;
@@ -1795,9 +2017,13 @@
             if (!ws || !ws.active) return;
 
             const editId = document.getElementById('ex-edit-id').value;
-            const usdVal = parseFloat(document.getElementById('ex-usd-amount').value);
-            const sypVal = parseFloat(document.getElementById('ex-syp-amount').value);
-            const rateVal = parseFloat(document.getElementById('ex-rate').value) || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : 0);
+            const usdVal = parseFormattedNumber(document.getElementById('ex-usd-amount').value);
+            const sypVal = parseFormattedNumber(document.getElementById('ex-syp-amount').value);
+            if (usdVal <= 0 || sypVal <= 0) {
+                showToast('⚠️ يرجى إدخال قيم صحيحة للتحويل');
+                return;
+            }
+            const rateVal = parseFormattedNumber(document.getElementById('ex-rate').value) || (usdVal > 0 ? Math.round((sypVal / usdVal) * 100) / 100 : 0);
             const date = document.getElementById('ex-date').value;
             const rawNote = document.getElementById('ex-note').value.trim();
 
@@ -1937,7 +2163,7 @@
                 const lastDate = txs.length > 0 ? txs[0].date : 'بدون حركات';
 
                 return `
-                    <div onclick="selectWorkshop('${w.id}')" class="cursor-pointer p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between ${!w.active ? 'workshop-inactive bg-slate-100 border-slate-400' : (isSelected ? 'bg-gradient-to-l from-indigo-50/95 to-white border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'bg-white border-slate-300 hover:border-indigo-400 hover:shadow-sm')}">
+                    <div onclick="selectWorkshop('${w.id}')" class="cursor-pointer p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between ${!w.active ? 'workshop-card-inactive' : (isSelected ? 'bg-gradient-to-l from-indigo-50/95 to-white border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'bg-white border-slate-300 hover:border-indigo-400 hover:shadow-sm')}">
                         <div>
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
@@ -1953,11 +2179,11 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-200">
-                                <div class="bg-emerald-50/80 rounded-xl p-2 border border-emerald-200">
+                                <div class="bg-emerald-50/90 rounded-xl p-2 border border-emerald-200">
                                     <div class="text-[10px] font-extrabold text-emerald-700">الرصيد الصافي ($)</div>
                                     <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">$ ${formatNum(usdNet)}</div>
                                 </div>
-                                <div class="bg-blue-50/80 rounded-xl p-2 border border-blue-200">
+                                <div class="bg-blue-50/90 rounded-xl p-2 border border-blue-200">
                                     <div class="text-[10px] font-extrabold text-blue-700">الرصيد الصافي (ل.س)</div>
                                     <div class="text-xs sm:text-sm font-black text-slate-900 ltr-num mt-0.5">${formatNum(sypNet)} ل.س</div>
                                 </div>
@@ -1993,12 +2219,19 @@
             const ws = workshops.find(w => w.id === selectedWorkshopId);
             const emptyState = document.getElementById('no-workshop-selected');
             const detailsEl = document.getElementById('workshop-details-content');
-            const stickyBar = document.getElementById('sticky-active-workshop-bar');
+
+            const stickyWsName = document.getElementById('sticky-ws-name');
+            const stickyDesc = document.getElementById('sticky-ws-desc');
+            const stickyStatus = document.getElementById('sticky-ws-status');
+            const stickyTopBtn = document.getElementById('sticky-scroll-top-btn');
 
             if (!ws) {
                 emptyState.classList.remove('hidden');
                 detailsEl.classList.add('hidden');
-                if (stickyBar) stickyBar.classList.add('hidden');
+                if (stickyWsName) stickyWsName.textContent = 'لم يتم اختيار ورشة';
+                if (stickyDesc) stickyDesc.classList.add('hidden');
+                if (stickyStatus) stickyStatus.classList.add('hidden');
+                if (stickyTopBtn) stickyTopBtn.classList.add('hidden');
                 return;
             }
 
@@ -2006,25 +2239,26 @@
             emptyState.classList.add('hidden');
             detailsEl.classList.remove('hidden');
 
-            if (stickyBar) {
-                stickyBar.classList.remove('hidden');
-                document.getElementById('sticky-ws-name').textContent = ws.name;
-                const stickyDesc = document.getElementById('sticky-ws-desc');
+            if (stickyWsName) stickyWsName.textContent = ws.name;
+            if (stickyDesc) {
                 if (ws.description) {
                     stickyDesc.textContent = ws.description;
                     stickyDesc.classList.remove('hidden');
                 } else {
                     stickyDesc.classList.add('hidden');
                 }
-                const stickyStatus = document.getElementById('sticky-ws-status');
+            }
+            if (stickyStatus) {
+                stickyStatus.classList.remove('hidden');
                 if (ws.active) {
                     stickyStatus.textContent = '● نشطة';
-                    stickyStatus.className = 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                    stickyStatus.className = 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0';
                 } else {
                     stickyStatus.textContent = '⏸ متوقفة';
-                    stickyStatus.className = 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300';
+                    stickyStatus.className = 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 shrink-0';
                 }
             }
+            if (stickyTopBtn) stickyTopBtn.classList.remove('hidden');
 
             document.getElementById('ws-title').textContent = ws.name;
             const descEl = document.getElementById('ws-description-display');
@@ -2105,7 +2339,21 @@
             const fDateTo = document.getElementById('filter-date-to').value;
 
             const typeLabel = fType === 'ALL' ? 'كشف شامل' : (fType === 'income' ? 'كشف الإيرادات' : (fType === 'expense' ? 'كشف المصروفات' : 'كشف الصرافة'));
-            document.getElementById('print-filter-subtitle').textContent = `${typeLabel} | البند: ${fCat === 'ALL' ? 'الكل' : fCat} | العملة: ${fCurr === 'ALL' ? 'الكل' : fCurr}`;
+            const scopeSummary = `${typeLabel} | البند: ${fCat === 'ALL' ? 'الكل' : fCat} | العملة: ${fCurr === 'ALL' ? 'الكل' : fCurr}`;
+            document.getElementById('print-filter-subtitle').textContent = scopeSummary;
+
+            // تعبئة بيانات الترويسة الرسمية للطباعة
+            document.getElementById('print-issue-date').textContent = getTodayStr();
+            document.getElementById('print-ref-code').textContent = `PRJ-${ws.id.slice(-5).toUpperCase()}`;
+            document.getElementById('print-ws-name').textContent = ws.name;
+            document.getElementById('print-scope-label').textContent = scopeSummary;
+            const pDescWrap = document.getElementById('print-ws-desc-wrap');
+            if (ws.description) {
+                document.getElementById('print-ws-desc').textContent = ws.description;
+                pDescWrap.classList.remove('hidden');
+            } else {
+                pDescWrap.classList.add('hidden');
+            }
 
             let filtered = (ws.transactions || []).filter(tx => {
                 if (fType !== 'ALL' && tx.type !== fType) return false;
@@ -2137,49 +2385,52 @@
             }
 
             tbody.innerHTML = filtered.map(tx => {
-                let typeBadge = '', amountHtml = '', noteDisplay = tx.note || '—';
+                let typeBadge = '', amountHtml = '', noteDisplay = tx.note || '—', rowClass = '';
                 if (tx.type === 'income') {
-                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-100 text-emerald-800">إيراد</span>`;
+                    rowClass = 'tx-row-income';
+                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-200/80 text-emerald-900">إيراد</span>`;
                     const currLabel = tx.currency === 'USD' ? `$ ${formatNum(tx.amount)}` : `${formatNum(tx.amount)} ل.س`;
-                    amountHtml = `<span class="text-emerald-700 font-black ltr-num">+ ${currLabel}</span>`;
+                    amountHtml = `<span class="text-emerald-800 font-black ltr-num">+ ${currLabel}</span>`;
                 } else if (tx.type === 'expense') {
-                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-rose-100 text-rose-800">مصروف</span>`;
+                    rowClass = 'tx-row-expense';
+                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-rose-200/80 text-rose-900">مصروف</span>`;
                     const currLabel = tx.currency === 'USD' ? `$ ${formatNum(tx.amount)}` : `${formatNum(tx.amount)} ل.س`;
-                    amountHtml = `<span class="text-rose-700 font-black ltr-num">- ${currLabel}</span>`;
+                    amountHtml = `<span class="text-rose-800 font-black ltr-num">- ${currLabel}</span>`;
                 } else {
-                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-amber-100 text-amber-800">⇄ صرافة</span>`;
+                    rowClass = 'tx-row-exchange';
+                    typeBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-amber-200/90 text-amber-950">⇄ صرافة</span>`;
                     const fromStr = tx.fromCurrency === 'USD' ? `$ ${formatNum(tx.fromAmount)}` : `${formatNum(tx.fromAmount)} ل.س`;
                     const toStr = tx.toCurrency === 'USD' ? `$ ${formatNum(tx.toAmount)}` : `${formatNum(tx.toAmount)} ل.س`;
-                    const rateBadge = tx.rate ? `<span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 ltr-num">سعر الصرف: ${formatNum(tx.rate)}</span>` : '';
+                    const rateBadge = tx.rate ? `<span class="text-[10px] font-bold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300 ltr-num">سعر الصرف: ${formatNum(tx.rate)}</span>` : '';
                     noteDisplay = `${tx.note ? tx.note + ' ' : ''}${rateBadge}` || '—';
                     amountHtml = `
                         <div class="flex flex-col gap-0.5 text-xs">
-                            <span class="text-rose-700 font-bold ltr-num">- ${fromStr}</span>
-                            <span class="text-emerald-700 font-extrabold ltr-num">+ ${toStr}</span>
+                            <span class="text-rose-800 font-bold ltr-num">- ${fromStr}</span>
+                            <span class="text-emerald-800 font-extrabold ltr-num">+ ${toStr}</span>
                         </div>
                     `;
                 }
 
                 const attachHtml = tx.image
                     ? `<button onclick="openImageModal('${tx.image}')" class="text-indigo-600 hover:underline text-xs font-extrabold">🖼️ عرض</button>`
-                    : `<span class="text-slate-300">—</span>`;
+                    : `<span class="text-slate-400">—</span>`;
 
-                let actionsHtml = `<span class="text-slate-300 text-xs">مقفل</span>`;
+                let actionsHtml = `<span class="text-slate-400 text-xs">مقفل</span>`;
                 if (ws.active && (canEditTx || canDeleteTx)) {
                     actionsHtml = `<div class="flex items-center justify-center gap-1.5">
-                        ${canEditTx ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold">تعديل</button>` : ''}
-                        ${canDeleteTx ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold">حذف</button>` : ''}
+                        ${canEditTx ? `<button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold border border-amber-300">تعديل</button>` : ''}
+                        ${canDeleteTx ? `<button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold border border-rose-300">حذف</button>` : ''}
                     </div>`;
                 }
 
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="py-3 px-3 whitespace-nowrap ltr-num text-slate-600">${tx.date}</td>
-                        <td class="py-3 px-3 whitespace-nowrap">${typeBadge}</td>
-                        <td class="py-3 px-3 font-extrabold text-slate-800">${tx.category || 'عام'}</td>
-                        <td class="py-3 px-3 text-slate-600">${noteDisplay}</td>
-                        <td class="py-3 px-3 whitespace-nowrap">${amountHtml}</td>
-                        <td class="py-3 px-3 no-print text-center">${attachHtml}</td>
+                    <tr class="${rowClass} hover:brightness-95 transition">
+                        <td class="py-3 px-3 whitespace-nowrap ltr-num text-slate-700 border-l border-slate-300">${tx.date}</td>
+                        <td class="py-3 px-3 whitespace-nowrap border-l border-slate-300">${typeBadge}</td>
+                        <td class="py-3 px-3 font-extrabold text-slate-900 border-l border-slate-300">${tx.category || 'عام'}</td>
+                        <td class="py-3 px-3 text-slate-700 border-l border-slate-300">${noteDisplay}</td>
+                        <td class="py-3 px-3 whitespace-nowrap border-l border-slate-300">${amountHtml}</td>
+                        <td class="py-3 px-3 no-print text-center border-l border-slate-300">${attachHtml}</td>
                         <td class="py-3 px-3 no-print text-center">${actionsHtml}</td>
                     </tr>
                 `;
@@ -2187,7 +2438,7 @@
         }
 
         // ==========================================
-        // الطباعة وتصدير PDF (A4) بالترتيب التصاعدي (الأقدم أولاً)
+        // الطباعة وتصدير PDF (A4) بالترتيب التصاعدي وتصميم شركات البناء
         // ==========================================
         function printWorkshopSorted() {
             if (!hasPermission('printExport')) return;
@@ -2213,7 +2464,7 @@
 
             const opt = {
                 margin: [8, 8, 8, 8],
-                filename: `كشف_حساب_${ws.name}_${getTodayStr()}.pdf`,
+                filename: `مستخلص_${ws.name}_${getTodayStr()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -2224,7 +2475,7 @@
                 document.body.classList.remove('pdf-export-mode');
                 isPrintSortAscending = false;
                 renderWorkshopDetails();
-                showToast('تم تصدير ملف PDF مرتباً من الأقدم للأحدث بنجاح');
+                showToast('تم تصدير ملف PDF الرسمي بنجاح');
             }).catch(() => {
                 document.body.classList.remove('pdf-export-mode');
                 isPrintSortAscending = false;
@@ -2559,7 +2810,12 @@
         }
 
         function exportFullSystemBackup() {
-            downloadJsonFile(window.appData, `full_backup_${getTodayStr()}.json`);
+            downloadJsonFile({
+                format: 'workshops_full_backup',
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                exportedAt: new Date().toISOString(),
+                ...window.appData
+            }, `full_backup_${getTodayStr()}.json`);
             showToast('تم تنزيل النسخة الاحتياطية الكاملة');
         }
 
@@ -2572,14 +2828,15 @@
                     const parsed = JSON.parse(ev.target.result);
                     if (parsed && Array.isArray(parsed.workshops)) {
                         window.appData = {
+                            schemaVersion: CURRENT_SCHEMA_VERSION,
                             owner: parsed.owner || window.appData.owner,
                             subUsers: parsed.subUsers || [],
-                            workshops: parsed.workshops
+                            workshops: parsed.workshops.map(normalizeWorkshopData).filter(Boolean)
                         };
                         renderAll();
                         await pushToCloud();
                         closeBackupModal();
-                        showToast('تمت استعادة النسخة الكاملة ورفعها للسحابة');
+                        showToast('تمت استعادة النسخة الكاملة وتحديث بنيتها ورفعها للسحابة');
                     }
                 } catch (err) {
                     showToast('ملف النسخة الاحتياطية غير صالح');
@@ -2592,8 +2849,14 @@
             if (!hasPermission('printExport')) return;
             const ws = getAccessibleWorkshops().find(w => w.id === selectedWorkshopId);
             if (!ws) return;
-            downloadJsonFile({ singleWorkshop: ws }, `workshop_${ws.name}_${getTodayStr()}.json`);
-            showToast('تم تصدير ملف الورشة بنجاح');
+            const normalized = normalizeWorkshopData(ws);
+            downloadJsonFile({
+                format: 'workshops_accounting_backup',
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                exportedAt: new Date().toISOString(),
+                singleWorkshop: normalized
+            }, `workshop_${ws.name}_${getTodayStr()}.json`);
+            showToast('تم تصدير ملف الورشة بصيغة متوافقة مع كافة الإصدارات');
         }
 
         function handleSingleWorkshopImport(e) {
@@ -2603,18 +2866,18 @@
             reader.onload = (ev) => {
                 try {
                     const parsed = JSON.parse(ev.target.result);
-                    const ws = parsed.singleWorkshop || (parsed.name && Array.isArray(parsed.transactions) ? parsed : null);
-                    if (!ws) {
+                    const rawWs = parsed.singleWorkshop || (parsed.name && Array.isArray(parsed.transactions) ? parsed : null);
+                    const normalized = normalizeWorkshopData(rawWs);
+                    if (!normalized) {
                         showToast('ملف الورشة غير صالح');
                         return;
                     }
                     pendingImportedWorkshop = {
-                        ...ws,
+                        ...normalized,
                         id: 'ws_' + Date.now()
                     };
-                    ensureWorkshopCategories(pendingImportedWorkshop);
                     document.getElementById('pending-import-name').textContent = pendingImportedWorkshop.name;
-                    document.getElementById('pending-import-stats').textContent = `عدد الحركات: ${(pendingImportedWorkshop.transactions || []).length}`;
+                    document.getElementById('pending-import-stats').textContent = `عدد الحركات: ${(pendingImportedWorkshop.transactions || []).length} | التصنيفات: ${pendingImportedWorkshop.categories.join('، ')}`;
                     document.getElementById('pending-import-card').classList.remove('hidden');
                 } catch (err) {
                     showToast('تعذر قراءة ملف الورشة');
@@ -2641,12 +2904,16 @@
         }
 
         function exportInactiveWorkshops() {
-            const inactive = window.appData.workshops.filter(w => !w.active);
+            const inactive = window.appData.workshops.filter(w => !w.active).map(normalizeWorkshopData);
             if (!inactive.length) {
                 showToast('لا توجد ورشات غير نشطة لتصديرها');
                 return;
             }
-            downloadJsonFile({ archivedWorkshops: inactive }, `inactive_workshops_${getTodayStr()}.json`);
+            downloadJsonFile({
+                format: 'workshops_archive_backup',
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                archivedWorkshops: inactive
+            }, `inactive_workshops_${getTodayStr()}.json`);
             showToast('تم تصدير أرشيف الورشات غير النشطة');
         }
 
@@ -2668,10 +2935,10 @@
         }
 
         // ==========================================
-        // التشغيل التلقائي والمزامنة الحية
+        // التشغيل التلقائي والمزامنة الذكية دون رمش
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
-            await fetchFromCloud();
+            await fetchFromCloud(false);
 
             const savedUser = sessionStorage.getItem(SESSION_USER_KEY);
             if (savedUser) {
@@ -2684,10 +2951,9 @@
             }
 
             setInterval(async () => {
-                if (!isSavingCloud) {
-                    const prevJson = JSON.stringify(window.appData);
-                    const ok = await fetchFromCloud();
-                    if (ok && window.currentUser && JSON.stringify(window.appData) !== prevJson) {
+                if (!isSavingCloud && !isAnyModalOrInputActive()) {
+                    const status = await fetchFromCloud(true);
+                    if (status === 'CHANGED' && window.currentUser) {
                         if (window.currentUser.role !== 'owner') {
                             const freshSub = window.appData.subUsers.find(u => u.username === window.currentUser.username);
                             if (!freshSub || freshSub.suspended) {
@@ -2702,7 +2968,7 @@
                         renderAll();
                     }
                 }
-            }, 6000);
+            }, 12000);
         });
     </script>
 </body>
