@@ -312,6 +312,12 @@
                             </div>
                         </div>
 
+                        <button id="btnEditMyProfile" onclick="openEditMyProfileModal()"
+                            class="hidden px-3 py-2 rounded-xl bg-teal-600/90 hover:bg-teal-500 text-white text-xs font-extrabold border border-teal-400/30 shadow transition flex items-center gap-1.5">
+                            <span>👤</span>
+                            <span>تعديل بياناتي</span>
+                        </button>
+
                         <button onclick="manualCloudSync()" title="مزامنة وتحديث من السحابة"
                             class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/10 transition flex items-center gap-1.5">
                             <span id="syncSpinnerIcon">🔄</span>
@@ -683,7 +689,7 @@
     <div id="officialPrintSheet"></div>
 
     <!-- PDF GENERATION LOADING OVERLAY -->
-    <div id="pdfGeneratingOverlay" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div id="pdfGeneratingOverlay" class="hidden fixed inset-0 z-[80] modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl border-2 border-indigo-200 text-slate-800 space-y-3">
             <div class="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin mx-auto"></div>
             <div class="text-sm font-black text-slate-900">جاري تجهيز وتنزيل ملف الـ PDF</div>
@@ -693,8 +699,8 @@
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
-    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS, TRASH MOVE OR SUB-USER DELETION -->
-    <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS, TRASH MOVE OR SUB-USER/MANAGER DELETION (HIGH Z-INDEX z-[70]) -->
+    <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-[70] modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
                 <h3 id="ownerAuthModalTitle" class="text-base font-black text-amber-300">🔐 تأكيد كلمة مرور الحساب</h3>
@@ -783,6 +789,51 @@
         </div>
     </div>
 
+    <!-- MODAL: SELF-EDIT PROFILE MODAL FOR SUB-USERS / MANAGERS WITH PERMISSION -->
+    <div id="editMyProfileModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-teal-200 overflow-hidden text-slate-800">
+            <div class="bg-gradient-to-l from-teal-900 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
+                <h3 class="text-base font-black">👤 تعديل بيانات حسابي الشخصي</h3>
+                <button type="button" onclick="closeModal('editMyProfileModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <form onsubmit="saveMySelfProfile(event)" class="p-5 space-y-4">
+                <p class="text-xs font-bold text-slate-600 leading-relaxed">
+                    يمكنك تعديل اسم الدخول وكلمة المرور واسمك الشخصي ورقم جوالك، وسيتم حفظ التعديلات مباشرة في السحابة:
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم المستخدم للدخول *</label>
+                        <input type="text" id="myProfileUsernameInput" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-teal-600 focus:outline-none text-sm font-black bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">كلمة المرور *</label>
+                        <input type="text" id="myProfilePasswordInput" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-teal-600 focus:outline-none text-sm font-black bg-slate-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1">الاسم الشخصي الكامل *</label>
+                    <input type="text" id="myProfileFullNameInput" required
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-teal-600 focus:outline-none text-sm font-black bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1">رقم الجوال / الهاتف</label>
+                    <input type="text" id="myProfilePhoneInput" placeholder="09xxxxxxxx" dir="ltr"
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-teal-600 focus:outline-none text-sm font-black bg-slate-50 text-right">
+                </div>
+                <div class="flex items-center gap-2.5 pt-1">
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-black text-sm shadow-lg transition">
+                        💾 حفظ التعديلات في السحابة
+                    </button>
+                    <button type="button" onclick="closeModal('editMyProfileModal')" class="px-5 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-sm">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 1: ADD / EDIT INCOME OR EXPENSE -->
     <div id="txModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border-2 border-slate-200 overflow-hidden my-auto text-slate-800">
@@ -849,6 +900,18 @@
                         class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-bold bg-slate-50"></textarea>
                 </div>
 
+                <div class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-3 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="text-xs font-extrabold text-slate-700">صور البند (صورتان كحد أقصى)</label>
+                        <span id="txPhotoCount" class="text-[10px] font-bold text-slate-500">0 / 2</span>
+                    </div>
+                    <input type="file" id="txPhotoInput" accept="image/*" multiple
+                        onchange="handleTxPhotoSelection(event)"
+                        class="block w-full text-xs text-slate-600 file:ml-2 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-indigo-100 file:text-indigo-800 file:font-extrabold">
+                    <p class="text-[10px] font-semibold text-slate-500">تُضغط الصور تلقائياً قبل رفعها للسحابة لتقليل المساحة.</p>
+                    <div id="txPhotoPreviewList" class="grid grid-cols-2 gap-2"></div>
+                </div>
+
                 <div class="flex items-center gap-2.5 pt-2">
                     <button type="submit" id="txSubmitBtn" class="flex-1 py-3 rounded-xl text-white font-black text-sm shadow-lg transition">
                         حفظ في السحابة
@@ -858,6 +921,17 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TRANSACTION PHOTOS VIEWER -->
+    <div id="txPhotosViewModal" class="hidden fixed inset-0 z-[60] modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border-2 border-indigo-200 overflow-hidden text-slate-800">
+            <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
+                <h3 class="text-base font-black">🖼️ صور البند</h3>
+                <button type="button" onclick="closeModal('txPhotosViewModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <div id="txPhotosViewContent" class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[75vh] overflow-y-auto"></div>
         </div>
     </div>
 
@@ -1029,22 +1103,23 @@
         </div>
     </div>
 
-    <!-- MODAL 6: ACCOUNTS & GRANULAR PERMISSIONS MANAGER -->
+    <!-- MODAL 6: ACCOUNTS, MANAGERS & GRANULAR PERMISSIONS MANAGER -->
     <div id="usersModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border-2 border-slate-200 overflow-hidden my-auto text-slate-800">
             <div class="bg-gradient-to-l from-indigo-950 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
                 <div>
-                    <h3 class="text-base sm:text-lg font-black">👥 إدارة الحسابات والصلاحيات السحابية</h3>
-                    <p class="text-[11px] font-bold text-indigo-200">تحكم كامل بحساب المهندس المدير والمستخدمين الفرعيين وصلاحياتهم الدقيقة</p>
+                    <h3 class="text-base sm:text-lg font-black">👥 إدارة الحسابات والمدراء والصلاحيات السحابية</h3>
+                    <p class="text-[11px] font-bold text-indigo-200">تحكم كامل بحسابات المدراء والمستخدمين الفرعيين وصلاحياتهم الدقيقة</p>
                 </div>
                 <button type="button" onclick="closeModal('usersModal')" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
 
             <div class="p-4 sm:p-6 space-y-6 max-h-[82vh] overflow-y-auto">
-                <div class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
+                <!-- PRIMARY ROOT ADMIN SECTION (VISIBLE ONLY TO PRIMARY ADMIN) -->
+                <div id="primaryAdminSettingsBox" class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
                     <h4 class="text-sm font-black text-indigo-950 mb-3 flex items-center gap-2">
-                        <span>🛡️</span>
-                        <span>بيانات المهندس المسؤول (الحساب الرئيسي) واسم الشركة الثابت للطباعة</span>
+                        <span>👑</span>
+                        <span>بيانات المدير الأساسي (الرتبة العليا) واسم الشركة الثابت للطباعة</span>
                     </h4>
                     <form onsubmit="updateAdminCredentials(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
                         <div>
@@ -1058,7 +1133,7 @@
                                 class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المهندس المسؤول *</label>
+                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المدير الأساسي *</label>
                             <input type="text" id="adminFullNameInput" required
                                 class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
                         </div>
@@ -1080,13 +1155,28 @@
                     </form>
                 </div>
 
+                <!-- ADD / EDIT MANAGER OR SUB-USER FORM -->
                 <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-300">
                     <div class="flex items-center justify-between mb-3">
-                        <h4 id="subUserFormTitle" class="text-sm font-black text-slate-900">➕ إضافة مستخدم فرعي جديد وتحديد صلاحياته</h4>
+                        <h4 id="subUserFormTitle" class="text-sm font-black text-slate-900">➕ إضافة مستخدم أو مدير جديد وتحديد صلاحياته</h4>
                         <button type="button" id="btnCancelSubUserEdit" onclick="resetSubUserForm()" class="hidden text-xs font-extrabold text-rose-600 hover:underline">إلغاء التعديل</button>
                     </div>
                     <form onsubmit="saveSubUser(event)" class="space-y-4">
                         <input type="hidden" id="subUserEditIndex" value="-1">
+
+                        <!-- ACCOUNT ROLE SELECTOR (ONLY VISIBLE TO PRIMARY ROOT ADMIN) -->
+                        <div id="accountRoleSelectorWrapper" class="p-3 rounded-xl bg-amber-50 border border-amber-300 flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <label class="block text-xs font-black text-amber-950">رتبة الحساب:</label>
+                                <p class="text-[11px] font-bold text-amber-800">المدير يمتلك تحكماً كاملاً بالنظام والورشات والحسابات الفرعية، ويبقى أقل رتبة من حسابك الأساسي</p>
+                            </div>
+                            <select id="subUserRoleSelect" onchange="handleAccountRoleTypeChange()"
+                                class="px-3.5 py-2 rounded-xl border-2 border-amber-400 bg-white text-xs sm:text-sm font-black text-slate-900 focus:outline-none">
+                                <option value="sub">👤 مستخدم فرعي (صلاحيات مخصصة)</option>
+                                <option value="manager">🛡️ مدير (تحكم كامل بالنظام)</option>
+                            </select>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المستخدم للدخول *</label>
@@ -1099,79 +1189,90 @@
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم صاحب الحساب الفرعي</label>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">الاسم الشخصي</label>
                                 <input type="text" id="subFullName" placeholder="الاسم للطباعة..."
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">رقم جوال صاحب الحساب</label>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">رقم الجوال</label>
                                 <input type="text" id="subPhone" placeholder="09xxxxxxxx" dir="ltr"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white text-right">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم (مفصولة بالكامل):</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permAddEditTx" checked class="w-4 h-4 accent-indigo-600">
-                                    <span>إضافة وتعديل الحركات</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permDeleteTx" class="w-4 h-4 accent-rose-600">
-                                    <span>حذف الحركات المالية</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permAddWs" class="w-4 h-4 accent-emerald-600">
-                                    <span>إضافة ورشات جديدة</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permEditWs" class="w-4 h-4 accent-amber-600">
-                                    <span>تعديل اسم ووصف الورشات</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permToggleWs" class="w-4 h-4 accent-teal-600">
-                                    <span>تفعيل وإيقاف الورشات</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permDeleteWs" class="w-4 h-4 accent-red-600">
-                                    <span>حذف الورشات (نقل للسلة)</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permPrintExport" checked class="w-4 h-4 accent-blue-600">
-                                    <span>الطباعة وتصدير PDF / Excel</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-amber-50 p-1.5 rounded-lg border border-amber-200">
-                                    <input type="checkbox" id="permUseOwnPrintInfo" class="w-4 h-4 accent-amber-600">
-                                    <span class="text-amber-950">الطباعة باسم وجوال الحساب الفرعي (وإلا باسم المدير)</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permManageCats" checked class="w-4 h-4 accent-purple-600">
-                                    <span>إدارة تصنيفات الورشة</span>
-                                </label>
-                            </div>
+                        <div id="managerFullAccessBanner" class="hidden p-3.5 rounded-xl bg-indigo-50 border-2 border-indigo-300 text-xs font-extrabold text-indigo-950 flex items-center gap-2">
+                            <span class="text-lg">🛡️</span>
+                            <span>حساب <strong>مدير</strong>: يمتلك تلقائياً جميع الصلاحيات والوصول لكافة الورشات وإدارة المستخدمين الفرعيين وسلة المهملات والطباعة، ولا يمكنه المساس بحساب المدير الأساسي.</span>
                         </div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-1.5">
-                                <label class="text-xs font-black text-slate-800">الورشات المسموح له بالوصول إليها:</label>
-                                <div class="flex gap-2 text-[11px] font-extrabold">
-                                    <button type="button" onclick="toggleAllSubUserWorkshops(true)" class="text-indigo-600 hover:underline">تحديد الكل</button>
-                                    <span>|</span>
-                                    <button type="button" onclick="toggleAllSubUserWorkshops(false)" class="text-slate-500 hover:underline">إلغاء الكل</button>
+                        <div id="subUserPermissionsSection" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم (مفصولة بالكامل):</label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permAddEditTx" checked class="w-4 h-4 accent-indigo-600">
+                                        <span>إضافة وتعديل الحركات</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permDeleteTx" class="w-4 h-4 accent-rose-600">
+                                        <span>حذف الحركات المالية</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permAddWs" class="w-4 h-4 accent-emerald-600">
+                                        <span>إضافة ورشات جديدة</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permEditWs" class="w-4 h-4 accent-amber-600">
+                                        <span>تعديل اسم ووصف الورشات</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permToggleWs" class="w-4 h-4 accent-teal-600">
+                                        <span>تفعيل وإيقاف الورشات</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permDeleteWs" class="w-4 h-4 accent-red-600">
+                                        <span>حذف الورشات (نقل للسلة)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permPrintExport" checked class="w-4 h-4 accent-blue-600">
+                                        <span>الطباعة وتصدير PDF / Excel</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-amber-50 p-1.5 rounded-lg border border-amber-200">
+                                        <input type="checkbox" id="permUseOwnPrintInfo" class="w-4 h-4 accent-amber-600">
+                                        <span class="text-amber-950">الطباعة باسم وجوال الحساب الفرعي (وإلا باسم المدير)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-teal-50 p-1.5 rounded-lg border border-teal-200">
+                                        <input type="checkbox" id="permEditOwnProfile" class="w-4 h-4 accent-teal-600">
+                                        <span class="text-teal-950">السماح بتعديل بياناته (اسم الدخول، كلمة المرور، الاسم، الجوال)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="permManageCats" checked class="w-4 h-4 accent-purple-600">
+                                        <span>إدارة تصنيفات الورشة</span>
+                                    </label>
                                 </div>
                             </div>
-                            <div id="subUserWorkshopsCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold"></div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-black text-slate-800">الورشات المسموح له بالوصول إليها:</label>
+                                    <div class="flex gap-2 text-[11px] font-extrabold">
+                                        <button type="button" onclick="toggleAllSubUserWorkshops(true)" class="text-indigo-600 hover:underline">تحديد الكل</button>
+                                        <span>|</span>
+                                        <button type="button" onclick="toggleAllSubUserWorkshops(false)" class="text-slate-500 hover:underline">إلغاء الكل</button>
+                                    </div>
+                                </div>
+                                <div id="subUserWorkshopsCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold"></div>
+                            </div>
                         </div>
 
                         <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm shadow transition">
-                            💾 حفظ المستخدم الفرعي
+                            💾 حفظ الحساب في السحابة
                         </button>
                     </form>
                 </div>
 
                 <div>
-                    <h4 class="text-sm font-black text-slate-900 mb-2.5">📋 قائمة الحسابات الفرعية المسجلة</h4>
+                    <h4 class="text-sm font-black text-slate-900 mb-2.5">📋 قائمة المدراء والحسابات الفرعية المسجلة</h4>
                     <div id="subUsersListContainer" class="space-y-2.5"></div>
                 </div>
             </div>
@@ -1232,7 +1333,7 @@
     </div>
 
     <!-- CUSTOM CONFIRMATION MODAL -->
-    <div id="customConfirmModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div id="customConfirmModal" class="hidden fixed inset-0 z-[70] modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-slate-200 p-5 text-center space-y-4 text-slate-800">
             <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-black">⚠️</div>
             <h3 id="confirmModalTitle" class="text-base font-black text-slate-900">تأكيد الإجراء</h3>
@@ -1249,7 +1350,7 @@
     </div>
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toastNotification" class="no-print fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-3 rounded-2xl bg-slate-900 text-white text-xs sm:text-sm font-extrabold shadow-2xl border border-white/15 flex items-center gap-2.5 transition-all">
+    <div id="toastNotification" class="no-print fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] hidden px-5 py-3 rounded-2xl bg-slate-900 text-white text-xs sm:text-sm font-extrabold shadow-2xl border border-white/15 flex items-center gap-2.5 transition-all">
         <span id="toastIcon">✅</span>
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
@@ -1460,6 +1561,7 @@
                     category: tx.category || 'عام',
                     date: tx.date || todayISO(),
                     description: tx.description || tx.desc || 'بدون وصف',
+                    photos: Array.isArray(tx.photos) ? tx.photos.slice(0, 2) : [],
                     entryOrder,
                     createdAt: tx.createdAt || (Date.now() + txIdx)
                 };
@@ -1498,6 +1600,21 @@
             return { validItems, expiredIds };
         }
 
+        function getFullManagerPermissionsObj() {
+            return {
+                addEditTx: true,
+                deleteTx: true,
+                addWs: true,
+                editWs: true,
+                toggleWs: true,
+                deleteWs: true,
+                printExport: true,
+                useOwnPrintInfo: true,
+                editOwnProfile: true,
+                manageCats: true
+            };
+        }
+
         function normalizeFullState(raw) {
             let adminUsername = isValidCredentialStr(appState.admin?.username) ? appState.admin.username : 'anas';
             let adminPassword = isValidCredentialStr(appState.admin?.password) ? appState.admin.password : '123';
@@ -1534,13 +1651,15 @@
                 .map(u => {
                     const p = u.permissions || {};
                     const legacyManageWs = !!(p.manageWs || p.manageWorkshops);
+                    const isCoManager = u.role === 'manager' || u.isManager === true;
                     return {
                         username: String(u.username ?? u.user).trim(),
                         password: isValidCredentialStr(u.password ?? u.pass) ? String(u.password ?? u.pass).trim() : '',
                         fullName: isValidCredentialStr(u.fullName ?? u.name) ? String(u.fullName ?? u.name).trim() : '',
                         phone: isValidCredentialStr(u.phone ?? u.mobile) ? String(u.phone ?? u.mobile).trim() : '',
+                        role: isCoManager ? 'manager' : 'sub',
                         allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
-                        permissions: {
+                        permissions: isCoManager ? getFullManagerPermissionsObj() : {
                             addEditTx: p.addEditTx !== false,
                             deleteTx: !!(p.deleteTx || p.editDeleteTx),
                             addWs: !!(p.addWs || p.manageWorkshops),
@@ -1549,6 +1668,7 @@
                             deleteWs: typeof p.deleteWs === 'boolean' ? p.deleteWs : legacyManageWs,
                             printExport: p.printExport !== false && p.print !== false,
                             useOwnPrintInfo: !!p.useOwnPrintInfo,
+                            editOwnProfile: !!p.editOwnProfile,
                             manageCats: p.manageCats !== false
                         }
                     };
@@ -1778,6 +1898,11 @@
                         deletedWorkshops: validTrashItems
                     };
                     const normalized = normalizeFullState(mergedRaw);
+                    const photoDocs = allDocs.filter(d => d.name.includes('/tx_photo_doc_'));
+                    applyCloudTransactionPhotos(
+                        [...normalized.workshops, ...normalized.deletedWorkshops],
+                        photoDocs
+                    );
                     const newHash = JSON.stringify(normalized);
                     if (newHash !== lastCloudHash) {
                         appState = normalized;
@@ -1785,17 +1910,21 @@
                         updateCloudCapacityMeter();
 
                         if (currentUser && !isModalOpen && !isReorderMode) {
-                            if (currentUser.role === 'sub') {
+                            if (currentUser.role === 'sub' || currentUser.role === 'manager') {
                                 const updatedSub = appState.subUsers.find(u => u.username === currentUser.username);
-                                if (updatedSub) {
-                                    currentUser.permissions = updatedSub.permissions;
-                                    currentUser.allowedWorkshops = updatedSub.allowedWorkshops || [];
-                                    currentUser.password = updatedSub.password;
-                                    currentUser.fullName = updatedSub.fullName || '';
-                                    currentUser.phone = updatedSub.phone || '';
-                                    applyRolePermissionsUI();
-                                    updateCurrentUserHeaderBadge();
+                                if (!updatedSub) {
+                                    showToast('تم إلغاء أو حذف حسابك من قبل الإدارة', '🔒');
+                                    logout();
+                                    return true;
                                 }
+                                currentUser.role = updatedSub.role === 'manager' ? 'manager' : 'sub';
+                                currentUser.permissions = updatedSub.role === 'manager' ? getFullManagerPermissionsObj() : updatedSub.permissions;
+                                currentUser.allowedWorkshops = updatedSub.role === 'manager' ? 'ALL' : (updatedSub.allowedWorkshops || []);
+                                currentUser.password = updatedSub.password;
+                                currentUser.fullName = updatedSub.fullName || '';
+                                currentUser.phone = updatedSub.phone || '';
+                                applyRolePermissionsUI();
+                                updateCurrentUserHeaderBadge();
                             } else if (currentUser.role === 'admin') {
                                 currentUser.fullName = appState.admin.fullName || '';
                                 currentUser.phone = appState.admin.phone || '';
@@ -1869,7 +1998,7 @@
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
-                        transactions: keepTxsInMaster ? (w.transactions || []) : []
+                        transactions: keepTxsInMaster ? stripWorkshopPhotos(w).transactions : []
                     })),
                     deletedWorkshops: appState.deletedWorkshops.map((w, idx) => ({
                         id: w.id,
@@ -1880,7 +2009,7 @@
                         categories: w.categories || ['عام'],
                         deletedAt: w.deletedAt || Date.now(),
                         deletedBy: w.deletedBy || '',
-                        transactions: keepTxsInMaster ? (w.transactions || []) : []
+                        transactions: keepTxsInMaster ? stripWorkshopPhotos(w).transactions : []
                     })),
                     updatedAt: Date.now()
                 };
@@ -1925,7 +2054,7 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     fields: {
-                                        payload: { stringValue: JSON.stringify(targetWs) },
+                                        payload: { stringValue: JSON.stringify(stripWorkshopPhotos(targetWs)) },
                                         updatedAt: { integerValue: String(Date.now()) }
                                     }
                                 })
@@ -1955,7 +2084,7 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     fields: {
-                                        payload: { stringValue: JSON.stringify(ws) },
+                                        payload: { stringValue: JSON.stringify(stripWorkshopPhotos(ws)) },
                                         updatedAt: { integerValue: String(Date.now()) }
                                     }
                                 })
@@ -1969,12 +2098,55 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     fields: {
-                                        payload: { stringValue: JSON.stringify(tws) },
+                                        payload: { stringValue: JSON.stringify(stripWorkshopPhotos(tws)) },
                                         updatedAt: { integerValue: String(Date.now()) }
                                     }
                                 })
                             })
                         );
+                    }
+                }
+
+                // مزامنة صور البنود في مستندات سحابية مستقلة، مع حذف الصور اليتيمة فقط.
+                // كل صورة مضغوطة مسبقاً، ولا تُحفظ أي نسخة محلية دائمة.
+                const allCloudDocsForPhotos = await fetchAllDocsInCollection(FIRESTORE_COLLECTION);
+                const existingPhotoDocs = allCloudDocsForPhotos.filter(d => d.name.includes('/tx_photo_doc_'));
+                const desiredPhotoDocIds = new Set();
+                const allWorkshopsForPhotos = [...appState.workshops, ...appState.deletedWorkshops];
+
+                for (const photoWs of allWorkshopsForPhotos) {
+                    for (const photoTx of (photoWs.transactions || [])) {
+                        const photos = Array.isArray(photoTx.photos) ? photoTx.photos : [];
+                        for (let slot = 0; slot < 2; slot++) {
+                            const dataUrl = photos[slot];
+                            const docId = `tx_photo_doc_${photoWs.id}_${photoTx.id}_${slot}`;
+                            if (!dataUrl) continue;
+                            desiredPhotoDocIds.add(docId);
+                            requests.push(
+                                fetch(`${FIRESTORE_BASE_URL}/${docId}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        fields: {
+                                            payload: { stringValue: JSON.stringify({
+                                                wsId: photoWs.id,
+                                                txId: photoTx.id,
+                                                slot,
+                                                dataUrl
+                                            }) },
+                                            updatedAt: { integerValue: String(Date.now()) }
+                                        }
+                                    })
+                                })
+                            );
+                        }
+                    }
+                }
+
+                for (const doc of existingPhotoDocs) {
+                    const docId = doc.name.split('/').pop();
+                    if (!desiredPhotoDocIds.has(docId)) {
+                        requests.push(fetch(`${FIRESTORE_BASE_URL}/${docId}`, { method: 'DELETE' }));
                     }
                 }
 
@@ -2019,7 +2191,7 @@
             }
         }
 
-        // ==================== 7. AUTHENTICATION & SESSION PERSISTENCE ON REFRESH ====================
+        // ==================== 7. AUTHENTICATION, ROLES & SESSION PERSISTENCE ====================
         function persistAuthSession(username, password) {
             try {
                 sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
@@ -2048,17 +2220,7 @@
                     fullName: appState.admin.fullName || '',
                     phone: appState.admin.phone || '',
                     companyName: appState.admin.companyName || '',
-                    permissions: {
-                        addEditTx: true,
-                        deleteTx: true,
-                        addWs: true,
-                        editWs: true,
-                        toggleWs: true,
-                        deleteWs: true,
-                        printExport: true,
-                        useOwnPrintInfo: true,
-                        manageCats: true
-                    },
+                    permissions: getFullManagerPermissionsObj(),
                     allowedWorkshops: 'ALL'
                 };
                 return true;
@@ -2069,15 +2231,16 @@
             );
             if (subIdx !== -1) {
                 const sub = appState.subUsers[subIdx];
+                const isCoManager = sub.role === 'manager';
                 currentUser = {
-                    role: 'sub',
+                    role: isCoManager ? 'manager' : 'sub',
                     subIndex: subIdx,
                     username: sub.username,
                     password: sub.password,
                     fullName: sub.fullName || '',
                     phone: sub.phone || '',
-                    permissions: sub.permissions,
-                    allowedWorkshops: sub.allowedWorkshops || []
+                    permissions: isCoManager ? getFullManagerPermissionsObj() : sub.permissions,
+                    allowedWorkshops: isCoManager ? 'ALL' : (sub.allowedWorkshops || [])
                 };
                 return true;
             }
@@ -2126,19 +2289,19 @@
                     companyName: fixedCompany,
                     personName: adminName,
                     phone: adminPhone,
-                    sourceLabel: 'بيانات المهندس المسؤول (المدير)'
+                    sourceLabel: 'بيانات المدير الأساسي'
                 };
             }
 
             const subObj = appState.subUsers.find(u => u.username === currentUser.username) || currentUser;
-            const useOwn = !!subObj.permissions?.useOwnPrintInfo;
+            const useOwn = currentUser.role === 'manager' || !!subObj.permissions?.useOwnPrintInfo;
 
             if (useOwn) {
                 return {
                     companyName: fixedCompany,
                     personName: (subObj.fullName || '').trim() || adminName,
                     phone: (subObj.phone || '').trim() || adminPhone,
-                    sourceLabel: 'بيانات صاحب الحساب الفرعي'
+                    sourceLabel: currentUser.role === 'manager' ? 'بيانات المدير' : 'بيانات صاحب الحساب الفرعي'
                 };
             }
 
@@ -2146,7 +2309,7 @@
                 companyName: fixedCompany,
                 personName: adminName,
                 phone: adminPhone,
-                sourceLabel: 'بيانات المهندس المسؤول (المدير)'
+                sourceLabel: 'بيانات المدير الأساسي'
             };
         }
 
@@ -2187,9 +2350,9 @@
             document.getElementById('btnCloseProfileNameModal').classList.add('hidden');
             document.getElementById('inputUserFullName').value = '';
             document.getElementById('inputUserPhone').value = '';
-            const isAdmin = currentUser?.role === 'admin';
-            document.getElementById('profileAdminCompanyWrapper').classList.toggle('hidden', !isAdmin);
-            if (isAdmin) {
+            const isRootAdmin = currentUser?.role === 'admin';
+            document.getElementById('profileAdminCompanyWrapper').classList.toggle('hidden', !isRootAdmin);
+            if (isRootAdmin) {
                 document.getElementById('inputAdminCompanyFromProfile').value = appState.admin.companyName || '';
             }
             openModal('profileNameModal');
@@ -2224,8 +2387,65 @@
             showToast('تم حفظ اسمك ورقم هاتفك في حسابك السحابي بنجاح', '👤');
         }
 
+        // ==================== SELF-EDIT PROFILE FOR SUB-USERS & MANAGERS ====================
+        function openEditMyProfileModal() {
+            if (!currentUser || currentUser.role === 'admin') return;
+            const subObj = appState.subUsers.find(u => u.username === currentUser.username);
+            if (!subObj) return;
+            if (currentUser.role !== 'manager' && !subObj.permissions?.editOwnProfile) {
+                showToast('ليس لديك صلاحية تعديل بيانات الحساب', '🔒');
+                return;
+            }
+
+            document.getElementById('myProfileUsernameInput').value = subObj.username;
+            document.getElementById('myProfilePasswordInput').value = subObj.password;
+            document.getElementById('myProfileFullNameInput').value = subObj.fullName || '';
+            document.getElementById('myProfilePhoneInput').value = subObj.phone || '';
+            openModal('editMyProfileModal');
+        }
+
+        async function saveMySelfProfile(e) {
+            e.preventDefault();
+            if (!currentUser || currentUser.role === 'admin') return;
+            const idx = appState.subUsers.findIndex(u => u.username === currentUser.username);
+            if (idx === -1) return;
+
+            const newU = document.getElementById('myProfileUsernameInput').value.trim();
+            const newP = document.getElementById('myProfilePasswordInput').value.trim();
+            const newF = document.getElementById('myProfileFullNameInput').value.trim();
+            const newPh = document.getElementById('myProfilePhoneInput').value.trim();
+
+            if (!isValidCredentialStr(newU) || !isValidCredentialStr(newP) || !newF) {
+                showToast('يرجى تعبئة اسم المستخدم وكلمة المرور والاسم الكامل بشكل صحيح', '⚠️');
+                return;
+            }
+
+            if (newU === appState.admin.username || appState.subUsers.some((u, i) => i !== idx && u.username === newU)) {
+                showToast('اسم المستخدم هذا مستخدم لحساب آخر، يرجى اختيار اسم مختلف!', '⚠️');
+                return;
+            }
+
+            appState.subUsers[idx].username = newU;
+            appState.subUsers[idx].password = newP;
+            appState.subUsers[idx].fullName = newF;
+            appState.subUsers[idx].phone = newPh;
+
+            currentUser.username = newU;
+            currentUser.password = newP;
+            currentUser.fullName = newF;
+            currentUser.phone = newPh;
+
+            persistAuthSession(newU, newP);
+            updateCurrentUserHeaderBadge();
+            closeModal('editMyProfileModal');
+            await saveToCloud();
+            showToast('تم حفظ بيانات حسابك الجديدة في السحابة بنجاح', '✅');
+        }
+
         function updateCurrentUserHeaderBadge() {
-            const roleLabel = currentUser.role === 'admin' ? 'المهندس المسؤول' : 'مستخدم فرعي';
+            const roleLabel = currentUser.role === 'admin'
+                ? 'المدير الأساسي'
+                : (currentUser.role === 'manager' ? 'مدير' : 'مستخدم فرعي');
             const shownName = currentUser.role === 'admin'
                 ? (appState.admin.fullName || currentUser.username)
                 : (currentUser.fullName || currentUser.username);
@@ -2238,21 +2458,26 @@
         }
 
         function applyRolePermissionsUI() {
-            const isAdmin = currentUser.role === 'admin';
+            const isRootAdmin = currentUser.role === 'admin';
+            const isCoManager = currentUser.role === 'manager';
+            const isAnyManager = isRootAdmin || isCoManager;
             const perms = currentUser.permissions;
 
-            document.getElementById('btnUsersManager').classList.toggle('hidden', !isAdmin);
-            document.getElementById('btnBackupReset').classList.toggle('hidden', !isAdmin);
-            document.getElementById('btnTrashManager').classList.toggle('hidden', !perms.deleteWs && !isAdmin);
+            document.getElementById('btnUsersManager').classList.toggle('hidden', !isAnyManager);
+            document.getElementById('btnBackupReset').classList.toggle('hidden', !isRootAdmin);
+            document.getElementById('btnTrashManager').classList.toggle('hidden', !perms.deleteWs && !isAnyManager);
             document.getElementById('addWorkshopForm').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnImportWorkshop').classList.toggle('hidden', !perms.addWs);
-            document.getElementById('btnToggleReorderWs').classList.toggle('hidden', !isAdmin);
+            document.getElementById('btnToggleReorderWs').classList.toggle('hidden', !isAnyManager);
             document.getElementById('txActionButtonsBar').classList.toggle('hidden', !perms.addEditTx);
             document.getElementById('btnManageCategories').classList.toggle('hidden', !perms.manageCats);
             document.getElementById('btnEditWsInfo').classList.toggle('hidden', !perms.editWs);
             document.getElementById('btnToggleWsStatus').classList.toggle('hidden', !perms.toggleWs);
             document.getElementById('exportPrintGroup').classList.toggle('hidden', !perms.printExport);
             document.getElementById('btnExportWsJson').classList.toggle('hidden', !perms.printExport);
+
+            const canSelfEdit = !isRootAdmin && (isCoManager || !!perms.editOwnProfile);
+            document.getElementById('btnEditMyProfile').classList.toggle('hidden', !canSelfEdit);
         }
 
         function logout() {
@@ -2268,13 +2493,13 @@
 
         function getAccessibleWorkshops() {
             if (!currentUser) return [];
-            if (currentUser.role === 'admin') return appState.workshops;
+            if (currentUser.role === 'admin' || currentUser.role === 'manager') return appState.workshops;
             return appState.workshops.filter(w => currentUser.allowedWorkshops.includes(w.id));
         }
 
         function getAccessibleDeletedWorkshops() {
             if (!currentUser) return [];
-            if (currentUser.role === 'admin') return appState.deletedWorkshops;
+            if (currentUser.role === 'admin' || currentUser.role === 'manager') return appState.deletedWorkshops;
             return appState.deletedWorkshops.filter(w =>
                 currentUser.allowedWorkshops.includes(w.id) || w.deletedBy === currentUser.username
             );
@@ -2690,14 +2915,19 @@
         function requestOwnerPasswordForSubUserDelete(idx) {
             const sub = appState.subUsers[idx];
             if (!sub) return;
+            if (sub.role === 'manager' && currentUser.role !== 'admin') {
+                showToast('حذف حساب مدير متاح حصراً للمدير الأساسي!', '🔒');
+                return;
+            }
+            const roleWord = sub.role === 'manager' ? 'المدير' : 'المستخدم الفرعي';
             const userLabel = sub.fullName ? `${sub.fullName} (${sub.username})` : sub.username;
 
             document.getElementById('pendingActionWsId').value = String(idx);
             document.getElementById('pendingActionType').value = 'deleteSubUser';
-            document.getElementById('ownerAuthModalTitle').textContent = '🔐 تأكيد حذف المستخدم الفرعي';
+            document.getElementById('ownerAuthModalTitle').textContent = `🔐 تأكيد حذف ${roleWord}`;
             document.getElementById('ownerAuthPasswordInput').value = '';
             document.getElementById('ownerAuthStatusMessage').textContent =
-                `لحذف حساب المستخدم الفرعي "${userLabel}" نهائياً من السحابة، يرجى إدخال كلمة مرور حسابك الحالي (${currentUser.username}) للتأكيد:`;
+                `لحذف حساب ${roleWord} "${userLabel}" نهائياً من السحابة، يرجى إدخال كلمة مرور حسابك الحالي (${currentUser.username}) للتأكيد:`;
 
             const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
             confirmBtn.textContent = '🗑️ تأكيد حذف الحساب';
@@ -2729,12 +2959,14 @@
             if (actionType === 'deleteSubUser') {
                 const idx = parseInt(targetIdOrIdx, 10);
                 if (!isNaN(idx) && appState.subUsers[idx]) {
-                    const deletedName = appState.subUsers[idx].username;
+                    const targetAcc = appState.subUsers[idx];
+                    if (targetAcc.role === 'manager' && currentUser.role !== 'admin') return;
+                    const deletedName = targetAcc.username;
                     appState.subUsers.splice(idx, 1);
                     resetSubUserForm();
                     renderSubUsersList();
                     await saveToCloud();
-                    showToast(`تم حذف المستخدم الفرعي "${deletedName}" من السحابة بنجاح`, '🗑️');
+                    showToast(`تم حذف الحساب "${deletedName}" من السحابة بنجاح`, '🗑️');
                 }
                 return;
             }
@@ -2776,7 +3008,7 @@
             if (activeWorkshopId) requestOwnerPasswordForWorkshopStatus(activeWorkshopId);
         }
 
-        // ==================== TRASH BIN MODAL: RESTORE, PERMANENT DELETE & EMPTY TRASH (MOBILE OPTIMIZED) ====================
+        // ==================== TRASH BIN MODAL: RESTORE, PERMANENT DELETE & EMPTY TRASH ====================
         function updateTrashBadgeCounter() {
             const items = getAccessibleDeletedWorkshops();
             const badge = document.getElementById('trashCountBadge');
@@ -3332,6 +3564,7 @@
                 const mobileActionsHtml = (canEdit || canDelete) ? `
                     <div class="sm:hidden no-print flex items-center gap-1 mt-1.5 pt-1 border-t border-black/10">
                         ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2 py-0.5 rounded bg-white/90 text-indigo-800 border border-slate-300 text-[10px] font-extrabold">تعديل</button>` : ''}
+                        ${(tx.photos || []).some(Boolean) ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-sky-800 border border-slate-300 text-[10px] font-extrabold">الصور</button>` : ''}
                         ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-rose-700 border border-slate-300 text-[10px] font-extrabold">حذف</button>` : ''}
                     </div>
                 ` : '';
@@ -3349,6 +3582,7 @@
                         <td class="hidden sm:table-cell no-print py-2.5 px-3 text-center whitespace-nowrap">
                             <div class="inline-flex items-center gap-1.5">
                                 ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-indigo-600 text-indigo-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">تعديل</button>` : ''}
+                                ${(tx.photos || []).some(Boolean) ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-sky-600 text-sky-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">الصور</button>` : ''}
                                 ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-rose-600 text-rose-700 hover:text-white border border-slate-300 text-xs font-extrabold transition">حذف</button>` : ''}
                             </div>
                         </td>
@@ -3370,12 +3604,156 @@
             }
         }
 
+        // صور الحركات: تُضغط في المتصفح ثم تُحفظ في مستندات Firestore مستقلة
+        // حتى لا تكبر مستندات الورشات أو تتأثر تقارير PDF والطباعة وExcel.
+        let txPendingPhotos = [];
+
+        function compressTxImage(file) {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) {
+                    reject(new Error('الملف المحدد ليس صورة صالحة'));
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        let maxSide = 1280;
+                        let ratio = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d', { alpha: false });
+                        let compressed = '';
+                        // إبقاء مستند الصورة أقل بكثير من حد Firestore البالغ 1 MiB.
+                        for (const quality of [0.68, 0.58, 0.48, 0.40]) {
+                            canvas.width = Math.max(1, Math.round(img.naturalWidth * ratio));
+                            canvas.height = Math.max(1, Math.round(img.naturalHeight * ratio));
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            compressed = canvas.toDataURL('image/jpeg', quality);
+                            if (compressed.length <= 700 * 1024) break;
+                        }
+                        if (compressed.length > 700 * 1024) {
+                            maxSide = 900;
+                            ratio = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+                            canvas.width = Math.max(1, Math.round(img.naturalWidth * ratio));
+                            canvas.height = Math.max(1, Math.round(img.naturalHeight * ratio));
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            compressed = canvas.toDataURL('image/jpeg', 0.42);
+                        }
+                        URL.revokeObjectURL(objectUrl);
+                        if (compressed.length > 700 * 1024) {
+                            reject(new Error('تعذر ضغط الصورة إلى الحجم المسموح'));
+                        } else {
+                            resolve(compressed);
+                        }
+                    } catch (err) {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(err);
+                    }
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error('تعذر قراءة الصورة'));
+                };
+                img.src = objectUrl;
+            });
+        }
+
+        function renderTxPhotoPreviews() {
+            const list = document.getElementById('txPhotoPreviewList');
+            const count = document.getElementById('txPhotoCount');
+            if (!list || !count) return;
+            count.textContent = `${txPendingPhotos.filter(Boolean).length} / 2`;
+            list.innerHTML = txPendingPhotos.map((src, index) => src ? `
+                <div class="relative rounded-xl border border-slate-300 bg-white p-1.5">
+                    <img src="${src}" alt="صورة البند ${index + 1}" class="w-full h-28 object-cover rounded-lg">
+                    <button type="button" onclick="removeTxPhoto(${index})"
+                        class="mt-1 w-full py-1 rounded-lg bg-rose-100 text-rose-700 text-[10px] font-black">إزالة الصورة</button>
+                </div>
+            ` : '').join('');
+        }
+
+        async function handleTxPhotoSelection(event) {
+            const files = Array.from(event.target.files || []);
+            event.target.value = '';
+            if (!files.length) return;
+            const freeSlots = 2 - txPendingPhotos.filter(Boolean).length;
+            if (freeSlots <= 0) {
+                showToast('يمكن إرفاق صورتين فقط لكل بند', '⚠️');
+                return;
+            }
+            if (files.length > freeSlots) {
+                showToast('تم اختيار عدد أكبر من المساحة المتاحة؛ سيتم اعتماد أول صورتين فقط', '⚠️');
+            }
+            try {
+                for (const file of files.slice(0, freeSlots)) {
+                    if (file.size > 12 * 1024 * 1024) {
+                        showToast('حجم الصورة الأصلية كبير جداً؛ الحد الأقصى 12 ميغابايت للصورة', '⚠️');
+                        continue;
+                    }
+                    const compressed = await compressTxImage(file);
+                    const emptyIndex = txPendingPhotos.findIndex(x => !x);
+                    if (emptyIndex >= 0) txPendingPhotos[emptyIndex] = compressed;
+                    else if (txPendingPhotos.length < 2) txPendingPhotos.push(compressed);
+                }
+                txPendingPhotos = txPendingPhotos.slice(0, 2);
+                renderTxPhotoPreviews();
+            } catch (err) {
+                console.error('Image compression failed:', err);
+                showToast('تعذر ضغط إحدى الصور أو قراءتها', '⚠️');
+            }
+        }
+
+        function removeTxPhoto(index) {
+            if (index < 0 || index > 1) return;
+            txPendingPhotos[index] = null;
+            renderTxPhotoPreviews();
+        }
+
+        function showTransactionPhotos(txId) {
+            const ws = getActiveWorkshop();
+            const tx = ws && ws.transactions.find(item => item.id === txId);
+            if (!tx) return;
+            const photos = (tx.photos || []).filter(Boolean);
+            const content = document.getElementById('txPhotosViewContent');
+            content.innerHTML = photos.length ? photos.map((src, i) => `
+                <div class="rounded-xl border border-slate-200 p-2 bg-slate-50">
+                    <img src="${src}" alt="صورة البند ${i + 1}" class="w-full max-h-[55vh] object-contain rounded-lg">
+                    <div class="text-center text-xs font-bold text-slate-500 mt-2">الصورة ${i + 1} من ${photos.length}</div>
+                </div>
+            `).join('') : '<div class="col-span-full py-8 text-center text-sm font-bold text-slate-500">لا توجد صور مرفقة لهذا البند</div>';
+            openModal('txPhotosViewModal');
+        }
+
+        function stripWorkshopPhotos(workshop) {
+            const copy = JSON.parse(JSON.stringify(workshop));
+            (copy.transactions || []).forEach(tx => { delete tx.photos; });
+            return copy;
+        }
+
+        function applyCloudTransactionPhotos(workshops, photoDocs) {
+            const workshopMap = new Map((workshops || []).map(ws => [ws.id, ws]));
+            for (const doc of (photoDocs || [])) {
+                const payload = parseFirestoreDocument(doc);
+                if (!payload || !payload.wsId || !payload.txId || !payload.dataUrl) continue;
+                const ws = workshopMap.get(payload.wsId);
+                const tx = ws && (ws.transactions || []).find(item => item.id === payload.txId);
+                if (!tx) continue;
+                if (!Array.isArray(tx.photos)) tx.photos = [];
+                tx.photos[Number(payload.slot) || 0] = payload.dataUrl;
+            }
+        }
+
         function openTxModal(type, editTxId = null) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             document.getElementById('txModalWsSubtitle').textContent = `الورشة: ${ws.name}`;
             const editTypeWrapper = document.getElementById('txEditTypeWrapper');
+            txPendingPhotos = [];
 
             if (editTxId) {
                 const tx = ws.transactions.find(t => t.id === editTxId);
@@ -3392,6 +3770,7 @@
                 populateTxCategorySelect(tx.category || 'عام');
                 document.getElementById('txDate').value = tx.date;
                 document.getElementById('txDescription').value = tx.description || '';
+                txPendingPhotos = Array.isArray(tx.photos) ? tx.photos.slice(0, 2) : [];
             } else {
                 document.getElementById('txEditId').value = '';
                 document.getElementById('txFixedType').value = type;
@@ -3406,6 +3785,7 @@
                 document.getElementById('txDescription').value = '';
             }
 
+            renderTxPhotoPreviews();
             openModal('txModal');
         }
 
@@ -3444,7 +3824,8 @@
                         currency,
                         category,
                         date,
-                        description
+                        description,
+                        photos: txPendingPhotos.slice(0, 2)
                     };
                 }
             } else {
@@ -3456,6 +3837,7 @@
                     category,
                     date,
                     description,
+                    photos: txPendingPhotos.slice(0, 2),
                     entryOrder: ws.transactions.length,
                     createdAt: Date.now()
                 });
@@ -3463,8 +3845,12 @@
 
             closeModal('txModal');
             refreshAllViewsAfterSync();
-            await saveToCloud(ws.id);
-            showToast(editId ? 'تم تعديل الحركة وحفظها في السحابة' : 'تمت إضافة الحركة وحفظها في السحابة', '✅');
+            const cloudSaved = await saveToCloud(ws.id);
+            if (cloudSaved) {
+                showToast(editId ? 'تم تعديل الحركة وحفظها في السحابة' : 'تمت إضافة الحركة وحفظها في السحابة', '✅');
+            } else {
+                showToast('لم يتم تأكيد الحفظ السحابي. الحركة ما زالت ظاهرة حالياً؛ لا تغلق الصفحة قبل نجاح المزامنة.', '⚠️');
+            }
         }
 
         function deleteTransaction(txId) {
@@ -3664,9 +4050,9 @@
             if (!ws) return;
 
             const eff = getEffectiveUserPrintProfile();
-            const isAdmin = currentUser?.role === 'admin';
+            const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
-            if (!isAdmin) {
+            if (!isAnyManager) {
                 document.getElementById('printInputCompany').value = eff.companyName || '';
                 document.getElementById('printInputPerson').value = eff.personName || '';
                 document.getElementById('printInputPhone').value = eff.phone || '';
@@ -3703,15 +4089,15 @@
             if (!ws) return;
 
             const eff = getEffectiveUserPrintProfile();
-            const isAdmin = currentUser?.role === 'admin';
+            const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
-            const company = isAdmin
+            const company = isAnyManager
                 ? (document.getElementById('printInputCompany').value.trim() || eff.companyName)
                 : eff.companyName;
-            const person = isAdmin
+            const person = isAnyManager
                 ? (document.getElementById('printInputPerson').value.trim() || eff.personName)
                 : eff.personName;
-            const phone = isAdmin
+            const phone = isAnyManager
                 ? (document.getElementById('printInputPhone').value.trim() || eff.phone)
                 : eff.phone;
 
@@ -4129,7 +4515,6 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(aoa);
 
-                // تنسيق الأرقام داخل خلايا الجدول (أعمدة المبالغ وسعر الصرف)
                 for (let r = 5; r < 5 + rows.length; r++) {
                     const rateCell = worksheet[XLSX.utils.encode_cell({ r, c: 5 })];
                     if (rateCell && typeof rateCell.v === 'number') rateCell.z = '#,##0.00';
@@ -4292,14 +4677,29 @@
             reader.readAsText(file);
         }
 
-        // ==================== 16. USERS & GRANULAR SEPARATED PERMISSIONS MANAGER ====================
+        // ==================== 16. USERS, MANAGERS & GRANULAR SEPARATED PERMISSIONS MANAGER ====================
+        function handleAccountRoleTypeChange() {
+            const roleVal = document.getElementById('subUserRoleSelect').value;
+            const isMgr = roleVal === 'manager';
+            document.getElementById('managerFullAccessBanner').classList.toggle('hidden', !isMgr);
+            document.getElementById('subUserPermissionsSection').classList.toggle('hidden', isMgr);
+        }
+
         function openUsersModal() {
-            if (currentUser.role !== 'admin') return;
-            document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
-            document.getElementById('adminPasswordInput').value = isValidCredentialStr(appState.admin.password) ? appState.admin.password : '';
-            document.getElementById('adminFullNameInput').value = isValidCredentialStr(appState.admin.fullName) ? appState.admin.fullName : '';
-            document.getElementById('adminPhoneInput').value = isValidCredentialStr(appState.admin.phone) ? appState.admin.phone : '';
-            document.getElementById('adminCompanyNameInput').value = isValidCredentialStr(appState.admin.companyName) ? appState.admin.companyName : '';
+            if (currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
+            const isRootAdmin = currentUser.role === 'admin';
+
+            document.getElementById('primaryAdminSettingsBox').classList.toggle('hidden', !isRootAdmin);
+            document.getElementById('accountRoleSelectorWrapper').classList.toggle('hidden', !isRootAdmin);
+
+            if (isRootAdmin) {
+                document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
+                document.getElementById('adminPasswordInput').value = isValidCredentialStr(appState.admin.password) ? appState.admin.password : '';
+                document.getElementById('adminFullNameInput').value = isValidCredentialStr(appState.admin.fullName) ? appState.admin.fullName : '';
+                document.getElementById('adminPhoneInput').value = isValidCredentialStr(appState.admin.phone) ? appState.admin.phone : '';
+                document.getElementById('adminCompanyNameInput').value = isValidCredentialStr(appState.admin.companyName) ? appState.admin.companyName : '';
+            }
+
             resetSubUserForm();
             renderSubUsersList();
             openModal('usersModal');
@@ -4307,6 +4707,7 @@
 
         async function updateAdminCredentials(e) {
             e.preventDefault();
+            if (currentUser.role !== 'admin') return;
             const u = document.getElementById('adminUsernameInput').value.trim();
             const p = document.getElementById('adminPasswordInput').value.trim();
             const fn = document.getElementById('adminFullNameInput').value.trim();
@@ -4323,18 +4724,16 @@
             appState.admin.phone = ph;
             appState.admin.companyName = cn;
 
-            if (currentUser.role === 'admin') {
-                currentUser.username = u;
-                currentUser.password = p;
-                currentUser.fullName = fn;
-                currentUser.phone = ph;
-                currentUser.companyName = cn;
-                persistAuthSession(u, p);
-                updateCurrentUserHeaderBadge();
-            }
+            currentUser.username = u;
+            currentUser.password = p;
+            currentUser.fullName = fn;
+            currentUser.phone = ph;
+            currentUser.companyName = cn;
+            persistAuthSession(u, p);
+            updateCurrentUserHeaderBadge();
 
             await saveToCloud();
-            showToast('تم تحديث وحفظ بيانات المهندس المسؤول والشركة في السحابة بنجاح', '🛡️');
+            showToast('تم تحديث وحفظ بيانات المدير الأساسي والشركة في السحابة بنجاح', '👑');
         }
 
         function renderSubUserWorkshopCheckboxes(selectedIds = []) {
@@ -4357,8 +4756,9 @@
 
         function resetSubUserForm() {
             document.getElementById('subUserEditIndex').value = '-1';
-            document.getElementById('subUserFormTitle').textContent = '➕ إضافة مستخدم فرعي جديد وتحديد صلاحياته';
+            document.getElementById('subUserFormTitle').textContent = '➕ إضافة مستخدم أو مدير جديد وتحديد صلاحياته';
             document.getElementById('btnCancelSubUserEdit').classList.add('hidden');
+            document.getElementById('subUserRoleSelect').value = 'sub';
             document.getElementById('subUsername').value = '';
             document.getElementById('subPassword').value = '';
             document.getElementById('subFullName').value = '';
@@ -4371,17 +4771,25 @@
             document.getElementById('permDeleteWs').checked = false;
             document.getElementById('permPrintExport').checked = true;
             document.getElementById('permUseOwnPrintInfo').checked = false;
+            document.getElementById('permEditOwnProfile').checked = false;
             document.getElementById('permManageCats').checked = true;
+            handleAccountRoleTypeChange();
             renderSubUserWorkshopCheckboxes([]);
         }
 
         function editSubUser(idx) {
             const sub = appState.subUsers[idx];
             if (!sub) return;
+            if (sub.role === 'manager' && currentUser.role !== 'admin') {
+                showToast('تعديل حساب مدير متاح حصراً للمدير الأساسي!', '🔒');
+                return;
+            }
             document.getElementById('subUserEditIndex').value = String(idx);
-            document.getElementById('subUserFormTitle').textContent = `✏️ تعديل صلاحيات المستخدم: ${sub.username}`;
+            const roleWord = sub.role === 'manager' ? 'المدير' : 'المستخدم';
+            document.getElementById('subUserFormTitle').textContent = `✏️ تعديل بيانات ${roleWord}: ${sub.username}`;
             document.getElementById('btnCancelSubUserEdit').classList.remove('hidden');
 
+            document.getElementById('subUserRoleSelect').value = sub.role === 'manager' ? 'manager' : 'sub';
             document.getElementById('subUsername').value = sub.username;
             document.getElementById('subPassword').value = sub.password;
             document.getElementById('subFullName').value = sub.fullName || '';
@@ -4395,33 +4803,49 @@
             document.getElementById('permDeleteWs').checked = !!sub.permissions?.deleteWs;
             document.getElementById('permPrintExport').checked = sub.permissions?.printExport !== false;
             document.getElementById('permUseOwnPrintInfo').checked = !!sub.permissions?.useOwnPrintInfo;
+            document.getElementById('permEditOwnProfile').checked = !!sub.permissions?.editOwnProfile;
             document.getElementById('permManageCats').checked = sub.permissions?.manageCats !== false;
 
+            handleAccountRoleTypeChange();
             renderSubUserWorkshopCheckboxes(sub.allowedWorkshops || []);
         }
 
         async function saveSubUser(e) {
             e.preventDefault();
             const editIdx = parseInt(document.getElementById('subUserEditIndex').value, 10);
+            const selectedRole = currentUser.role === 'admin'
+                ? document.getElementById('subUserRoleSelect').value
+                : 'sub';
+            const isMgr = selectedRole === 'manager';
+
+            if (editIdx >= 0 && appState.subUsers[editIdx]?.role === 'manager' && currentUser.role !== 'admin') {
+                showToast('غير مسموح بتعديل حساب مدير إلا من المدير الأساسي!', '🔒');
+                return;
+            }
+
             const username = document.getElementById('subUsername').value.trim();
             const password = document.getElementById('subPassword').value.trim();
             const fullName = document.getElementById('subFullName').value.trim();
             const phone = document.getElementById('subPhone').value.trim();
 
             if (!isValidCredentialStr(username) || !isValidCredentialStr(password)) return;
-            if (username === appState.admin.username) {
-                showToast('لا يمكن استخدام نفس اسم دخول المدير!', '⚠️');
+            if (username === appState.admin.username || appState.subUsers.some((u, i) => i !== editIdx && u.username === username)) {
+                showToast('اسم المستخدم هذا مستخدم مسبقاً، اختر اسماً آخر!', '⚠️');
                 return;
             }
 
-            const allowedWorkshops = Array.from(document.querySelectorAll('.sub-ws-checkbox:checked')).map(cb => cb.value);
+            const allowedWorkshops = isMgr
+                ? appState.workshops.map(w => w.id)
+                : Array.from(document.querySelectorAll('.sub-ws-checkbox:checked')).map(cb => cb.value);
+
             const userObj = {
                 username,
                 password,
                 fullName,
                 phone,
+                role: isMgr ? 'manager' : 'sub',
                 allowedWorkshops,
-                permissions: {
+                permissions: isMgr ? getFullManagerPermissionsObj() : {
                     addEditTx: document.getElementById('permAddEditTx').checked,
                     deleteTx: document.getElementById('permDeleteTx').checked,
                     addWs: document.getElementById('permAddWs').checked,
@@ -4430,6 +4854,7 @@
                     deleteWs: document.getElementById('permDeleteWs').checked,
                     printExport: document.getElementById('permPrintExport').checked,
                     useOwnPrintInfo: document.getElementById('permUseOwnPrintInfo').checked,
+                    editOwnProfile: document.getElementById('permEditOwnProfile').checked,
                     manageCats: document.getElementById('permManageCats').checked
                 }
             };
@@ -4443,7 +4868,7 @@
             resetSubUserForm();
             renderSubUsersList();
             await saveToCloud();
-            showToast('تم حفظ بيانات وصلاحيات المستخدم في السحابة', '👥');
+            showToast(isMgr ? 'تم حفظ حساب المدير بصلاحيات كاملة في السحابة' : 'تم حفظ بيانات وصلاحيات المستخدم في السحابة', '👥');
         }
 
         function deleteSubUser(idx) {
@@ -4453,41 +4878,60 @@
         function renderSubUsersList() {
             const container = document.getElementById('subUsersListContainer');
             if (appState.subUsers.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-xs font-bold text-slate-500">لا يوجد مستخدمون فرعيون حالياً</div>`;
+                container.innerHTML = `<div class="p-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-xs font-bold text-slate-500">لا يوجد مدراء أو مستخدمون فرعيون حالياً</div>`;
                 return;
             }
 
+            const isRootAdmin = currentUser.role === 'admin';
+
             container.innerHTML = appState.subUsers.map((sub, idx) => {
+                const isMgr = sub.role === 'manager';
                 const p = sub.permissions || {};
                 const badges = [];
-                if (p.addEditTx) badges.push('إضافة/تعديل حركات');
-                if (p.deleteTx) badges.push('حذف حركات');
-                if (p.addWs) badges.push('إضافة ورشات');
-                if (p.editWs) badges.push('تعديل الورشات');
-                if (p.toggleWs) badges.push('تفعيل/إيقاف الورشات');
-                if (p.deleteWs) badges.push('حذف الورشات');
-                if (p.printExport) badges.push('طباعة وتصدير');
-                if (p.useOwnPrintInfo) badges.push('الطباعة باسم وجوال الفرعي');
-                else badges.push('الطباعة باسم وجوال المدير');
-                if (p.manageCats) badges.push('إدارة التصنيفات');
+                if (isMgr) {
+                    badges.push('صلاحيات كاملة على النظام وكافة الورشات');
+                    badges.push('إدارة الحسابات الفرعية');
+                } else {
+                    if (p.addEditTx) badges.push('إضافة/تعديل حركات');
+                    if (p.deleteTx) badges.push('حذف حركات');
+                    if (p.addWs) badges.push('إضافة ورشات');
+                    if (p.editWs) badges.push('تعديل الورشات');
+                    if (p.toggleWs) badges.push('تفعيل/إيقاف الورشات');
+                    if (p.deleteWs) badges.push('حذف الورشات');
+                    if (p.printExport) badges.push('طباعة وتصدير');
+                    if (p.useOwnPrintInfo) badges.push('الطباعة باسم وجوال الفرعي');
+                    else badges.push('الطباعة باسم وجوال المدير');
+                    if (p.editOwnProfile) badges.push('تعديل بياناته الشخصية');
+                    if (p.manageCats) badges.push('إدارة التصنيفات');
+                }
+
+                const canManageThisAccount = isRootAdmin || !isMgr;
 
                 return `
-                    <div class="p-3.5 rounded-2xl border border-slate-300 bg-white flex flex-wrap items-center justify-between gap-3">
+                    <div class="p-3.5 rounded-2xl border-2 ${isMgr ? 'border-amber-300 bg-amber-50/40' : 'border-slate-300 bg-white'} flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <div class="text-sm font-black text-slate-900">
-                                👤 ${escapeHtml(sub.username)}
+                            <div class="flex flex-wrap items-center gap-2 text-sm font-black text-slate-900">
+                                <span>${isMgr ? '🛡️' : '👤'} ${escapeHtml(sub.username)}</span>
+                                ${isMgr
+                                    ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black shadow-sm">رتبة: مدير</span>`
+                                    : `<span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-extrabold">مستخدم فرعي</span>`
+                                }
                                 ${sub.fullName ? `<span class="text-xs font-bold text-indigo-700">(${escapeHtml(sub.fullName)})</span>` : ''}
                                 ${sub.phone ? `<span class="text-xs font-bold text-emerald-700" dir="ltr">[📱 ${escapeHtml(sub.phone)}]</span>` : ''}
-                                <span class="text-xs font-bold text-slate-400 mr-2">كلمة المرور: ${escapeHtml(sub.password)}</span>
+                                ${canManageThisAccount ? `<span class="text-xs font-bold text-slate-400">كلمة المرور: ${escapeHtml(sub.password)}</span>` : ''}
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
-                                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">الورشات: ${(sub.allowedWorkshops || []).length}</span>
-                                ${badges.map(b => `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">${b}</span>`).join('')}
+                                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">الورشات: ${isMgr ? 'الكل' : (sub.allowedWorkshops || []).length}</span>
+                                ${badges.map(b => `<span class="px-2 py-0.5 rounded ${isMgr ? 'bg-amber-100 text-amber-950' : 'bg-slate-100 text-slate-700'} text-[10px] font-bold">${b}</span>`).join('')}
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="editSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white text-xs font-extrabold transition">تعديل</button>
-                            <button type="button" onclick="deleteSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">حذف</button>
+                            ${canManageThisAccount ? `
+                                <button type="button" onclick="editSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white text-xs font-extrabold transition">تعديل</button>
+                                <button type="button" onclick="deleteSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">حذف</button>
+                            ` : `
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold">🔒 محمي للمدير الأساسي</span>
+                            `}
                         </div>
                     </div>
                 `;
