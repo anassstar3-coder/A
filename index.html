@@ -269,7 +269,7 @@
                             <h1 class="text-base sm:text-lg font-black tracking-tight text-white">نظام إدارة محاسبة الورشات</h1>
                             <div class="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-300 mt-0.5">
                                 <span id="currentUserBadge" class="text-amber-300">👤 --</span>
-                                <button onclick="openEditProfileNameModal()" title="تعديل اسمك الشخصي للطباعة"
+                                <button id="btnEditOwnProfileName" onclick="openEditProfileNameModal()" title="تعديل اسمك الشخصي للطباعة"
                                     class="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-sky-200 border border-white/15 transition text-[10px] font-extrabold">
                                     ✏️ تعديل الاسم
                                 </button>
@@ -470,7 +470,6 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- زر التشغيل/الإيقاف يظهر فقط لمن لديه صلاحية toggleWs ويطلب كلمة سر حسابه -->
                         <button id="btnToggleWsStatus" onclick="toggleCurrentWorkshopStatus()"
                             class="no-grayscale-btn px-3.5 py-2 rounded-xl text-xs font-black shadow transition flex items-center gap-1.5">
                         </button>
@@ -552,12 +551,12 @@
                                     <span>📊</span>
                                     <span>Excel</span>
                                 </button>
-                                <button onclick="openPrintDetailsModal('pdf')"
+                                <button onclick="handlePrintOrPdfRequest('pdf')"
                                     class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
                                     <span>📄</span>
                                     <span>تصدير PDF (A4)</span>
                                 </button>
-                                <button onclick="openPrintDetailsModal('print')"
+                                <button onclick="handlePrintOrPdfRequest('print')"
                                     class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
                                     <span>🖨</span>
                                     <span>طباعة مباشرة</span>
@@ -969,9 +968,9 @@
                 <div class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
                     <h4 class="text-sm font-black text-indigo-950 mb-3 flex items-center gap-2">
                         <span>🛡️</span>
-                        <span>بيانات المدير الأساسي للنظام</span>
+                        <span>بيانات المدير الأساسي للنظام وترويسة الشركة الافتراضية</span>
                     </h4>
-                    <form onsubmit="updateAdminCredentials(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <form onsubmit="updateAdminCredentials(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         <div>
                             <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الدخول للمدير</label>
                             <input type="text" id="adminUsernameInput" required
@@ -985,6 +984,11 @@
                         <div>
                             <label class="block text-[11px] font-extrabold text-slate-700 mb-1">الاسم الشخصي (للطباعة)</label>
                             <input type="text" id="adminFullNameInput" required
+                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الشركة الافتراضي</label>
+                            <input type="text" id="adminCompanyNameInput" placeholder="اختياري..."
                                 class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
                         </div>
                         <div class="flex items-end">
@@ -1002,7 +1006,7 @@
                     </div>
                     <form onsubmit="saveSubUser(event)" class="space-y-4">
                         <input type="hidden" id="subUserEditIndex" value="-1">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المستخدم للدخول *</label>
                                 <input type="text" id="subUsername" required placeholder="مثال: ahmad"
@@ -1014,15 +1018,20 @@
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">الاسم الشخصي (يُطلب منه إن تُرك فارغاً)</label>
-                                <input type="text" id="subFullName" placeholder="الاسم للطباعة..."
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم صاحب الحساب (للطباعة)</label>
+                                <input type="text" id="subFullName" placeholder="يُؤخذ من المالك إن تُرك فارغاً..."
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الشركة (للطباعة)</label>
+                                <input type="text" id="subCompanyName" placeholder="اسم الشركة المخصص له..."
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم (مفصولة بالكامل):</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permAddEditTx" checked class="w-4 h-4 accent-indigo-600">
                                     <span>إضافة وتعديل الحركات</span>
@@ -1050,6 +1059,10 @@
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permPrintExport" checked class="w-4 h-4 accent-blue-600">
                                     <span>الطباعة وتصدير PDF / Excel</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="permEditPrintHeader" checked class="w-4 h-4 accent-cyan-600">
+                                    <span>تعديل اسم الشركة والاسم عند الطباعة</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permManageCats" checked class="w-4 h-4 accent-purple-600">
@@ -1169,7 +1182,7 @@
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + SESSION PERSISTENCE ON REFRESH) ==================== -->
+    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + SESSION PERSISTENCE + PRINT HEADER PERMISSIONS) ==================== -->
     <script>
         // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
         const FIREBASE_PROJECT_ID = 'anas-alasfar';
@@ -1186,7 +1199,8 @@
             admin: {
                 username: 'anas',
                 password: '123',
-                fullName: ''
+                fullName: '',
+                companyName: ''
             },
             subUsers: [],
             workshops: []
@@ -1383,14 +1397,17 @@
             let adminUsername = isValidCredentialStr(appState.admin?.username) ? appState.admin.username : 'anas';
             let adminPassword = isValidCredentialStr(appState.admin?.password) ? appState.admin.password : '123';
             let adminFullName = isValidCredentialStr(appState.admin?.fullName) ? appState.admin.fullName : '';
+            let adminCompanyName = isValidCredentialStr(appState.admin?.companyName) ? appState.admin.companyName : '';
 
             if (raw && raw.admin) {
                 const candU = raw.admin.username ?? raw.admin.user;
                 const candP = raw.admin.password ?? raw.admin.pass;
                 const candF = raw.admin.fullName ?? raw.admin.name;
+                const candC = raw.admin.companyName ?? raw.admin.company;
                 if (isValidCredentialStr(candU)) adminUsername = String(candU).trim();
                 if (isValidCredentialStr(candP)) adminPassword = String(candP).trim();
                 if (isValidCredentialStr(candF)) adminFullName = String(candF).trim();
+                if (isValidCredentialStr(candC)) adminCompanyName = String(candC).trim();
             } else if (raw && (raw.adminUser || raw.adminUsername || raw.adminPass || raw.adminPassword)) {
                 const candU = raw.adminUser ?? raw.adminUsername;
                 const candP = raw.adminPass ?? raw.adminPassword;
@@ -1413,6 +1430,7 @@
                         username: String(u.username ?? u.user).trim(),
                         password: isValidCredentialStr(u.password ?? u.pass) ? String(u.password ?? u.pass).trim() : '',
                         fullName: isValidCredentialStr(u.fullName ?? u.name) ? String(u.fullName ?? u.name).trim() : '',
+                        companyName: isValidCredentialStr(u.companyName ?? u.company) ? String(u.companyName ?? u.company).trim() : '',
                         allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
                         permissions: {
                             addEditTx: p.addEditTx !== false,
@@ -1422,6 +1440,7 @@
                             toggleWs: typeof p.toggleWs === 'boolean' ? p.toggleWs : legacyManageWs,
                             deleteWs: typeof p.deleteWs === 'boolean' ? p.deleteWs : legacyManageWs,
                             printExport: p.printExport !== false && p.print !== false,
+                            editPrintHeader: p.editPrintHeader !== false,
                             manageCats: p.manageCats !== false
                         }
                     };
@@ -1437,7 +1456,8 @@
                 admin: {
                     username: adminUsername,
                     password: adminPassword,
-                    fullName: adminFullName
+                    fullName: adminFullName,
+                    companyName: adminCompanyName
                 },
                 subUsers: subUsersArr,
                 workshops: workshopsArr
@@ -1655,8 +1675,15 @@
                                     currentUser.permissions = updatedSub.permissions;
                                     currentUser.allowedWorkshops = updatedSub.allowedWorkshops || [];
                                     currentUser.password = updatedSub.password;
+                                    currentUser.fullName = updatedSub.fullName || '';
+                                    currentUser.companyName = updatedSub.companyName || '';
                                     applyRolePermissionsUI();
+                                    updateCurrentUserHeaderBadge();
                                 }
+                            } else if (currentUser.role === 'admin') {
+                                currentUser.fullName = appState.admin.fullName || '';
+                                currentUser.companyName = appState.admin.companyName || '';
+                                updateCurrentUserHeaderBadge();
                             }
                             const accessible = getAccessibleWorkshops();
                             if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
@@ -1703,7 +1730,8 @@
                     admin: {
                         username: String(appState.admin.username || 'anas').trim(),
                         password: String(appState.admin.password || '123').trim(),
-                        fullName: String(appState.admin.fullName || '').trim()
+                        fullName: String(appState.admin.fullName || '').trim(),
+                        companyName: String(appState.admin.companyName || '').trim()
                     },
                     subUsers: appState.subUsers,
                     workshops: appState.workshops.map((w, idx) => ({
@@ -1850,6 +1878,7 @@
                     username: adminU,
                     password: adminP,
                     fullName: appState.admin.fullName || '',
+                    companyName: appState.admin.companyName || '',
                     permissions: {
                         addEditTx: true,
                         deleteTx: true,
@@ -1858,6 +1887,7 @@
                         toggleWs: true,
                         deleteWs: true,
                         printExport: true,
+                        editPrintHeader: true,
                         manageCats: true
                     },
                     allowedWorkshops: 'ALL'
@@ -1876,6 +1906,7 @@
                     username: sub.username,
                     password: sub.password,
                     fullName: sub.fullName || '',
+                    companyName: sub.companyName || '',
                     permissions: sub.permissions,
                     allowedWorkshops: sub.allowedWorkshops || []
                 };
@@ -1916,6 +1947,24 @@
             errBox.classList.remove('hidden');
         });
 
+        function getEffectiveUserPrintProfile() {
+            const adminName = (appState.admin.fullName || '').trim();
+            const adminCompany = (appState.admin.companyName || '').trim();
+            if (!currentUser || currentUser.role === 'admin') {
+                return {
+                    personName: adminName,
+                    companyName: adminCompany
+                };
+            }
+            const subObj = appState.subUsers.find(u => u.username === currentUser.username) || currentUser;
+            const subName = (subObj.fullName || '').trim();
+            const subCompany = (subObj.companyName || '').trim();
+            return {
+                personName: subName || adminName,
+                companyName: subCompany || adminCompany
+            };
+        }
+
         function enterApplication() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
@@ -1933,7 +1982,9 @@
 
             refreshAllViewsAfterSync();
 
-            if (!currentUser.fullName || !currentUser.fullName.trim()) {
+            const effectiveProfile = getEffectiveUserPrintProfile();
+            const canEditHeader = currentUser.role === 'admin' || !!currentUser.permissions?.editPrintHeader;
+            if (!effectiveProfile.personName && canEditHeader) {
                 openMandatoryProfileNameModal();
             }
 
@@ -1953,9 +2004,14 @@
         }
 
         function openEditProfileNameModal() {
+            if (currentUser.role !== 'admin' && !currentUser.permissions?.editPrintHeader) {
+                showToast('تم تحديد بيانات الطباعة الخاصة بك من قِبل مدير النظام', '🔒');
+                return;
+            }
             document.getElementById('profileNameModalTitle').textContent = '✏️ تعديل اسمك الشخصي للطباعة';
             document.getElementById('btnCloseProfileNameModal').classList.remove('hidden');
-            document.getElementById('inputUserFullName').value = currentUser?.fullName || '';
+            const eff = getEffectiveUserPrintProfile();
+            document.getElementById('inputUserFullName').value = eff.personName || '';
             openModal('profileNameModal');
         }
 
@@ -1980,7 +2036,11 @@
 
         function updateCurrentUserHeaderBadge() {
             const roleLabel = currentUser.role === 'admin' ? 'مدير النظام' : 'مستخدم فرعي';
-            const displayName = currentUser.fullName ? `${currentUser.fullName} (${currentUser.username})` : currentUser.username;
+            const eff = getEffectiveUserPrintProfile();
+            const shownName = currentUser.role === 'admin'
+                ? (appState.admin.fullName || currentUser.username)
+                : (currentUser.fullName || eff.personName || currentUser.username);
+            const displayName = shownName && shownName !== currentUser.username ? `${shownName} (${currentUser.username})` : currentUser.username;
             document.getElementById('currentUserBadge').textContent = `👤 ${displayName} • ${roleLabel}`;
         }
 
@@ -1990,6 +2050,7 @@
 
             document.getElementById('btnUsersManager').classList.toggle('hidden', !isAdmin);
             document.getElementById('btnBackupReset').classList.toggle('hidden', !isAdmin);
+            document.getElementById('btnEditOwnProfileName').classList.toggle('hidden', !isAdmin && !perms.editPrintHeader);
             document.getElementById('addWorkshopForm').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnImportWorkshop').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnToggleReorderWs').classList.toggle('hidden', !isAdmin);
@@ -3153,10 +3214,31 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (FULL TABLE WITH TYPE COLUMN) ====================
+        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (WITH ROLE-BASED HEADER PERMISSIONS) ====================
+        function handlePrintOrPdfRequest(mode) {
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+
+            const eff = getEffectiveUserPrintProfile();
+            const canEditHeader = currentUser.role === 'admin' || !!currentUser.permissions?.editPrintHeader;
+
+            if (!canEditHeader) {
+                // المستخدم غير مخول بتعديل الترويسة: يعتمد النظام الاسم واسم الشركة المحددين من المالك مسبقاً
+                document.getElementById('printInputCompany').value = eff.companyName || '';
+                document.getElementById('printInputPerson').value = eff.personName || '';
+                document.getElementById('printInputPhone').value = '';
+                triggerActualPrintOrPdf(mode);
+                return;
+            }
+
+            openPrintDetailsModal(mode);
+        }
+
         function openPrintDetailsModal(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
+
+            const eff = getEffectiveUserPrintProfile();
 
             document.getElementById('printActionMode').value = mode;
             document.getElementById('printDetailsTitle').textContent = mode === 'pdf'
@@ -3166,9 +3248,14 @@
                 ? '📄 إنشاء وحفظ PDF الرسمي الآن'
                 : '🖨 طباعة الكشف الرسمي الآن';
 
+            const companyInput = document.getElementById('printInputCompany');
+            if (!companyInput.value.trim() && eff.companyName) {
+                companyInput.value = eff.companyName;
+            }
+
             const personInput = document.getElementById('printInputPerson');
-            if (!personInput.value.trim() && currentUser?.fullName) {
-                personInput.value = currentUser.fullName;
+            if (!personInput.value.trim() && eff.personName) {
+                personInput.value = eff.personName;
             }
 
             openModal('printDetailsModal');
@@ -3178,8 +3265,9 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
 
-            const company = document.getElementById('printInputCompany').value.trim();
-            const person = document.getElementById('printInputPerson').value.trim();
+            const eff = getEffectiveUserPrintProfile();
+            const company = document.getElementById('printInputCompany').value.trim() || eff.companyName;
+            const person = document.getElementById('printInputPerson').value.trim() || eff.personName;
             const phone = document.getElementById('printInputPhone').value.trim();
             const fType = document.getElementById('txFilterType').value;
 
@@ -3355,13 +3443,10 @@
             `;
         }
 
-        function executePrintOrPdf(e) {
-            e.preventDefault();
-            const mode = document.getElementById('printActionMode').value;
+        function triggerActualPrintOrPdf(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
-            closeModal('printDetailsModal');
             buildOfficialCorporatePrintSheet();
 
             const prevTitle = document.title;
@@ -3375,6 +3460,13 @@
                 window.print();
                 document.title = prevTitle;
             }, 250);
+        }
+
+        function executePrintOrPdf(e) {
+            e.preventDefault();
+            const mode = document.getElementById('printActionMode').value;
+            closeModal('printDetailsModal');
+            triggerActualPrintOrPdf(mode);
         }
 
         function exportWorkshopExcel() {
@@ -3538,6 +3630,7 @@
             document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
             document.getElementById('adminPasswordInput').value = isValidCredentialStr(appState.admin.password) ? appState.admin.password : '';
             document.getElementById('adminFullNameInput').value = isValidCredentialStr(appState.admin.fullName) ? appState.admin.fullName : '';
+            document.getElementById('adminCompanyNameInput').value = isValidCredentialStr(appState.admin.companyName) ? appState.admin.companyName : '';
             resetSubUserForm();
             renderSubUsersList();
             openModal('usersModal');
@@ -3548,6 +3641,7 @@
             const u = document.getElementById('adminUsernameInput').value.trim();
             const p = document.getElementById('adminPasswordInput').value.trim();
             const fn = document.getElementById('adminFullNameInput').value.trim();
+            const cn = document.getElementById('adminCompanyNameInput').value.trim();
             if (!isValidCredentialStr(u) || !isValidCredentialStr(p) || !fn) {
                 showToast('يرجى إدخال اسم مستخدم وكلمة مرور صالحة!', '⚠️');
                 return;
@@ -3556,17 +3650,19 @@
             appState.admin.username = u;
             appState.admin.password = p;
             appState.admin.fullName = fn;
+            appState.admin.companyName = cn;
 
             if (currentUser.role === 'admin') {
                 currentUser.username = u;
                 currentUser.password = p;
                 currentUser.fullName = fn;
+                currentUser.companyName = cn;
                 persistAuthSession(u, p);
                 updateCurrentUserHeaderBadge();
             }
 
             await saveToCloud();
-            showToast('تم تحديث وحفظ بيانات المدير وكلمة المرور في السحابة بنجاح', '🛡️');
+            showToast('تم تحديث وحفظ بيانات المدير والشركة في السحابة بنجاح', '🛡️');
         }
 
         function renderSubUserWorkshopCheckboxes(selectedIds = []) {
@@ -3594,6 +3690,7 @@
             document.getElementById('subUsername').value = '';
             document.getElementById('subPassword').value = '';
             document.getElementById('subFullName').value = '';
+            document.getElementById('subCompanyName').value = '';
             document.getElementById('permAddEditTx').checked = true;
             document.getElementById('permDeleteTx').checked = false;
             document.getElementById('permAddWs').checked = false;
@@ -3601,6 +3698,7 @@
             document.getElementById('permToggleWs').checked = false;
             document.getElementById('permDeleteWs').checked = false;
             document.getElementById('permPrintExport').checked = true;
+            document.getElementById('permEditPrintHeader').checked = true;
             document.getElementById('permManageCats').checked = true;
             renderSubUserWorkshopCheckboxes([]);
         }
@@ -3615,6 +3713,7 @@
             document.getElementById('subUsername').value = sub.username;
             document.getElementById('subPassword').value = sub.password;
             document.getElementById('subFullName').value = sub.fullName || '';
+            document.getElementById('subCompanyName').value = sub.companyName || '';
 
             document.getElementById('permAddEditTx').checked = sub.permissions?.addEditTx !== false;
             document.getElementById('permDeleteTx').checked = !!sub.permissions?.deleteTx;
@@ -3623,6 +3722,7 @@
             document.getElementById('permToggleWs').checked = !!sub.permissions?.toggleWs;
             document.getElementById('permDeleteWs').checked = !!sub.permissions?.deleteWs;
             document.getElementById('permPrintExport').checked = sub.permissions?.printExport !== false;
+            document.getElementById('permEditPrintHeader').checked = sub.permissions?.editPrintHeader !== false;
             document.getElementById('permManageCats').checked = sub.permissions?.manageCats !== false;
 
             renderSubUserWorkshopCheckboxes(sub.allowedWorkshops || []);
@@ -3634,6 +3734,7 @@
             const username = document.getElementById('subUsername').value.trim();
             const password = document.getElementById('subPassword').value.trim();
             const fullName = document.getElementById('subFullName').value.trim();
+            const companyName = document.getElementById('subCompanyName').value.trim();
 
             if (!isValidCredentialStr(username) || !isValidCredentialStr(password)) return;
             if (username === appState.admin.username) {
@@ -3646,6 +3747,7 @@
                 username,
                 password,
                 fullName,
+                companyName,
                 allowedWorkshops,
                 permissions: {
                     addEditTx: document.getElementById('permAddEditTx').checked,
@@ -3655,6 +3757,7 @@
                     toggleWs: document.getElementById('permToggleWs').checked,
                     deleteWs: document.getElementById('permDeleteWs').checked,
                     printExport: document.getElementById('permPrintExport').checked,
+                    editPrintHeader: document.getElementById('permEditPrintHeader').checked,
                     manageCats: document.getElementById('permManageCats').checked
                 }
             };
@@ -3695,6 +3798,8 @@
                 if (p.toggleWs) badges.push('تفعيل/إيقاف الورشات');
                 if (p.deleteWs) badges.push('حذف الورشات');
                 if (p.printExport) badges.push('طباعة وتصدير');
+                if (p.editPrintHeader !== false) badges.push('تعديل ترويسة الطباعة');
+                else badges.push('ترويسة طباعة ثابتة من المالك');
                 if (p.manageCats) badges.push('إدارة التصنيفات');
 
                 return `
@@ -3703,6 +3808,7 @@
                             <div class="text-sm font-black text-slate-900">
                                 👤 ${escapeHtml(sub.username)}
                                 ${sub.fullName ? `<span class="text-xs font-bold text-indigo-700">(${escapeHtml(sub.fullName)})</span>` : ''}
+                                ${sub.companyName ? `<span class="text-xs font-bold text-emerald-700">[${escapeHtml(sub.companyName)}]</span>` : ''}
                                 <span class="text-xs font-bold text-slate-400 mr-2">كلمة المرور: ${escapeHtml(sub.password)}</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5 mt-1.5">
