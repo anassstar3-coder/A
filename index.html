@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <!-- html2pdf for Direct Real A4 PDF Download with Intact Arabic Shaping -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS for Real Native .xlsx Excel Files Compatible with Mobile & Desktop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -3318,7 +3320,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD (FIXED MOBILE VIEWPORT & ARABIC SPACING) & UNCHANGED PRINT ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, UNCHANGED PRINT & NATIVE MOBILE-COMPATIBLE .XLSX EXCEL ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3580,7 +3582,6 @@
                     await document.fonts.ready;
                 }
 
-                // ضبط عرض الجسم والورقة عند الإحداثيات (0,0) بدقة 730px لمنع القص الجانبي على شاشات الجوال
                 appEl.classList.add('hidden');
                 document.body.classList.add('pdf-export-mode');
                 sheet.classList.add('pdf-render-active');
@@ -3642,7 +3643,6 @@
                 return;
             }
 
-            // الطباعة المباشرة تبقى كما هي تماماً
             const prevTitle = document.title;
             document.title = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}`;
 
@@ -3665,92 +3665,172 @@
 
             const fType = document.getElementById('txFilterType').value;
             const rows = getFilteredTransactions(ws);
+            const cleanFileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.xlsx`;
 
-            let trHtml = '';
+            // بناء مصفوفة بيانات Excel حقيقية (.xlsx) متوافقة 100% مع الجوال والكمبيوتر
+            if (typeof XLSX !== 'undefined') {
+                const aoa = [
+                    [`كشف حساب ورشة: ${ws.name} (${todayISO()})`],
+                    [ws.description || ''],
+                    [
+                        'التاريخ',
+                        'النوع',
+                        'البند',
+                        'البيان',
+                        'إيراد دولار ($)',
+                        'مصروف دولار ($)',
+                        'إيراد سوري (ل.س)',
+                        'مصروف سوري (ل.س)'
+                    ]
+                ];
+
+                rows.forEach((tx) => {
+                    let typeText = '';
+                    let catText = tx.category || 'عام';
+                    let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
+
+                    if (tx.type === 'income') {
+                        typeText = 'إيراد';
+                        if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
+                        else sypIn = Number(tx.amount) || 0;
+                    } else if (tx.type === 'expense') {
+                        typeText = 'مصروف';
+                        if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
+                        else sypOut = Number(tx.amount) || 0;
+                    } else if (tx.type === 'exchange') {
+                        typeText = fType === 'income_with_in_exchange'
+                            ? 'تحويل وارد'
+                            : (fType === 'expense_with_out_exchange' ? 'تحويل صادر' : 'صرافة');
+                        catText = tx.rate ? `صرافة (سعر: ${tx.rate})` : 'صرافة';
+                        if (fType !== 'income_with_in_exchange') {
+                            if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
+                            else sypOut = Number(tx.fromAmount) || 0;
+                        }
+                        if (fType !== 'expense_with_out_exchange') {
+                            if (tx.toCurrency === 'USD') usdIn = Number(tx.toAmount) || 0;
+                            else sypIn = Number(tx.toAmount) || 0;
+                        }
+                    }
+
+                    aoa.push([
+                        tx.date || '',
+                        typeText,
+                        catText,
+                        tx.description || '',
+                        usdIn,
+                        usdOut,
+                        sypIn,
+                        sypOut
+                    ]);
+                });
+
+                const lastDataRow = rows.length + 3;
+                const totalRowIdx = aoa.length; // 0-based index for totals row
+                const netRowIdx = totalRowIdx + 1;
+
+                // صف المجموع الكلي مع معادلات Excel حقيقية
+                aoa.push([
+                    'المجموع الكلي',
+                    '',
+                    '',
+                    '',
+                    rows.length > 0 ? { t: 'n', f: `SUM(E4:E${lastDataRow})` } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(F4:F${lastDataRow})` } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(G4:G${lastDataRow})` } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(H4:H${lastDataRow})` } : 0
+                ]);
+
+                // صف الرصيد الصافي مع معادلات الطرح
+                const excelTotalRowNum = totalRowIdx + 1;
+                aoa.push([
+                    'الرصيد الصافي (USD / SYP)',
+                    '',
+                    '',
+                    '',
+                    { t: 'n', f: `E${excelTotalRowNum}-F${excelTotalRowNum}` },
+                    '',
+                    { t: 'n', f: `G${excelTotalRowNum}-H${excelTotalRowNum}` },
+                    ''
+                ]);
+
+                const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+
+                // دمج خلايا العنوان والوصف والمجاميع
+                worksheet['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
+                    { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 3 } },
+                    { s: { r: netRowIdx, c: 0 }, e: { r: netRowIdx, c: 3 } },
+                    { s: { r: netRowIdx, c: 4 }, e: { r: netRowIdx, c: 5 } },
+                    { s: { r: netRowIdx, c: 6 }, e: { r: netRowIdx, c: 7 } }
+                ];
+
+                // ضبط عرض الأعمدة تلقائياً
+                worksheet['!cols'] = [
+                    { wch: 14 },
+                    { wch: 14 },
+                    { wch: 20 },
+                    { wch: 36 },
+                    { wch: 16 },
+                    { wch: 16 },
+                    { wch: 18 },
+                    { wch: 18 }
+                ];
+
+                // ضبط اتجاه الورقة من اليمين إلى اليسار (RTL)
+                worksheet['!views'] = [{ rightToLeft: true }];
+
+                const workbook = XLSX.utils.book_new();
+                workbook.Workbook = { Views: [{ RTL: true }] };
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'كشف_الحساب');
+
+                const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = cleanFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+                showToast('تم تصدير ملف Excel (.xlsx) بنجاح ومتوافق مع الجوال والكمبيوتر', '📊');
+                return;
+            }
+
+            // خطة بديلة بصيغة CSV UTF-8 BOM في حال تعذر تحميل المكتبة
+            let csvRows = [
+                ['التاريخ', 'النوع', 'البند', 'البيان', 'إيراد دولار ($)', 'مصروف دولار ($)', 'إيراد سوري (ل.س)', 'مصروف سوري (ل.س)']
+            ];
             rows.forEach((tx) => {
-                let typeText = '';
-                let catText = tx.category || 'عام';
+                let typeText = tx.type === 'income' ? 'إيراد' : (tx.type === 'expense' ? 'مصروف' : 'صرافة');
+                let catText = tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام');
                 let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
-
                 if (tx.type === 'income') {
-                    typeText = 'إيراد';
                     if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
                     else sypIn = Number(tx.amount) || 0;
                 } else if (tx.type === 'expense') {
-                    typeText = 'مصروف';
                     if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
                     else sypOut = Number(tx.amount) || 0;
                 } else if (tx.type === 'exchange') {
-                    typeText = fType === 'income_with_in_exchange' ? 'تحويل وارد' : (fType === 'expense_with_out_exchange' ? 'تحويل صادر' : 'صرافة');
-                    catText = tx.rate ? `صرافة (سعر: ${tx.rate})` : 'صرافة';
-                    if (fType !== 'income_with_in_exchange') {
-                        if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
-                        else sypOut = Number(tx.fromAmount) || 0;
-                    }
-                    if (fType !== 'expense_with_out_exchange') {
-                        if (tx.toCurrency === 'USD') usdIn = Number(tx.toAmount) || 0;
-                        else sypIn = Number(tx.toAmount) || 0;
-                    }
+                    if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
+                    else sypOut = Number(tx.fromAmount) || 0;
+                    if (tx.toCurrency === 'USD') usdIn = Number(tx.toAmount) || 0;
+                    else sypIn = Number(tx.toAmount) || 0;
                 }
-
-                trHtml += `
-                    <tr>
-                        <td>${escapeHtml(tx.date)}</td>
-                        <td>${escapeHtml(typeText)}</td>
-                        <td>${escapeHtml(catText)}</td>
-                        <td>${escapeHtml(tx.description || '')}</td>
-                        <td>${usdIn}</td>
-                        <td>${usdOut}</td>
-                        <td>${sypIn}</td>
-                        <td>${sypOut}</td>
-                    </tr>`;
+                csvRows.push([tx.date, typeText, catText, `"${String(tx.description || '').replace(/"/g, '""')}"`, usdIn, usdOut, sypIn, sypOut]);
             });
-
-            const lastDataRow = rows.length + 3;
-            const totalRow = lastDataRow + 1;
-
-            const excelHtml = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="UTF-8"></head>
-                <body dir="rtl">
-                    <table border="1">
-                        <tr><th colspan="8" style="background:#0f172a;color:#fff;font-size:15px;">كشف حساب ورشة: ${escapeHtml(ws.name)} (${todayISO()})</th></tr>
-                        <tr><td colspan="8">${escapeHtml(ws.description || '')}</td></tr>
-                        <tr style="background:#1e293b;color:#fff;font-weight:bold;">
-                            <th>التاريخ</th>
-                            <th>النوع</th>
-                            <th>البند</th>
-                            <th>البيان</th>
-                            <th>إيراد دولار ($)</th>
-                            <th>مصروف دولار ($)</th>
-                            <th>إيراد سوري (ل.س)</th>
-                            <th>مصروف سوري (ل.س)</th>
-                        </tr>
-                        ${trHtml}
-                        <tr style="background:#e2e8f0;font-weight:bold;">
-                            <td colspan="4">المجموع الكلي (دوال Excel)</td>
-                            <td>=SUM(E4:E${lastDataRow})</td>
-                            <td>=SUM(F4:F${lastDataRow})</td>
-                            <td>=SUM(G4:G${lastDataRow})</td>
-                            <td>=SUM(H4:H${lastDataRow})</td>
-                        </tr>
-                        <tr style="background:#dcfce7;font-weight:bold;">
-                            <td colspan="4">الرصيد الصافي</td>
-                            <td colspan="2">=E${totalRow}-F${totalRow}</td>
-                            <td colspan="2">=G${totalRow}-H${totalRow}</td>
-                        </tr>
-                    </table>
-                </body>
-                </html>`;
-
-            const blob = new Blob(['\ufeff', excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const csvContent = '\ufeff' + csvRows.map(r => r.join(',')).join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.xls`;
+            a.download = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.csv`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('تم تصدير ملف Excel مع المعادلات بنجاح', '📊');
+            showToast('تم تصدير ملف الجدول بنجاح', '📊');
         }
 
         // ==================== 15. SINGLE WORKSHOP EXPORT / FUTURE-PROOF IMPORT ====================
