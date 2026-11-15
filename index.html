@@ -78,6 +78,50 @@
         .row-expense { background-color: #ffe4e6; }
         .row-exchange { background-color: #fef08a; }
 
+        /* تحسين عرض الجدول على شاشات الجوال فقط بدون تمرير أفقي */
+        @media (max-width: 639px) {
+            #txTableWrapper {
+                overflow-x: hidden !important;
+            }
+            #txMainTable {
+                table-layout: fixed !important;
+                width: 100% !important;
+            }
+            #txMainTable th,
+            #txMainTable td {
+                padding: 7px 4px !important;
+                font-size: 11px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            #txMainTable th.col-date,
+            #txMainTable td.col-date {
+                width: 21% !important;
+                font-size: 10px !important;
+                white-space: normal !important;
+                line-height: 1.25 !important;
+            }
+            #txMainTable th.col-cat,
+            #txMainTable td.col-cat {
+                width: 21% !important;
+                font-size: 10.5px !important;
+                line-height: 1.25 !important;
+            }
+            #txMainTable th.col-desc,
+            #txMainTable td.col-desc {
+                width: 34% !important;
+                font-size: 11px !important;
+                line-height: 1.3 !important;
+            }
+            #txMainTable th.col-amount,
+            #txMainTable td.col-amount {
+                width: 24% !important;
+                font-size: 11px !important;
+                white-space: normal !important;
+                line-height: 1.25 !important;
+            }
+        }
+
         @keyframes pulseGlow {
             0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
             50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
@@ -426,7 +470,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- زر التشغيل/الإيقاف يبقى ملوناً دائماً ويطلب كلمة سر المالك حصراً -->
+                        <!-- زر التشغيل/الإيقاف يظهر فقط لمن لديه صلاحية toggleWs ويطلب كلمة سر حسابه -->
                         <button id="btnToggleWsStatus" onclick="toggleCurrentWorkshopStatus()"
                             class="no-grayscale-btn px-3.5 py-2 rounded-xl text-xs font-black shadow transition flex items-center gap-1.5">
                         </button>
@@ -559,7 +603,7 @@
                             </div>
                         </div>
 
-                        <!-- صف التواريخ + خيار الحفاظ على ترتيب تنزيل البنود الأصلي أو الترتيب حسب التاريخ -->
+                        <!-- صف التواريخ + التحكم بالترتيب التصاعدي والتنازلي (حسب التاريخ أو حسب ترتيب التنزيل الأصلي) -->
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1 items-center">
                             <div class="sm:col-span-3 flex items-center gap-1.5">
                                 <span class="text-[11px] font-extrabold text-slate-500 shrink-0">من:</span>
@@ -572,16 +616,15 @@
                                     class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white">
                             </div>
                             <div class="sm:col-span-4 flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300">
-                                <select id="txSortOrderSelect" onchange="handleSortOrderSelectChange()"
+                                <select id="txSortDirectionSelect" onchange="renderTransactionsTable()"
                                     class="text-xs font-extrabold text-slate-800 bg-transparent focus:outline-none cursor-pointer flex-1 min-w-0">
-                                    <option value="entry">📋 الترتيب الأصلي (حسب التنزيل)</option>
-                                    <option value="desc">📅 التاريخ: تنازلي (الأحدث أولاً)</option>
-                                    <option value="asc">📅 التاريخ: تصاعدي (الأقدم أولاً)</option>
+                                    <option value="desc">⬇️ تنازلي (الأحدث أولاً)</option>
+                                    <option value="asc">⬆️ تصاعدي (الأقدم أولاً)</option>
                                 </select>
-                                <label class="inline-flex items-center gap-1.5 border-r border-slate-200 pr-2 cursor-pointer select-none shrink-0" title="تفعيل الفرز حسب التاريخ (وعند إزالته يعود الترتيب الأصلي حسب التنزيل)">
-                                    <input type="checkbox" id="chkEnableDateSort" onchange="handleEnableDateSortCheckbox(this)"
+                                <label class="inline-flex items-center gap-1.5 border-r border-slate-200 pr-2 cursor-pointer select-none shrink-0" title="عند التفعيل: الترتيب التصاعدي والتنازلي يعمل حسب التاريخ. وعند الإلغاء: يعمل حسب ترتيب تنزيل البنود الأصلي">
+                                    <input type="checkbox" id="chkSortByDate" onchange="renderTransactionsTable()"
                                         class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-                                    <span class="text-[11px] font-black text-indigo-700">ترتيب بالتاريخ</span>
+                                    <span class="text-[11px] font-black text-indigo-700">حسب التاريخ</span>
                                 </label>
                             </div>
                             <div class="sm:col-span-2 flex items-center justify-end text-xs font-extrabold text-slate-600">
@@ -591,15 +634,15 @@
                     </div>
 
                     <div id="txTableWrapper" class="overflow-x-auto rounded-2xl border-2 border-slate-300">
-                        <table class="w-full text-right border-collapse">
+                        <table id="txMainTable" class="w-full text-right border-collapse">
                             <thead>
                                 <tr class="bg-slate-900 text-white text-xs font-black">
-                                    <th class="py-3 px-3 border-b border-slate-700">التاريخ</th>
-                                    <th class="py-3 px-3 border-b border-slate-700">النوع</th>
-                                    <th class="py-3 px-3 border-b border-slate-700">البند / التصنيف</th>
-                                    <th class="py-3 px-3 border-b border-slate-700">البيان / الوصف</th>
-                                    <th class="py-3 px-3 border-b border-slate-700">المبلغ والعملة</th>
-                                    <th class="no-print py-3 px-3 border-b border-slate-700 text-center">إجراءات</th>
+                                    <th class="col-date py-3 px-3 border-b border-slate-700">التاريخ</th>
+                                    <th class="hidden sm:table-cell py-3 px-3 border-b border-slate-700">النوع</th>
+                                    <th class="col-cat py-3 px-3 border-b border-slate-700">البند</th>
+                                    <th class="col-desc py-3 px-3 border-b border-slate-700">البيان / الوصف</th>
+                                    <th class="col-amount py-3 px-3 border-b border-slate-700">المبلغ</th>
+                                    <th class="hidden sm:table-cell no-print py-3 px-3 border-b border-slate-700 text-center">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionsTableBody" class="divide-y divide-slate-300 text-xs sm:text-sm font-bold text-slate-900"></tbody>
@@ -615,19 +658,19 @@
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
-    <!-- MODAL: OWNER PASSWORD VERIFICATION FOR ACTIVATING / DEACTIVATING WORKSHOP -->
+    <!-- MODAL: PASSWORD VERIFICATION FOR ACTIVATING / DEACTIVATING WORKSHOP (OWNER OR AUTHORIZED SUB-USER) -->
     <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
-                <h3 class="text-base font-black text-amber-300">🔐 تحقق من كلمة سر المالك</h3>
+                <h3 class="text-base font-black text-amber-300">🔐 تأكيد كلمة مرور الحساب</h3>
                 <button type="button" onclick="closeModal('ownerAuthStatusModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
             <form onsubmit="confirmOwnerPasswordForWorkshopStatus(event)" class="p-5 space-y-4">
                 <input type="hidden" id="pendingStatusWsId">
                 <p id="ownerAuthStatusMessage" class="text-xs font-extrabold text-slate-700 leading-relaxed"></p>
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">كلمة سر حساب المالك الأساسي *</label>
-                    <input type="password" id="ownerAuthPasswordInput" required placeholder="أدخل كلمة سر المالك..."
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">أدخل كلمة مرور حسابك الشخصي للمتابعة *</label>
+                    <input type="password" id="ownerAuthPasswordInput" required placeholder="••••••••"
                         class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none text-sm font-black bg-slate-50 text-center">
                 </div>
                 <div class="flex items-center gap-2.5 pt-1">
@@ -978,11 +1021,11 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم:</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
+                            <label class="block text-xs font-black text-slate-800 mb-2">الصلاحيات الدقيقة للمستخدم (مفصولة بالكامل):</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs font-extrabold">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permAddEditTx" checked class="w-4 h-4 accent-indigo-600">
-                                    <span>إضافة وتعديل الحركات المالية</span>
+                                    <span>إضافة وتعديل الحركات</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permDeleteTx" class="w-4 h-4 accent-rose-600">
@@ -993,8 +1036,16 @@
                                     <span>إضافة ورشات جديدة</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="permManageWs" class="w-4 h-4 accent-amber-600">
-                                    <span>حذف وتعديل/إيقاف الورشات</span>
+                                    <input type="checkbox" id="permEditWs" class="w-4 h-4 accent-amber-600">
+                                    <span>تعديل اسم ووصف الورشات</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="permToggleWs" class="w-4 h-4 accent-teal-600">
+                                    <span>تفعيل وإيقاف الورشات</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="permDeleteWs" class="w-4 h-4 accent-red-600">
+                                    <span>حذف الورشات</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permPrintExport" checked class="w-4 h-4 accent-blue-600">
@@ -1354,20 +1405,26 @@
 
             const subUsersArr = rawSubs
                 .filter(u => isValidCredentialStr(u.username ?? u.user))
-                .map(u => ({
-                    username: String(u.username ?? u.user).trim(),
-                    password: isValidCredentialStr(u.password ?? u.pass) ? String(u.password ?? u.pass).trim() : '',
-                    fullName: isValidCredentialStr(u.fullName ?? u.name) ? String(u.fullName ?? u.name).trim() : '',
-                    allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
-                    permissions: {
-                        addEditTx: u.permissions?.addEditTx !== false,
-                        deleteTx: !!(u.permissions?.deleteTx || u.permissions?.editDeleteTx),
-                        addWs: !!(u.permissions?.addWs || u.permissions?.manageWorkshops),
-                        manageWs: !!(u.permissions?.manageWs || u.permissions?.manageWorkshops),
-                        printExport: u.permissions?.printExport !== false && u.permissions?.print !== false,
-                        manageCats: u.permissions?.manageCats !== false
-                    }
-                }));
+                .map(u => {
+                    const p = u.permissions || {};
+                    const legacyManageWs = !!(p.manageWs || p.manageWorkshops);
+                    return {
+                        username: String(u.username ?? u.user).trim(),
+                        password: isValidCredentialStr(u.password ?? u.pass) ? String(u.password ?? u.pass).trim() : '',
+                        fullName: isValidCredentialStr(u.fullName ?? u.name) ? String(u.fullName ?? u.name).trim() : '',
+                        allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
+                        permissions: {
+                            addEditTx: p.addEditTx !== false,
+                            deleteTx: !!(p.deleteTx || p.editDeleteTx),
+                            addWs: !!(p.addWs || p.manageWorkshops),
+                            editWs: typeof p.editWs === 'boolean' ? p.editWs : legacyManageWs,
+                            toggleWs: typeof p.toggleWs === 'boolean' ? p.toggleWs : legacyManageWs,
+                            deleteWs: typeof p.deleteWs === 'boolean' ? p.deleteWs : legacyManageWs,
+                            printExport: p.printExport !== false && p.print !== false,
+                            manageCats: p.manageCats !== false
+                        }
+                    };
+                });
 
             const workshopsArr = Array.isArray(raw?.workshops)
                 ? raw.workshops.map((w, idx) => normalizeWorkshopData(w, idx))
@@ -1591,6 +1648,15 @@
                         updateCloudCapacityMeter();
 
                         if (currentUser && !isModalOpen && !isReorderMode) {
+                            if (currentUser.role === 'sub') {
+                                const updatedSub = appState.subUsers.find(u => u.username === currentUser.username);
+                                if (updatedSub) {
+                                    currentUser.permissions = updatedSub.permissions;
+                                    currentUser.allowedWorkshops = updatedSub.allowedWorkshops || [];
+                                    currentUser.password = updatedSub.password;
+                                    applyRolePermissionsUI();
+                                }
+                            }
                             const accessible = getAccessibleWorkshops();
                             if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
                                 activeWorkshopId = accessible[0].id;
@@ -1786,12 +1852,15 @@
                 currentUser = {
                     role: 'admin',
                     username: adminU,
+                    password: adminP,
                     fullName: appState.admin.fullName || '',
                     permissions: {
                         addEditTx: true,
                         deleteTx: true,
                         addWs: true,
-                        manageWs: true,
+                        editWs: true,
+                        toggleWs: true,
+                        deleteWs: true,
                         printExport: true,
                         manageCats: true
                     },
@@ -1810,6 +1879,7 @@
                     role: 'sub',
                     subIndex: subIdx,
                     username: sub.username,
+                    password: sub.password,
                     fullName: sub.fullName || '',
                     permissions: sub.permissions,
                     allowedWorkshops: sub.allowedWorkshops || []
@@ -1898,7 +1968,8 @@
             document.getElementById('btnToggleReorderWs').classList.toggle('hidden', !isAdmin);
             document.getElementById('txActionButtonsBar').classList.toggle('hidden', !perms.addEditTx);
             document.getElementById('btnManageCategories').classList.toggle('hidden', !perms.manageCats);
-            document.getElementById('btnEditWsInfo').classList.toggle('hidden', !perms.manageWs);
+            document.getElementById('btnEditWsInfo').classList.toggle('hidden', !perms.editWs);
+            document.getElementById('btnToggleWsStatus').classList.toggle('hidden', !perms.toggleWs);
             document.getElementById('exportPrintGroup').classList.toggle('hidden', !perms.printExport);
             document.getElementById('btnExportWsJson').classList.toggle('hidden', !perms.printExport);
         }
@@ -2023,7 +2094,7 @@
             );
         }
 
-        // ==================== 9. WORKSHOPS GRID, SELECTION & OWNER PASSWORD LOCK ====================
+        // ==================== 9. WORKSHOPS GRID, SELECTION & PERMISSION-BASED PASSWORD LOCK ====================
         function setWorkshopFilter(status) {
             workshopFilterStatus = status;
             const btnAll = document.getElementById('wsFilterAll');
@@ -2142,7 +2213,8 @@
                 const totals = calculateWorkshopTotals(ws);
                 const isSelected = ws.id === activeWorkshopId;
                 const isInactive = ws.active === false;
-                const canDeleteWs = currentUser.permissions.manageWs;
+                const canToggleWs = !!currentUser.permissions.toggleWs;
+                const canDeleteWs = !!currentUser.permissions.deleteWs;
 
                 let cardClasses = 'relative rounded-2xl p-4 transition-all border-2 flex flex-col justify-between ';
                 if (isReorderMode) {
@@ -2203,12 +2275,14 @@
                             </div>
                         </div>
 
-                        ${!isReorderMode ? `
+                        ${(!isReorderMode && (canToggleWs || canDeleteWs)) ? `
                             <div class="flex items-center justify-end gap-1.5 pt-1" onclick="event.stopPropagation()">
-                                <button type="button" onclick="requestOwnerPasswordForWorkshopStatus('${ws.id}')"
-                                    class="no-grayscale-btn px-2.5 py-1 rounded-lg text-[11px] font-black transition shadow ${isInactive ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30'}">
-                                    ${isInactive ? '▶ تشغيل' : '⏸ إيقاف'}
-                                </button>
+                                ${canToggleWs ? `
+                                    <button type="button" onclick="requestOwnerPasswordForWorkshopStatus('${ws.id}')"
+                                        class="no-grayscale-btn px-2.5 py-1 rounded-lg text-[11px] font-black transition shadow ${isInactive ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30'}">
+                                        ${isInactive ? '▶ تشغيل' : '⏸ إيقاف'}
+                                    </button>
+                                ` : ''}
                                 ${canDeleteWs ? `
                                     <button type="button" onclick="deleteWorkshopById('${ws.id}')"
                                         class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white text-[11px] font-extrabold transition">
@@ -2269,6 +2343,10 @@
         }
 
         function requestOwnerPasswordForWorkshopStatus(wsId) {
+            if (!currentUser.permissions.toggleWs) {
+                showToast('ليس لديك صلاحية تفعيل أو إيقاف الورشات', '🔒');
+                return;
+            }
             const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
             const willActivate = ws.active === false;
@@ -2276,8 +2354,8 @@
             document.getElementById('pendingStatusWsId').value = wsId;
             document.getElementById('ownerAuthPasswordInput').value = '';
             document.getElementById('ownerAuthStatusMessage').textContent = willActivate
-                ? `إعادة تشغيل وتفعيل ورشة "${ws.name}" تتطلب إدخال كلمة سر حساب المالك حصراً:`
-                : `إيقاف نشاط ورشة "${ws.name}" يتطلب إدخال كلمة سر حساب المالك حصراً:`;
+                ? `لتشغيل وتفعيل ورشة "${ws.name}"، يرجى إدخال كلمة مرور حسابك (${currentUser.username}):`
+                : `لإيقاف نشاط ورشة "${ws.name}"، يرجى إدخال كلمة مرور حسابك (${currentUser.username}):`;
 
             const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
             if (willActivate) {
@@ -2294,11 +2372,15 @@
 
         async function confirmOwnerPasswordForWorkshopStatus(e) {
             e.preventDefault();
-            const enteredPass = document.getElementById('ownerAuthPasswordInput').value.trim();
-            const ownerPass = String(appState.admin.password || '123').trim();
+            if (!currentUser.permissions.toggleWs) return;
 
-            if (enteredPass !== ownerPass) {
-                showToast('❌ كلمة سر حساب المالك غير صحيحة! لا يمكن تنفيذ العملية.', '🔒');
+            const enteredPass = document.getElementById('ownerAuthPasswordInput').value.trim();
+            const expectedPass = currentUser.role === 'admin'
+                ? String(appState.admin.password || '123').trim()
+                : String(appState.subUsers.find(u => u.username === currentUser.username)?.password || currentUser.password || '').trim();
+
+            if (!enteredPass || enteredPass !== expectedPass) {
+                showToast('❌ كلمة مرور الحساب غير صحيحة! لا يمكن تنفيذ العملية.', '🔒');
                 document.getElementById('ownerAuthPasswordInput').value = '';
                 document.getElementById('ownerAuthPasswordInput').focus();
                 return;
@@ -2320,7 +2402,7 @@
         }
 
         function deleteWorkshopById(wsId) {
-            if (!currentUser.permissions.manageWs) return;
+            if (!currentUser.permissions.deleteWs) return;
             const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
 
@@ -2341,6 +2423,7 @@
         }
 
         function openEditWorkshopModal() {
+            if (!currentUser.permissions.editWs) return;
             const ws = getActiveWorkshop();
             if (!ws) return;
             document.getElementById('editWsNameInput').value = ws.name;
@@ -2350,6 +2433,7 @@
 
         async function saveEditedWorkshopInfo(e) {
             e.preventDefault();
+            if (!currentUser.permissions.editWs) return;
             const ws = getActiveWorkshop();
             if (!ws) return;
             const newName = document.getElementById('editWsNameInput').value.trim();
@@ -2410,16 +2494,18 @@
             const wsHeaderBar = document.getElementById('activeWsHeaderBar');
             const wsBody = document.getElementById('activeWorkshopBody');
             const toggleBtn = document.getElementById('btnToggleWsStatus');
+            toggleBtn.classList.toggle('hidden', !currentUser.permissions.toggleWs);
+
             if (ws.active === false) {
                 wsHeaderBar.classList.add('workshop-inactive-header');
                 wsBody.classList.add('workshop-inactive-body');
                 toggleBtn.innerHTML = '<span>▶</span><span>تشغيل وتفعيل الورشة</span>';
-                toggleBtn.className = 'no-grayscale-btn px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/40 transition flex items-center gap-1.5';
+                toggleBtn.className = `${!currentUser.permissions.toggleWs ? 'hidden ' : ''}no-grayscale-btn px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/40 transition flex items-center gap-1.5`;
             } else {
                 wsHeaderBar.classList.remove('workshop-inactive-header');
                 wsBody.classList.remove('workshop-inactive-body');
                 toggleBtn.innerHTML = '<span>⏸</span><span>إيقاف الورشة</span>';
-                toggleBtn.className = 'no-grayscale-btn px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-extrabold transition flex items-center gap-1.5';
+                toggleBtn.className = `${!currentUser.permissions.toggleWs ? 'hidden ' : ''}no-grayscale-btn px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-extrabold transition flex items-center gap-1.5`;
             }
 
             document.getElementById('activeWsTitle').textContent = ws.name;
@@ -2524,36 +2610,18 @@
             sel.value = ws.categories.includes(selectedCat) ? selectedCat : 'عام';
         }
 
-        // ==================== 11. TRANSACTIONS TABLE: ENTRY ORDER PRESERVATION & OPTIONAL DATE SORT ====================
-        function handleSortOrderSelectChange() {
-            const selVal = document.getElementById('txSortOrderSelect').value;
-            const chk = document.getElementById('chkEnableDateSort');
-            if (chk) {
-                chk.checked = (selVal === 'asc' || selVal === 'desc');
-            }
-            renderTransactionsTable();
-        }
-
-        function handleEnableDateSortCheckbox(checkboxEl) {
-            const sel = document.getElementById('txSortOrderSelect');
-            if (checkboxEl.checked) {
-                if (sel.value === 'entry') {
-                    sel.value = 'desc';
-                }
-            } else {
-                sel.value = 'entry';
-            }
-            renderTransactionsTable();
-        }
-
-        function getFilteredTransactions(ws, overrideSortMode = null) {
+        // ==================== 11. TRANSACTIONS TABLE: ENTRY-ORDER OR DATE SORT (ASC / DESC) ====================
+        function getFilteredTransactions(ws) {
             const searchQ = (document.getElementById('txSearchInput').value || '').trim().toLowerCase();
             const fType = document.getElementById('txFilterType').value;
             const fCat = document.getElementById('txFilterCategory').value;
             const fCurr = document.getElementById('txFilterCurrency').value;
             const dFrom = document.getElementById('txFilterDateFrom').value;
             const dTo = document.getElementById('txFilterDateTo').value;
-            const sortMode = overrideSortMode || document.getElementById('txSortOrderSelect').value || 'entry';
+
+            const sortDirection = document.getElementById('txSortDirectionSelect').value || 'desc';
+            const sortByDateEnabled = document.getElementById('chkSortByDate').checked;
+            const isAsc = sortDirection === 'asc';
 
             const indexedList = (ws.transactions || []).map((tx, idx) => ({ tx, originalIndex: idx }));
 
@@ -2595,15 +2663,17 @@
                 return true;
             });
 
-            if (sortMode === 'entry') {
-                // الحفاظ التام على الترتيب الأصلي لتنزيل البنود (الأحدث تنزيلاً في الأعلى كما نُزّل)
-                filteredIndexed.sort((a, b) => b.originalIndex - a.originalIndex);
-            } else {
-                const isAsc = sortMode === 'asc';
+            if (sortByDateEnabled) {
+                // عند تفعيل "حسب التاريخ": التصاعدي والتنازلي يرتبان حسب تاريخ الحركة
                 filteredIndexed.sort((a, b) => {
                     if (a.tx.date !== b.tx.date) {
                         return isAsc ? a.tx.date.localeCompare(b.tx.date) : b.tx.date.localeCompare(a.tx.date);
                     }
+                    return isAsc ? (a.originalIndex - b.originalIndex) : (b.originalIndex - a.originalIndex);
+                });
+            } else {
+                // عند عدم تفعيل "حسب التاريخ": التصاعدي والتنازلي يرتبان حسب ترتيب تنزيل البنود الأصلي
+                filteredIndexed.sort((a, b) => {
                     return isAsc ? (a.originalIndex - b.originalIndex) : (b.originalIndex - a.originalIndex);
                 });
             }
@@ -2618,8 +2688,8 @@
             document.getElementById('txFilterCurrency').value = 'all';
             document.getElementById('txFilterDateFrom').value = '';
             document.getElementById('txFilterDateTo').value = '';
-            document.getElementById('txSortOrderSelect').value = 'entry';
-            document.getElementById('chkEnableDateSort').checked = false;
+            document.getElementById('txSortDirectionSelect').value = 'desc';
+            document.getElementById('chkSortByDate').checked = false;
             renderTransactionsTable();
         }
 
@@ -2712,27 +2782,37 @@
                     } else {
                         typeBadge = `<span class="inline-block px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-black">⇄ صرافة</span>`;
                         amountColHtml = `
-                            <div class="text-rose-900 font-black text-xs" dir="ltr">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</div>
-                            <div class="text-emerald-900 font-black text-xs mt-0.5" dir="ltr">+ ${formatNum(tx.toAmount, toDec)} ${toSym}</div>
+                            <div class="text-rose-900 font-black text-[10.5px] sm:text-xs" dir="ltr">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</div>
+                            <div class="text-emerald-900 font-black text-[10.5px] sm:text-xs mt-0.5" dir="ltr">+ ${formatNum(tx.toAmount, toDec)} ${toSym}</div>
                         `;
                     }
 
                     categoryColHtml = `
                         <div class="font-extrabold text-slate-900">صرافة</div>
-                        ${tx.rate ? `<div class="inline-block mt-1 px-2 py-0.5 rounded bg-amber-300/80 border border-amber-500/50 text-[10px] font-black text-slate-900">الصرف: ${formatNum(tx.rate, 2)}</div>` : ''}
+                        ${tx.rate ? `<div class="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-amber-300/80 border border-amber-500/50 text-[9.5px] sm:text-[10px] font-black text-slate-900">الصرف: ${formatNum(tx.rate, 2)}</div>` : ''}
                     `;
                 }
 
                 const editFn = tx.type === 'exchange' ? `openExchangeModal('${tx.id}')` : `openTxModal('${tx.type}', '${tx.id}')`;
 
+                const mobileActionsHtml = (canEdit || canDelete) ? `
+                    <div class="sm:hidden no-print flex items-center gap-1 mt-1.5 pt-1 border-t border-black/10">
+                        ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2 py-0.5 rounded bg-white/90 text-indigo-800 border border-slate-300 text-[10px] font-extrabold">تعديل</button>` : ''}
+                        ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-rose-700 border border-slate-300 text-[10px] font-extrabold">حذف</button>` : ''}
+                    </div>
+                ` : '';
+
                 return `
                     <tr class="${rowClass} border-b border-slate-300">
-                        <td class="py-2.5 px-3 whitespace-nowrap text-xs font-extrabold text-slate-700">${escapeHtml(tx.date)}</td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">${typeBadge}</td>
-                        <td class="py-2.5 px-3">${categoryColHtml}</td>
-                        <td class="py-2.5 px-3 text-slate-900 font-bold leading-snug">${escapeHtml(tx.description || '—')}</td>
-                        <td class="py-2.5 px-3 whitespace-nowrap">${amountColHtml}</td>
-                        <td class="no-print py-2.5 px-3 text-center whitespace-nowrap">
+                        <td class="col-date py-2.5 px-3 sm:whitespace-nowrap text-xs font-extrabold text-slate-700">${escapeHtml(tx.date)}</td>
+                        <td class="hidden sm:table-cell py-2.5 px-3 whitespace-nowrap">${typeBadge}</td>
+                        <td class="col-cat py-2.5 px-3">${categoryColHtml}</td>
+                        <td class="col-desc py-2.5 px-3 text-slate-900 font-bold leading-snug">
+                            <div>${escapeHtml(tx.description || '—')}</div>
+                            ${mobileActionsHtml}
+                        </td>
+                        <td class="col-amount py-2.5 px-3 sm:whitespace-nowrap">${amountColHtml}</td>
+                        <td class="hidden sm:table-cell no-print py-2.5 px-3 text-center whitespace-nowrap">
                             <div class="inline-flex items-center gap-1.5">
                                 ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-indigo-600 text-indigo-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">تعديل</button>` : ''}
                                 ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-rose-600 text-rose-700 hover:text-white border border-slate-300 text-xs font-extrabold transition">حذف</button>` : ''}
@@ -3044,7 +3124,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (NO BROKEN ARABIC) ====================
+        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (FULL TABLE WITH TYPE COLUMN) ====================
         function openPrintDetailsModal(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3422,7 +3502,7 @@
             reader.readAsText(file);
         }
 
-        // ==================== 16. USERS & GRANULAR PERMISSIONS MANAGER ====================
+        // ==================== 16. USERS & GRANULAR SEPARATED PERMISSIONS MANAGER ====================
         function openUsersModal() {
             if (currentUser.role !== 'admin') return;
             document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
@@ -3449,6 +3529,7 @@
 
             if (currentUser.role === 'admin') {
                 currentUser.username = u;
+                currentUser.password = p;
                 currentUser.fullName = fn;
                 updateCurrentUserHeaderBadge();
             }
@@ -3485,7 +3566,9 @@
             document.getElementById('permAddEditTx').checked = true;
             document.getElementById('permDeleteTx').checked = false;
             document.getElementById('permAddWs').checked = false;
-            document.getElementById('permManageWs').checked = false;
+            document.getElementById('permEditWs').checked = false;
+            document.getElementById('permToggleWs').checked = false;
+            document.getElementById('permDeleteWs').checked = false;
             document.getElementById('permPrintExport').checked = true;
             document.getElementById('permManageCats').checked = true;
             renderSubUserWorkshopCheckboxes([]);
@@ -3505,7 +3588,9 @@
             document.getElementById('permAddEditTx').checked = sub.permissions?.addEditTx !== false;
             document.getElementById('permDeleteTx').checked = !!sub.permissions?.deleteTx;
             document.getElementById('permAddWs').checked = !!sub.permissions?.addWs;
-            document.getElementById('permManageWs').checked = !!sub.permissions?.manageWs;
+            document.getElementById('permEditWs').checked = !!sub.permissions?.editWs;
+            document.getElementById('permToggleWs').checked = !!sub.permissions?.toggleWs;
+            document.getElementById('permDeleteWs').checked = !!sub.permissions?.deleteWs;
             document.getElementById('permPrintExport').checked = sub.permissions?.printExport !== false;
             document.getElementById('permManageCats').checked = sub.permissions?.manageCats !== false;
 
@@ -3535,7 +3620,9 @@
                     addEditTx: document.getElementById('permAddEditTx').checked,
                     deleteTx: document.getElementById('permDeleteTx').checked,
                     addWs: document.getElementById('permAddWs').checked,
-                    manageWs: document.getElementById('permManageWs').checked,
+                    editWs: document.getElementById('permEditWs').checked,
+                    toggleWs: document.getElementById('permToggleWs').checked,
+                    deleteWs: document.getElementById('permDeleteWs').checked,
                     printExport: document.getElementById('permPrintExport').checked,
                     manageCats: document.getElementById('permManageCats').checked
                 }
@@ -3573,7 +3660,9 @@
                 if (p.addEditTx) badges.push('إضافة/تعديل حركات');
                 if (p.deleteTx) badges.push('حذف حركات');
                 if (p.addWs) badges.push('إضافة ورشات');
-                if (p.manageWs) badges.push('حذف/تعديل ورشات');
+                if (p.editWs) badges.push('تعديل الورشات');
+                if (p.toggleWs) badges.push('تفعيل/إيقاف الورشات');
+                if (p.deleteWs) badges.push('حذف الورشات');
                 if (p.printExport) badges.push('طباعة وتصدير');
                 if (p.manageCats) badges.push('إدارة التصنيفات');
 
