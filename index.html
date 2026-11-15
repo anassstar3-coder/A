@@ -598,7 +598,7 @@
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-bold bg-white">
                             </div>
                             <div>
-                                <select id="txFilterType" onchange="renderTransactionsTable()"
+                                <select id="txFilterType" onchange="handleTxFilterTypeChange()"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
                                     <option value="all">كل الحركات</option>
                                     <option value="income">الإيرادات فقط</option>
@@ -610,13 +610,13 @@
                             </div>
                             <div>
                                 <select id="txFilterCategory" onchange="renderTransactionsTable()"
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white transition-colors">
                                     <option value="all">كل البنود</option>
                                 </select>
                             </div>
                             <div>
                                 <select id="txFilterCurrency" onchange="renderTransactionsTable()"
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white">
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white transition-colors">
                                     <option value="all">كل العملات</option>
                                     <option value="USD">دولار أمريكي ($)</option>
                                     <option value="SYP">ليرة سورية (ل.س)</option>
@@ -693,7 +693,7 @@
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
-    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS OR TRASH MOVE -->
+    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS, TRASH MOVE OR SUB-USER DELETION -->
     <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
@@ -721,26 +721,26 @@
         </div>
     </div>
 
-    <!-- MODAL: TRASH BIN (30-DAY CLOUD RETENTION) -->
-    <div id="trashModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <!-- MODAL: TRASH BIN (30-DAY CLOUD RETENTION - MOBILE OPTIMIZED) -->
+    <div id="trashModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border-2 border-rose-200 overflow-hidden my-auto text-slate-800">
-            <div class="bg-gradient-to-l from-rose-950 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
-                <div>
-                    <h3 class="text-base sm:text-lg font-black flex items-center gap-2">
+            <div class="bg-gradient-to-l from-rose-950 to-slate-900 px-4 sm:px-5 py-3.5 sm:py-4 text-white flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <h3 class="text-sm sm:text-lg font-black flex items-center gap-1.5">
                         <span>🗑️</span>
-                        <span>سلة المهملات السحابية (احتفاظ لمدة 30 يوماً)</span>
+                        <span class="truncate">سلة المهملات السحابية (30 يوماً)</span>
                     </h3>
-                    <p class="text-[11px] font-bold text-rose-200 mt-0.5">تُحذف الورشات تلقائياً بعد مرور 30 يوماً على نقلها للسلة، ويمكنك استعادتها أو تفريغ السلة نهائياً قبل ذلك</p>
+                    <p class="text-[10.5px] sm:text-[11px] font-bold text-rose-200 mt-0.5 leading-snug">تُحذف الورشات تلقائياً بعد 30 يوماً، ويمكنك استعادتها أو تفريغ السلة قبل ذلك</p>
                 </div>
-                <button type="button" onclick="closeModal('trashModal')" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+                <button type="button" onclick="closeModal('trashModal')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black shrink-0">✕</button>
             </div>
-            <div class="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto">
-                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
-                    <div class="text-xs font-extrabold text-slate-600">
+            <div class="p-3.5 sm:p-6 space-y-3.5 max-h-[82vh] overflow-y-auto">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-200">
+                    <div class="text-xs font-extrabold text-slate-700">
                         الورشات الموجودة في السلة: <span id="trashModalCountText" class="text-rose-700 font-black">0</span>
                     </div>
                     <button type="button" id="btnEmptyTrash" onclick="emptyTrashCompletely()"
-                        class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow transition flex items-center gap-1.5">
+                        class="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow transition flex items-center gap-1.5">
                         <span>🔥</span>
                         <span>تفريغ السلة وحذف الكل نهائياً</span>
                     </button>
@@ -2687,6 +2687,26 @@
             setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
         }
 
+        function requestOwnerPasswordForSubUserDelete(idx) {
+            const sub = appState.subUsers[idx];
+            if (!sub) return;
+            const userLabel = sub.fullName ? `${sub.fullName} (${sub.username})` : sub.username;
+
+            document.getElementById('pendingActionWsId').value = String(idx);
+            document.getElementById('pendingActionType').value = 'deleteSubUser';
+            document.getElementById('ownerAuthModalTitle').textContent = '🔐 تأكيد حذف المستخدم الفرعي';
+            document.getElementById('ownerAuthPasswordInput').value = '';
+            document.getElementById('ownerAuthStatusMessage').textContent =
+                `لحذف حساب المستخدم الفرعي "${userLabel}" نهائياً من السحابة، يرجى إدخال كلمة مرور حسابك الحالي (${currentUser.username}) للتأكيد:`;
+
+            const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
+            confirmBtn.textContent = '🗑️ تأكيد حذف الحساب';
+            confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow';
+
+            openModal('ownerAuthStatusModal');
+            setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
+        }
+
         async function confirmOwnerPasswordAction(e) {
             e.preventDefault();
             const actionType = document.getElementById('pendingActionType').value;
@@ -2703,9 +2723,24 @@
                 return;
             }
 
-            const wsId = document.getElementById('pendingActionWsId').value;
-            const ws = appState.workshops.find(w => w.id === wsId);
+            const targetIdOrIdx = document.getElementById('pendingActionWsId').value;
             closeModal('ownerAuthStatusModal');
+
+            if (actionType === 'deleteSubUser') {
+                const idx = parseInt(targetIdOrIdx, 10);
+                if (!isNaN(idx) && appState.subUsers[idx]) {
+                    const deletedName = appState.subUsers[idx].username;
+                    appState.subUsers.splice(idx, 1);
+                    resetSubUserForm();
+                    renderSubUsersList();
+                    await saveToCloud();
+                    showToast(`تم حذف المستخدم الفرعي "${deletedName}" من السحابة بنجاح`, '🗑️');
+                }
+                return;
+            }
+
+            const wsId = targetIdOrIdx;
+            const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
 
             if (actionType === 'deleteToTrash') {
@@ -2741,7 +2776,7 @@
             if (activeWorkshopId) requestOwnerPasswordForWorkshopStatus(activeWorkshopId);
         }
 
-        // ==================== TRASH BIN MODAL: RESTORE, PERMANENT DELETE & EMPTY TRASH ====================
+        // ==================== TRASH BIN MODAL: RESTORE, PERMANENT DELETE & EMPTY TRASH (MOBILE OPTIMIZED) ====================
         function updateTrashBadgeCounter() {
             const items = getAccessibleDeletedWorkshops();
             const badge = document.getElementById('trashCountBadge');
@@ -2762,7 +2797,7 @@
             const container = document.getElementById('trashWorkshopsListContainer');
             if (items.length === 0) {
                 container.innerHTML = `
-                    <div class="p-8 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 space-y-1.5">
+                    <div class="p-6 sm:p-8 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 space-y-1.5">
                         <div class="text-3xl">🗑️</div>
                         <div class="text-sm font-black text-slate-700">سلة المهملات فارغة حالياً</div>
                         <div class="text-xs font-bold text-slate-400">أي ورشة يتم حذفها ستبقى هنا لمدة 30 يوماً قبل حذفها تلقائياً</div>
@@ -2777,29 +2812,50 @@
                 const remainingDays = Math.max(1, Math.ceil((TRASH_RETENTION_MS - elapsedMs) / (24 * 60 * 60 * 1000)));
                 const totals = calculateWorkshopTotals(ws);
 
+                const usdColor = totals.usdNet < 0 ? 'text-rose-700' : 'text-emerald-700';
+                const sypColor = totals.sypNet < 0 ? 'text-rose-700' : 'text-blue-800';
+
                 return `
-                    <div class="p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
-                        <div class="space-y-1 min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="text-sm sm:text-base font-black text-slate-900">${escapeHtml(ws.name)}</span>
-                                <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-black">
-                                    ⏳ متبقي ${remainingDays} يوم للحذف التلقائي
-                                </span>
+                    <div class="p-3.5 sm:p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 flex flex-col gap-3 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <h4 class="text-sm sm:text-base font-black text-slate-900 break-words">${escapeHtml(ws.name)}</h4>
+                                ${ws.description ? `<p class="text-[11px] font-bold text-slate-500 mt-0.5 break-words">${escapeHtml(ws.description)}</p>` : ''}
                             </div>
-                            <div class="text-xs font-bold text-slate-500">
-                                تاريخ الحذف: ${formatDateFromMs(deletedAt)} • عدد الحركات: ${(ws.transactions || []).length}
-                                • الصافي: <span dir="ltr" class="font-black text-slate-800">$ ${formatNum(totals.usdNet)}</span> / <span dir="ltr" class="font-black text-slate-800">${formatNum(totals.sypNet, 0)} ل.س</span>
+                            <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[10.5px] sm:text-[11px] font-black shrink-0">
+                                ⏳ متبقي ${remainingDays} يوم للحذف التلقائي
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <div class="text-[10px] font-bold text-slate-400">تاريخ الحذف</div>
+                                <div class="font-extrabold text-slate-800 mt-0.5">${formatDateFromMs(deletedAt)}</div>
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <div class="text-[10px] font-bold text-slate-400">عدد الحركات</div>
+                                <div class="font-extrabold text-slate-800 mt-0.5">${(ws.transactions || []).length} حركة</div>
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <div class="text-[10px] font-bold text-slate-400">صافي الدولار</div>
+                                <div class="font-black ${usdColor} mt-0.5 truncate" dir="ltr">${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}</div>
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <div class="text-[10px] font-bold text-slate-400">صافي السوري</div>
+                                <div class="font-black ${sypColor} mt-0.5 truncate" dir="ltr">${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س</div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
+
+                        <div class="grid grid-cols-2 sm:flex sm:justify-end items-center gap-2 pt-1 border-t border-slate-200">
                             <button type="button" onclick="restoreWorkshopFromTrash('${ws.id}')"
-                                class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow transition flex items-center gap-1">
+                                class="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow transition flex items-center gap-1.5">
                                 <span>♻️</span>
                                 <span>استعادة الورشة</span>
                             </button>
                             <button type="button" onclick="permanentlyDeleteSingleTrashWorkshop('${ws.id}')"
-                                class="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
-                                حذف نهائي
+                                class="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition flex items-center gap-1">
+                                <span>🗑️</span>
+                                <span>حذف نهائي</span>
                             </button>
                         </div>
                     </div>
@@ -2965,6 +3021,7 @@
                 cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
             if (cats.includes(prevCat)) catFilter.value = prevCat;
 
+            updateExchangeFilterLocks();
             renderTransactionsTable();
         }
 
@@ -3057,12 +3114,43 @@
             sel.value = ws.categories.includes(selectedCat) ? selectedCat : 'عام';
         }
 
-        // ==================== 11. TRANSACTIONS TABLE: ENTRY-ORDER OR DATE SORT (ASC / DESC) ====================
+        // ==================== 11. TRANSACTIONS TABLE: EXCHANGE FILTER LOCK & SORTING ====================
+        function updateExchangeFilterLocks() {
+            const fType = document.getElementById('txFilterType').value;
+            const catSelect = document.getElementById('txFilterCategory');
+            const currSelect = document.getElementById('txFilterCurrency');
+
+            const isExchangeOnly = (fType === 'exchange');
+            const activeCls = 'w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white text-slate-900 transition-colors';
+            const disabledCls = 'w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-extrabold bg-slate-200/80 text-slate-400 cursor-not-allowed select-none transition-colors';
+
+            if (isExchangeOnly) {
+                catSelect.value = 'all';
+                catSelect.disabled = true;
+                catSelect.className = disabledCls;
+
+                currSelect.value = 'all';
+                currSelect.disabled = true;
+                currSelect.className = disabledCls;
+            } else {
+                catSelect.disabled = false;
+                catSelect.className = activeCls;
+
+                currSelect.disabled = false;
+                currSelect.className = activeCls;
+            }
+        }
+
+        function handleTxFilterTypeChange() {
+            updateExchangeFilterLocks();
+            renderTransactionsTable();
+        }
+
         function getFilteredTransactions(ws) {
             const searchQ = (document.getElementById('txSearchInput').value || '').trim().toLowerCase();
             const fType = document.getElementById('txFilterType').value;
-            const fCat = document.getElementById('txFilterCategory').value;
-            const fCurr = document.getElementById('txFilterCurrency').value;
+            const fCat = fType === 'exchange' ? 'all' : document.getElementById('txFilterCategory').value;
+            const fCurr = fType === 'exchange' ? 'all' : document.getElementById('txFilterCurrency').value;
             const dFrom = document.getElementById('txFilterDateFrom').value;
             const dTo = document.getElementById('txFilterDateTo').value;
 
@@ -3135,6 +3223,7 @@
             document.getElementById('txFilterDateTo').value = '';
             document.getElementById('txSortDirectionSelect').value = 'desc';
             document.getElementById('chkSortByDate').checked = false;
+            updateExchangeFilterLocks();
             renderTransactionsTable();
         }
 
@@ -3569,7 +3658,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, PRINT & NATIVE .XLSX EXCEL ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, PRINT & ENHANCED EXCEL EXPORT ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3912,19 +4001,49 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
 
+            const eff = getEffectiveUserPrintProfile();
             const fType = document.getElementById('txFilterType').value;
             const rows = getFilteredTransactions(ws);
+            const totals = calculateFilteredListTotals(rows, fType);
             const cleanFileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.xlsx`;
 
+            const typeSelect = document.getElementById('txFilterType');
+            const catSelect = document.getElementById('txFilterCategory');
+            const currSelect = document.getElementById('txFilterCurrency');
+            const dFrom = document.getElementById('txFilterDateFrom').value;
+            const dTo = document.getElementById('txFilterDateTo').value;
+
+            const filterNotes = [
+                `نوع الحركة: ${typeSelect.options[typeSelect.selectedIndex]?.text || 'كل الحركات'}`,
+                `البند: ${fType === 'exchange' || catSelect.value === 'all' ? 'الكل' : catSelect.value}`,
+                `العملة: ${fType === 'exchange' || currSelect.value === 'all' ? 'الكل' : currSelect.value}`
+            ];
+            if (dFrom) filterNotes.push(`من: ${dFrom}`);
+            if (dTo) filterNotes.push(`إلى: ${dTo}`);
+
             if (typeof XLSX !== 'undefined') {
+                const companyHeader = eff.companyName
+                    ? `${eff.companyName}  —  كشف حساب ورشة: ${ws.name}`
+                    : `كشف حساب ورشة: ${ws.name}`;
+                const metaSubHeader = [
+                    ws.description ? `الوصف: ${ws.description}` : '',
+                    eff.personName ? `المسؤول: ${eff.personName}` : '',
+                    eff.phone ? `هاتف: ${eff.phone}` : '',
+                    `تاريخ التصدير: ${todayISO()}`
+                ].filter(Boolean).join('   |   ');
+
                 const aoa = [
-                    [`كشف حساب ورشة: ${ws.name} (${todayISO()})`],
-                    [ws.description || ''],
+                    [companyHeader],
+                    [metaSubHeader],
+                    [`نطاق التصفية: ${filterNotes.join('  •  ')}   |   عدد الحركات: ${rows.length}`],
+                    [],
                     [
+                        '#',
                         'التاريخ',
-                        'النوع',
-                        'البند',
-                        'البيان',
+                        'نوع الحركة',
+                        'البند / التصنيف',
+                        'البيان / الوصف التفصيلي',
+                        'سعر الصرف',
                         'إيراد دولار ($)',
                         'مصروف دولار ($)',
                         'إيراد سوري (ل.س)',
@@ -3932,24 +4051,26 @@
                     ]
                 ];
 
-                rows.forEach((tx) => {
+                rows.forEach((tx, index) => {
                     let typeText = '';
                     let catText = tx.category || 'عام';
+                    let rateVal = '';
                     let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
 
                     if (tx.type === 'income') {
-                        typeText = 'إيراد';
+                        typeText = 'إيراد (+)';
                         if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
                         else sypIn = Number(tx.amount) || 0;
                     } else if (tx.type === 'expense') {
-                        typeText = 'مصروف';
+                        typeText = 'مصروف (-)';
                         if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
                         else sypOut = Number(tx.amount) || 0;
                     } else if (tx.type === 'exchange') {
                         typeText = fType === 'income_with_in_exchange'
-                            ? 'تحويل وارد'
-                            : (fType === 'expense_with_out_exchange' ? 'تحويل صادر' : 'صرافة');
-                        catText = tx.rate ? `صرافة (سعر: ${tx.rate})` : 'صرافة';
+                            ? 'تحويل وارد (⇄)'
+                            : (fType === 'expense_with_out_exchange' ? 'تحويل صادر (⇄)' : 'صرافة / تحويل (⇄)');
+                        catText = 'صرافة';
+                        rateVal = tx.rate ? Number(tx.rate) : '';
                         if (fType !== 'income_with_in_exchange') {
                             if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
                             else sypOut = Number(tx.fromAmount) || 0;
@@ -3961,10 +4082,12 @@
                     }
 
                     aoa.push([
+                        index + 1,
                         tx.date || '',
                         typeText,
                         catText,
                         tx.description || '',
+                        rateVal,
                         usdIn,
                         usdOut,
                         sypIn,
@@ -3972,60 +4095,91 @@
                     ]);
                 });
 
-                const lastDataRow = rows.length + 3;
+                const firstDataRowExcel = 6;
+                const lastDataRowExcel = rows.length + 5;
                 const totalRowIdx = aoa.length;
                 const netRowIdx = totalRowIdx + 1;
 
                 aoa.push([
-                    'المجموع الكلي',
+                    'المجموع الكلي للإيرادات والمصروفات',
                     '',
                     '',
                     '',
-                    rows.length > 0 ? { t: 'n', f: `SUM(E4:E${lastDataRow})` } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(F4:F${lastDataRow})` } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(G4:G${lastDataRow})` } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(H4:H${lastDataRow})` } : 0
+                    '',
+                    '',
+                    rows.length > 0 ? { t: 'n', f: `SUM(G${firstDataRowExcel}:G${lastDataRowExcel})`, z: '#,##0.00' } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(H${firstDataRowExcel}:H${lastDataRowExcel})`, z: '#,##0.00' } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(I${firstDataRowExcel}:I${lastDataRowExcel})`, z: '#,##0' } : 0,
+                    rows.length > 0 ? { t: 'n', f: `SUM(J${firstDataRowExcel}:J${lastDataRowExcel})`, z: '#,##0' } : 0
                 ]);
 
                 const excelTotalRowNum = totalRowIdx + 1;
                 aoa.push([
-                    'الرصيد الصافي (USD / SYP)',
+                    'الرصيد الصافي النهائي للورشة',
                     '',
                     '',
                     '',
-                    { t: 'n', f: `E${excelTotalRowNum}-F${excelTotalRowNum}` },
                     '',
-                    { t: 'n', f: `G${excelTotalRowNum}-H${excelTotalRowNum}` },
+                    '',
+                    { t: 'n', f: `G${excelTotalRowNum}-H${excelTotalRowNum}`, z: '#,##0.00' },
+                    '',
+                    { t: 'n', f: `I${excelTotalRowNum}-J${excelTotalRowNum}`, z: '#,##0' },
                     ''
                 ]);
 
                 const worksheet = XLSX.utils.aoa_to_sheet(aoa);
 
+                // تنسيق الأرقام داخل خلايا الجدول (أعمدة المبالغ وسعر الصرف)
+                for (let r = 5; r < 5 + rows.length; r++) {
+                    const rateCell = worksheet[XLSX.utils.encode_cell({ r, c: 5 })];
+                    if (rateCell && typeof rateCell.v === 'number') rateCell.z = '#,##0.00';
+
+                    for (const c of [6, 7]) {
+                        const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
+                        if (cell && typeof cell.v === 'number') cell.z = '#,##0.00';
+                    }
+                    for (const c of [8, 9]) {
+                        const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
+                        if (cell && typeof cell.v === 'number') cell.z = '#,##0';
+                    }
+                }
+
                 worksheet['!merges'] = [
-                    { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
-                    { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
-                    { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 3 } },
-                    { s: { r: netRowIdx, c: 0 }, e: { r: netRowIdx, c: 3 } },
-                    { s: { r: netRowIdx, c: 4 }, e: { r: netRowIdx, c: 5 } },
-                    { s: { r: netRowIdx, c: 6 }, e: { r: netRowIdx, c: 7 } }
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
+                    { s: { r: 2, c: 0 }, e: { r: 2, c: 9 } },
+                    { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 5 } },
+                    { s: { r: netRowIdx, c: 0 }, e: { r: netRowIdx, c: 5 } },
+                    { s: { r: netRowIdx, c: 6 }, e: { r: netRowIdx, c: 7 } },
+                    { s: { r: netRowIdx, c: 8 }, e: { r: netRowIdx, c: 9 } }
                 ];
 
                 worksheet['!cols'] = [
+                    { wch: 6 },
                     { wch: 14 },
-                    { wch: 14 },
-                    { wch: 20 },
-                    { wch: 36 },
-                    { wch: 16 },
-                    { wch: 16 },
                     { wch: 18 },
-                    { wch: 18 }
+                    { wch: 18 },
+                    { wch: 40 },
+                    { wch: 13 },
+                    { wch: 17 },
+                    { wch: 17 },
+                    { wch: 20 },
+                    { wch: 20 }
+                ];
+
+                worksheet['!rows'] = [
+                    { hpt: 30 },
+                    { hpt: 22 },
+                    { hpt: 20 },
+                    { hpt: 8 },
+                    { hpt: 26 }
                 ];
 
                 worksheet['!views'] = [{ rightToLeft: true }];
 
                 const workbook = XLSX.utils.book_new();
                 workbook.Workbook = { Views: [{ RTL: true }] };
-                XLSX.utils.book_append_sheet(workbook, worksheet, 'كشف_الحساب');
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'كشف_حساب_الورشة');
 
                 const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
                 const blob = new Blob([wbout], {
@@ -4039,7 +4193,7 @@
                 a.click();
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
-                showToast('تم تصدير ملف Excel (.xlsx) بنجاح ومتوافق مع الجوال والكمبيوتر', '📊');
+                showToast('تم تصدير ملف Excel (.xlsx) المنسق باحترافية بنجاح', '📊');
                 return;
             }
 
@@ -4293,20 +4447,7 @@
         }
 
         function deleteSubUser(idx) {
-            const sub = appState.subUsers[idx];
-            if (!sub) return;
-            const userLabel = sub.fullName ? `${sub.fullName} (${sub.username})` : sub.username;
-
-            showCustomConfirm(
-                'حذف حساب المستخدم الفرعي',
-                `هل تريد حذف حساب المستخدم الفرعي "${userLabel}" بالفعل من السحابة؟`,
-                async () => {
-                    appState.subUsers.splice(idx, 1);
-                    renderSubUsersList();
-                    await saveToCloud();
-                    showToast('تم حذف المستخدم الفرعي من السحابة', '🗑️');
-                }
-            );
+            requestOwnerPasswordForSubUserDelete(idx);
         }
 
         function renderSubUsersList() {
