@@ -141,7 +141,6 @@
         #officialPrintSheet * {
             font-family: 'Cairo', sans-serif !important;
             letter-spacing: 0px !important;
-            word-spacing: normal !important;
         }
         .corp-table {
             width: 100% !important;
@@ -178,15 +177,29 @@
             break-inside: avoid !important;
         }
 
-        /* وضع التصدير المباشر لملف PDF */
+        /* وضع التصدير المباشر لملف PDF: تثبيت الحاوية عند (0,0) لمنع أي إزاحة أو قص جانبي على الجوال */
+        body.pdf-export-mode {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: visible !important;
+            width: 730px !important;
+            min-width: 730px !important;
+        }
         #officialPrintSheet.pdf-render-active {
             display: block !important;
-            width: 720px !important;
-            max-width: 720px !important;
-            margin: 0 auto !important;
-            padding: 6px !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: auto !important;
+            width: 730px !important;
+            min-width: 730px !important;
+            max-width: 730px !important;
+            margin: 0 !important;
+            padding: 8px 10px !important;
             background: #ffffff !important;
             color: #0f172a !important;
+            direction: rtl !important;
         }
 
         @media print {
@@ -3305,7 +3318,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD (INTACT ARABIC) & UNCHANGED PRINT ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD (FIXED MOBILE VIEWPORT & ARABIC SPACING) & UNCHANGED PRINT ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3384,7 +3397,7 @@
             const contactLine = [
                 person ? `المسؤول: ${escapeHtml(person)}` : '',
                 phone ? `هاتف: <span dir="ltr">${escapeHtml(phone)}</span>` : ''
-            ].filter(Boolean).join('   •   ');
+            ].filter(Boolean).join('&nbsp;&nbsp;•&nbsp;&nbsp;');
 
             const usdBoxBg = totals.usdNet < 0 ? '#fff1f2' : '#ecfdf5';
             const usdBoxBorder = totals.usdNet < 0 ? '#f43f5e' : '#10b981';
@@ -3440,10 +3453,10 @@
 
                     return `
                         <tr class="${rowCls}">
-                            <td style="width:12%; white-space:nowrap; font-weight:700; color:#334155;">${escapeHtml(tx.date)}</td>
+                            <td style="width:13%; white-space:nowrap; font-weight:700; color:#334155;">${escapeHtml(tx.date)}</td>
                             <td style="width:12%; white-space:nowrap;">${typeHtml}</td>
                             <td style="width:16%; font-weight:700;">${catHtml}</td>
-                            <td style="width:38%; font-weight:600; color:#0f172a;">${escapeHtml(tx.description || '—')}</td>
+                            <td style="width:37%; font-weight:600; color:#0f172a;">${escapeHtml(tx.description || '—')}</td>
                             <td style="width:22%; white-space:nowrap;">${amountHtml}</td>
                         </tr>
                     `;
@@ -3452,57 +3465,73 @@
             const sheet = document.getElementById('officialPrintSheet');
             sheet.innerHTML = `
                 <div style="border:2px solid #0f172a; border-radius:14px; overflow:hidden; margin-bottom:14px;">
-                    <div style="background:#0f172a; color:#ffffff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #f59e0b;">
-                        <div>
-                            <div style="font-size:18px; font-weight:900; color:#fbbf24;">${escapeHtml(company || 'كشف حساب مالي رسمي')}</div>
-                            ${contactLine ? `<div style="font-size:11px; color:#e2e8f0; margin-top:3px; font-weight:700;">${contactLine}</div>` : ''}
-                        </div>
-                        <div style="text-align:left; font-size:11px; color:#f8fafc;">
-                            <div style="font-weight:800;">تاريخ الإصدار: <span style="color:#fbbf24;">${todayISO()}</span></div>
-                            <div style="font-weight:800; margin-top:2px;">عدد الحركات: <span style="color:#38bdf8;">${rows.length}</span></div>
-                        </div>
-                    </div>
-                    <div style="background:#f8fafc; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px;">
-                        <div>
-                            <span style="color:#475569; font-weight:700;">المشروع / الورشة: </span>
-                            <span style="color:#0f172a; font-weight:900; font-size:14px;">${escapeHtml(ws.name)}</span>
-                            ${ws.description ? `<span style="color:#64748b; font-weight:700;"> (${escapeHtml(ws.description)})</span>` : ''}
-                        </div>
-                        <div style="font-size:10.5px; color:#1e3a8a; font-weight:800; background:#e0e7ff; padding:3px 10px; border-radius:999px;">
-                            ${escapeHtml(filterNotes.join(' • '))}
-                        </div>
-                    </div>
+                    <table style="width:100%; border-collapse:collapse; background:#0f172a; color:#ffffff; border-bottom:4px solid #f59e0b;">
+                        <tr>
+                            <td style="padding:14px 18px; text-align:right; vertical-align:middle;">
+                                <div style="font-size:18px; font-weight:900; color:#fbbf24;">${escapeHtml(company || 'كشف حساب مالي رسمي')}</div>
+                                ${contactLine ? `<div style="font-size:11px; color:#e2e8f0; margin-top:4px; font-weight:700;">${contactLine}</div>` : ''}
+                            </td>
+                            <td style="padding:14px 18px; text-align:left; vertical-align:middle; font-size:11px; color:#f8fafc; white-space:nowrap;">
+                                <div style="font-weight:800;">تاريخ الإصدار: <span style="color:#fbbf24;">${todayISO()}</span></div>
+                                <div style="font-weight:800; margin-top:3px;">عدد الحركات: <span style="color:#38bdf8;">${rows.length}</span></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table style="width:100%; border-collapse:collapse; background:#f8fafc; font-size:12px;">
+                        <tr>
+                            <td style="padding:10px 18px; text-align:right; vertical-align:middle;">
+                                <span style="color:#475569; font-weight:700;">المشروع / الورشة: </span>
+                                <span style="color:#0f172a; font-weight:900; font-size:14px;">${escapeHtml(ws.name)}</span>
+                                ${ws.description ? `<span style="color:#64748b; font-weight:700;">&nbsp;(${escapeHtml(ws.description)})</span>` : ''}
+                            </td>
+                            <td style="padding:10px 18px; text-align:left; vertical-align:middle;">
+                                <span style="display:inline-block; font-size:10.5px; color:#1e3a8a; font-weight:800; background:#e0e7ff; padding:3px 10px; border-radius:999px;">
+                                    ${escapeHtml(filterNotes.join('  •  '))}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
-                    <div style="background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span style="font-size:11px; font-weight:800; color:#334155;">ملخص صندوق الدولار الأمريكي</span>
-                            <span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span>
-                        </div>
-                        <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:4px 0;">
-                            ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">
-                            <span style="color:#065f46;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</span>
-                            <span style="color:#9f1239;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</span>
-                        </div>
-                    </div>
+                <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px 14px -10px;">
+                    <tr>
+                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+                                <tr>
+                                    <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الدولار الأمريكي</td>
+                                    <td style="text-align:left;"><span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span></td>
+                                </tr>
+                            </table>
+                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:4px 0; text-align:right;">
+                                ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
+                            </div>
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:5px; margin-top:4px;">
+                                <tr>
+                                    <td style="color:#065f46; text-align:right; padding-top:5px;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</td>
+                                    <td style="color:#9f1239; text-align:left; padding-top:5px;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</td>
+                                </tr>
+                            </table>
+                        </td>
 
-                    <div style="background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span style="font-size:11px; font-weight:800; color:#334155;">ملخص صندوق الليرة السورية</span>
-                            <span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span>
-                        </div>
-                        <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:4px 0;">
-                            ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">
-                            <span style="color:#065f46;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</span>
-                            <span style="color:#9f1239;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</span>
-                        </div>
-                    </div>
-                </div>
+                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+                                <tr>
+                                    <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الليرة السورية</td>
+                                    <td style="text-align:left;"><span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span></td>
+                                </tr>
+                            </table>
+                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:4px 0; text-align:right;">
+                                ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
+                            </div>
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:5px; margin-top:4px;">
+                                <tr>
+                                    <td style="color:#065f46; text-align:right; padding-top:5px;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</td>
+                                    <td style="color:#9f1239; text-align:left; padding-top:5px;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
 
                 <table class="corp-table">
                     <thead>
@@ -3519,20 +3548,22 @@
                     </tbody>
                 </table>
 
-                <div class="corp-signatures" style="margin-top:26px; padding-top:12px; border-top:1.5px solid #cbd5e1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; text-align:center; font-size:11px; font-weight:800; color:#1e293b;">
-                    <div>
-                        <div style="margin-bottom:28px;">توقيع المحاسب</div>
-                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
-                    </div>
-                    <div>
-                        <div style="margin-bottom:28px;">مدير الورشة / المشروع</div>
-                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
-                    </div>
-                    <div>
-                        <div style="margin-bottom:28px;">الختم والاعتماد</div>
-                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
-                    </div>
-                </div>
+                <table class="corp-signatures" style="width:100%; border-collapse:collapse; margin-top:26px; border-top:1.5px solid #cbd5e1; text-align:center; font-size:11px; font-weight:800; color:#1e293b;">
+                    <tr>
+                        <td style="width:33.33%; padding-top:12px;">
+                            <div style="margin-bottom:28px;">توقيع المحاسب</div>
+                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        </td>
+                        <td style="width:33.33%; padding-top:12px;">
+                            <div style="margin-bottom:28px;">مدير الورشة / المشروع</div>
+                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        </td>
+                        <td style="width:33.33%; padding-top:12px;">
+                            <div style="margin-bottom:28px;">الختم والاعتماد</div>
+                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        </td>
+                    </tr>
+                </table>
             `;
         }
 
@@ -3549,24 +3580,28 @@
                     await document.fonts.ready;
                 }
 
-                // إظهار ورقة الكشف الرسمي البيضاء في أعلى الصفحة لضمان تصويرها بدقة 100% دون تداخل أو قص
+                // ضبط عرض الجسم والورقة عند الإحداثيات (0,0) بدقة 730px لمنع القص الجانبي على شاشات الجوال
                 appEl.classList.add('hidden');
+                document.body.classList.add('pdf-export-mode');
                 sheet.classList.add('pdf-render-active');
                 window.scrollTo(0, 0);
 
                 await new Promise(resolve => setTimeout(resolve, 250));
 
                 const opt = {
-                    margin: [10, 8, 10, 8],
+                    margin: [8, 6, 8, 6],
                     filename: fileName,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: {
                         scale: 2,
                         useCORS: true,
                         backgroundColor: '#ffffff',
+                        x: 0,
+                        y: 0,
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 750,
+                        width: 730,
+                        windowWidth: 730,
                         letterRendering: false
                     },
                     jsPDF: {
@@ -3580,15 +3615,17 @@
                 };
 
                 await html2pdf().set(opt).from(sheet).save();
-                showToast('تم تنزيل ملف PDF بنجاح وبخط عربي سليم 100%', '📄');
+                showToast('تم تنزيل ملف PDF بنجاح وبشكل كامل وسليم 100%', '📄');
             } catch (err) {
                 console.error('Direct PDF generation failed:', err);
                 showToast('تعذر التنزيل المباشر، جاري فتح نافذة الطباعة لحفظ PDF...', '⚠️');
                 sheet.classList.remove('pdf-render-active');
+                document.body.classList.remove('pdf-export-mode');
                 appEl.classList.remove('hidden');
                 window.print();
             } finally {
                 sheet.classList.remove('pdf-render-active');
+                document.body.classList.remove('pdf-export-mode');
                 appEl.classList.remove('hidden');
                 overlay.classList.add('hidden');
             }
