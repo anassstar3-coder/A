@@ -10,8 +10,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- html2pdf for Official A4 PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -44,10 +42,19 @@
             -webkit-backdrop-filter: blur(8px);
         }
 
-        .workshop-inactive-mode {
-            filter: grayscale(100%) contrast(0.95);
-            opacity: 0.9;
+        /* الوضع الرمادي الكامل للورشة غير المفعلة مع استثناء زر التشغيل */
+        .workshop-inactive-body {
+            filter: grayscale(100%) contrast(0.92);
+            opacity: 0.85;
+            background-color: #e2e8f0 !important;
             transition: all 0.3s ease;
+        }
+        .workshop-inactive-header {
+            background: linear-gradient(to left, #1e293b, #334155, #1e293b) !important;
+        }
+        .workshop-inactive-header .grayable-header-item {
+            filter: grayscale(100%);
+            opacity: 0.8;
         }
         .no-grayscale-btn {
             filter: none !important;
@@ -67,167 +74,6 @@
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.35) !important;
         }
 
-        @media print {
-            @page { size: A4 portrait; margin: 10mm; }
-            body {
-                background: #ffffff !important;
-                color: #0f172a !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                font-family: 'Cairo', sans-serif !important;
-                letter-spacing: normal !important;
-            }
-            * {
-                letter-spacing: normal !important;
-                word-spacing: normal !important;
-            }
-            .workshop-inactive-mode {
-                filter: none !important;
-                opacity: 1 !important;
-            }
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            .print-container {
-                width: 100% !important;
-                max-width: 100% !important;
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: #ffffff !important;
-            }
-            .print-boxes-grid {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px !important;
-                margin-bottom: 12px !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            .print-box-compact {
-                padding: 10px 12px !important;
-                border-radius: 10px !important;
-                border-width: 1.5px !important;
-            }
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                font-size: 10.5px !important;
-                page-break-inside: auto !important;
-            }
-            thead {
-                display: table-header-group !important;
-            }
-            tbody {
-                display: table-row-group !important;
-            }
-            tr {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            th, td {
-                border: 1px solid #94a3b8 !important;
-                padding: 6px 7px !important;
-                text-align: right !important;
-                letter-spacing: normal !important;
-            }
-            th {
-                background-color: #0f172a !important;
-                color: #ffffff !important;
-                font-weight: 800 !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .row-income { background-color: #dcfce7 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .row-expense { background-color: #ffe4e6 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .row-exchange { background-color: #fef9c3 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
-        .print-only { display: none; }
-
-        body.pdf-exporting {
-            background: #ffffff !important;
-            color: #0f172a !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        body.pdf-exporting * {
-            letter-spacing: normal !important;
-            word-spacing: normal !important;
-        }
-        body.pdf-exporting .workshop-inactive-mode {
-            filter: none !important;
-            opacity: 1 !important;
-        }
-        body.pdf-exporting .no-print { display: none !important; }
-        body.pdf-exporting .print-only { display: block !important; }
-        body.pdf-exporting main {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        body.pdf-exporting #activeWorkshopSection {
-            width: 710px !important;
-            max-width: 710px !important;
-            margin: 0 auto !important;
-            border: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            background: #ffffff !important;
-            overflow: visible !important;
-        }
-        body.pdf-exporting #activeWorkshopBody {
-            padding: 4px !important;
-        }
-        body.pdf-exporting .print-boxes-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 10px !important;
-            margin-bottom: 12px !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-        body.pdf-exporting .print-box-compact {
-            padding: 10px 12px !important;
-            border-radius: 10px !important;
-            border-width: 1.5px !important;
-        }
-        body.pdf-exporting .print-box-compact .box-amount {
-            font-size: 19px !important;
-        }
-        body.pdf-exporting #txTableWrapper {
-            overflow: visible !important;
-            border: none !important;
-        }
-        body.pdf-exporting table {
-            width: 100% !important;
-            table-layout: fixed !important;
-            border-collapse: collapse !important;
-            font-size: 10px !important;
-        }
-        body.pdf-exporting thead {
-            display: table-header-group !important;
-        }
-        body.pdf-exporting tr {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-        body.pdf-exporting th, body.pdf-exporting td {
-            border: 1px solid #94a3b8 !important;
-            padding: 5px 6px !important;
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-            white-space: normal !important;
-        }
-        body.pdf-exporting th:nth-child(1), body.pdf-exporting td:nth-child(1) { width: 13%; }
-        body.pdf-exporting th:nth-child(2), body.pdf-exporting td:nth-child(2) { width: 14%; }
-        body.pdf-exporting th:nth-child(3), body.pdf-exporting td:nth-child(3) { width: 17%; }
-        body.pdf-exporting th:nth-child(4), body.pdf-exporting td:nth-child(4) { width: 34%; }
-        body.pdf-exporting th:nth-child(5), body.pdf-exporting td:nth-child(5) { width: 22%; }
-        body.pdf-exporting .row-income { background-color: #d1fae5 !important; }
-        body.pdf-exporting .row-expense { background-color: #ffe4e6 !important; }
-        body.pdf-exporting .row-exchange { background-color: #fef08a !important; }
-
         .row-income { background-color: #d1fae5; }
         .row-expense { background-color: #ffe4e6; }
         .row-exchange { background-color: #fef08a; }
@@ -237,6 +83,75 @@
             50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
         }
         .live-dot { animation: pulseGlow 2s infinite; }
+
+        /* تنسيقات الطباعة الرسمية المباشرة (A4 نظيف وبدون تكسير للعربي) */
+        #officialPrintSheet {
+            display: none;
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm 10mm;
+            }
+            html, body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-family: 'Cairo', sans-serif !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            #loginScreen, #appContainer, .modal-backdrop, #toastNotification {
+                display: none !important;
+            }
+            #officialPrintSheet {
+                display: block !important;
+                width: 100% !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                direction: rtl !important;
+            }
+            #officialPrintSheet * {
+                font-family: 'Cairo', sans-serif !important;
+                letter-spacing: 0 !important;
+                word-spacing: normal !important;
+            }
+            .corp-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 11px !important;
+                margin-top: 10px !important;
+            }
+            .corp-table thead {
+                display: table-header-group !important;
+            }
+            .corp-table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .corp-table th {
+                background-color: #0f172a !important;
+                color: #ffffff !important;
+                border: 1px solid #0f172a !important;
+                padding: 7px 8px !important;
+                font-weight: 800 !important;
+                text-align: right !important;
+            }
+            .corp-table td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 8px !important;
+                text-align: right !important;
+                vertical-align: middle !important;
+            }
+            .corp-row-inc { background-color: #ecfdf5 !important; }
+            .corp-row-exp { background-color: #fff1f2 !important; }
+            .corp-row-exc { background-color: #fefce8 !important; }
+            .corp-signatures {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -495,25 +410,8 @@
             <!-- SECTION 3: ACTIVE WORKSHOP WORKSPACE -->
             <section id="activeWorkshopSection" class="hidden rounded-3xl border-2 border-slate-500/80 bg-white shadow-xl overflow-hidden transition-all">
                 
-                <div class="print-only mb-3">
-                    <div class="bg-slate-900 text-white p-3.5 rounded-xl flex items-center justify-between border-b-4 border-amber-400">
-                        <div>
-                            <div id="printCustomCompany" class="text-base font-black text-amber-300">كشف حساب ورشة</div>
-                            <div id="printCustomPersonPhone" class="text-[11px] font-bold text-slate-200 mt-0.5"></div>
-                        </div>
-                        <div class="text-left text-[11px] font-bold text-slate-200">
-                            <div>التاريخ: <span id="printReportDate" class="text-white font-black"></span></div>
-                            <div>الورشة: <span id="printWsNameHeader" class="text-amber-300 font-black"></span></div>
-                        </div>
-                    </div>
-                    <div class="mt-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-300 flex flex-wrap items-center justify-between text-[11px] font-extrabold text-slate-800">
-                        <div id="printWsDescRow"></div>
-                        <div>التصفية: <span id="printActiveFilterSummary" class="text-indigo-800">شامل</span></div>
-                    </div>
-                </div>
-
-                <div class="no-print bg-gradient-to-l from-slate-900 via-slate-800 to-indigo-950 px-5 py-4 border-b-2 border-slate-600 flex flex-wrap items-center justify-between gap-3">
-                    <div class="flex items-center gap-3 min-w-0">
+                <div id="activeWsHeaderBar" class="no-print bg-gradient-to-l from-slate-900 via-slate-800 to-indigo-950 px-5 py-4 border-b-2 border-slate-600 flex flex-wrap items-center justify-between gap-3 transition-all">
+                    <div class="grayable-header-item flex items-center gap-3 min-w-0">
                         <span class="w-3.5 h-3.5 rounded-full bg-amber-400 shrink-0"></span>
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
@@ -528,27 +426,28 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
+                        <!-- زر التشغيل/الإيقاف يبقى ملوناً دائماً ويطلب كلمة سر المالك حصراً -->
                         <button id="btnToggleWsStatus" onclick="toggleCurrentWorkshopStatus()"
                             class="no-grayscale-btn px-3.5 py-2 rounded-xl text-xs font-black shadow transition flex items-center gap-1.5">
                         </button>
 
                         <button id="btnManageCategories" onclick="openCategoriesModal()"
-                            class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold shadow transition flex items-center gap-1.5">
+                            class="grayable-header-item px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold shadow transition flex items-center gap-1.5">
                             <span>🏷️</span>
                             <span>إدارة التصنيفات</span>
                         </button>
 
                         <button id="btnExportWsJson" onclick="exportSingleWorkshopJson()"
-                            class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/15 transition flex items-center gap-1.5">
+                            class="grayable-header-item px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/15 transition flex items-center gap-1.5">
                             <span>📤</span>
                             <span>تصدير ملف</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="activeWorkshopBody" class="p-4 sm:p-6 space-y-6 text-slate-800">
-                    <div class="print-boxes-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div id="wsUsdBox" class="print-box-compact rounded-2xl border-2 p-5 transition-all shadow-sm">
+                <div id="activeWorkshopBody" class="p-4 sm:p-6 space-y-6 text-slate-800 transition-all">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div id="wsUsdBox" class="rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span id="wsUsdBoxLabel" class="text-xs font-black text-slate-700">صندوق الورشة</span>
                                 <span class="px-3 py-1 rounded-xl bg-slate-900 text-amber-300 font-black text-xs sm:text-sm shadow-sm flex items-center gap-1">
@@ -556,14 +455,14 @@
                                     <span>USD</span>
                                 </span>
                             </div>
-                            <div id="wsUsdNet" class="box-amount text-2xl sm:text-3xl font-black tracking-tight my-1.5" dir="ltr">$ 0</div>
+                            <div id="wsUsdNet" class="text-2xl sm:text-3xl font-black tracking-tight my-1.5" dir="ltr">$ 0</div>
                             <div class="flex items-center justify-between text-[11px] sm:text-xs font-extrabold pt-2 border-t border-black/10">
                                 <span class="text-emerald-800">الإيرادات: <span id="wsUsdIn">0 $</span></span>
                                 <span class="text-rose-800">المصروفات: <span id="wsUsdOut">0 $</span></span>
                             </div>
                         </div>
 
-                        <div id="wsSypBox" class="print-box-compact rounded-2xl border-2 p-5 transition-all shadow-sm">
+                        <div id="wsSypBox" class="rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span id="wsSypBoxLabel" class="text-xs font-black text-slate-700">صندوق الورشة</span>
                                 <span class="px-3 py-1 rounded-xl bg-blue-900 text-white font-black text-xs sm:text-sm shadow-sm flex items-center gap-1">
@@ -571,7 +470,7 @@
                                     <span>SYP</span>
                                 </span>
                             </div>
-                            <div id="wsSypNet" class="box-amount text-2xl sm:text-3xl font-black tracking-tight my-1.5" dir="ltr">0 ل.س</div>
+                            <div id="wsSypNet" class="text-2xl sm:text-3xl font-black tracking-tight my-1.5" dir="ltr">0 ل.س</div>
                             <div class="flex items-center justify-between text-[11px] sm:text-xs font-extrabold pt-2 border-t border-black/10">
                                 <span class="text-emerald-800">الإيرادات: <span id="wsSypIn">0 ل.س</span></span>
                                 <span class="text-rose-800">المصروفات: <span id="wsSypOut">0 ل.س</span></span>
@@ -612,12 +511,12 @@
                                 <button onclick="openPrintDetailsModal('pdf')"
                                     class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
                                     <span>📄</span>
-                                    <span>PDF (A4)</span>
+                                    <span>تصدير PDF (A4)</span>
                                 </button>
                                 <button onclick="openPrintDetailsModal('print')"
                                     class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
                                     <span>🖨</span>
-                                    <span>طباعة</span>
+                                    <span>طباعة مباشرة</span>
                                 </button>
                             </div>
                         </div>
@@ -660,19 +559,32 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-                            <div class="flex items-center gap-1.5">
+                        <!-- صف التواريخ + تصنيف التاريخ (تصاعدي / تنازلي) + تشيك بوكس إعادة الترتيب الفعلي في السحابة -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1 items-center">
+                            <div class="sm:col-span-3 flex items-center gap-1.5">
                                 <span class="text-[11px] font-extrabold text-slate-500 shrink-0">من:</span>
                                 <input type="date" id="txFilterDateFrom" onchange="renderTransactionsTable()"
                                     class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white">
                             </div>
-                            <div class="flex items-center gap-1.5">
+                            <div class="sm:col-span-3 flex items-center gap-1.5">
                                 <span class="text-[11px] font-extrabold text-slate-500 shrink-0">إلى:</span>
                                 <input type="date" id="txFilterDateTo" onchange="renderTransactionsTable()"
                                     class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white">
                             </div>
-                            <div class="col-span-2 flex items-center justify-end text-xs font-extrabold text-slate-600">
-                                عدد النتائج المعروضة: <span id="txFilteredCount" class="mx-1 text-indigo-700 font-black">0</span> حركة
+                            <div class="sm:col-span-4 flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300">
+                                <select id="txSortOrderSelect" onchange="handleSortOrderSelectChange()"
+                                    class="text-xs font-extrabold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                                    <option value="desc">📅 التاريخ: تنازلي (الأحدث أولاً)</option>
+                                    <option value="asc">📅 التاريخ: تصاعدي (الأقدم أولاً)</option>
+                                </select>
+                                <label class="inline-flex items-center gap-1.5 border-r border-slate-200 pr-2 cursor-pointer select-none shrink-0" title="تثبيت وإعادة ترتيب الحركات في السحابة حسب التاريخ المختار">
+                                    <input type="checkbox" id="chkPersistDateSort" onchange="handlePersistDateSortCheckbox(this)"
+                                        class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+                                    <span class="text-[11px] font-black text-indigo-700">إعادة ترتيبها</span>
+                                </label>
+                            </div>
+                            <div class="sm:col-span-2 flex items-center justify-end text-xs font-extrabold text-slate-600">
+                                النتائج: <span id="txFilteredCount" class="mx-1 text-indigo-700 font-black">0</span>
                             </div>
                         </div>
                     </div>
@@ -692,29 +604,42 @@
                             <tbody id="transactionsTableBody" class="divide-y divide-slate-300 text-xs sm:text-sm font-bold text-slate-900"></tbody>
                         </table>
                     </div>
-
-                    <div class="print-only mt-6 pt-3 border-t-2 border-slate-300">
-                        <div class="grid grid-cols-3 gap-4 text-center text-xs font-black text-slate-800">
-                            <div>
-                                <div class="mb-6">توقيع المحاسب</div>
-                                <div class="border-b border-dashed border-slate-400 w-3/4 mx-auto"></div>
-                            </div>
-                            <div>
-                                <div class="mb-6">مدير المشروع</div>
-                                <div class="border-b border-dashed border-slate-400 w-3/4 mx-auto"></div>
-                            </div>
-                            <div>
-                                <div class="mb-6">الاعتماد</div>
-                                <div class="border-b border-dashed border-slate-400 w-3/4 mx-auto"></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- ==================== OFFICIAL CORPORATE A4 PRINT SHEET (CLEAN & CRISP ARABIC) ==================== -->
+    <div id="officialPrintSheet"></div>
+
     <!-- ==================== FLOATING MODALS ==================== -->
+
+    <!-- MODAL: OWNER PASSWORD VERIFICATION FOR ACTIVATING / DEACTIVATING WORKSHOP -->
+    <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
+            <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
+                <h3 class="text-base font-black text-amber-300">🔐 تحقق من كلمة سر المالك</h3>
+                <button type="button" onclick="closeModal('ownerAuthStatusModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <form onsubmit="confirmOwnerPasswordForWorkshopStatus(event)" class="p-5 space-y-4">
+                <input type="hidden" id="pendingStatusWsId">
+                <p id="ownerAuthStatusMessage" class="text-xs font-extrabold text-slate-700 leading-relaxed"></p>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">كلمة سر حساب المالك الأساسي *</label>
+                    <input type="password" id="ownerAuthPasswordInput" required placeholder="أدخل كلمة سر المالك..."
+                        class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none text-sm font-black bg-slate-50 text-center">
+                </div>
+                <div class="flex items-center gap-2.5 pt-1">
+                    <button type="submit" id="btnConfirmOwnerStatus" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow">
+                        تأكيد وتنفيذ
+                    </button>
+                    <button type="button" onclick="closeModal('ownerAuthStatusModal')" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL 0: MANDATORY / EDIT USER PERSONAL NAME FOR PRINTING -->
     <div id="profileNameModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
@@ -817,7 +742,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: ADD / EDIT CURRENCY EXCHANGE -->
+    <!-- MODAL 2: ADD / EDIT CURRENCY EXCHANGE (AUTO-CALCULATION FROM BOTH SIDES) -->
     <div id="exchangeModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-amber-200 overflow-hidden my-auto text-slate-800">
             <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3.5 text-slate-950 flex items-center justify-between">
@@ -830,6 +755,19 @@
 
             <form id="exchangeForm" onsubmit="saveExchangeTransaction(event)" class="p-5 space-y-3.5">
                 <input type="hidden" id="exEditId">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">سعر الصرف ($1) *</label>
+                        <input type="text" inputmode="decimal" id="exRate" required placeholder="14,500" oninput="handleExchangeInput('RATE')"
+                            class="w-full px-3 py-2 rounded-xl border-2 border-amber-400 focus:border-amber-600 focus:outline-none text-sm font-black bg-amber-50/40 text-left" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ *</label>
+                        <input type="date" id="exDate" required
+                            class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-bold bg-slate-50">
+                    </div>
+                </div>
 
                 <div id="exUsdCard" class="p-3.5 rounded-2xl border-2 transition-all">
                     <div class="flex items-center justify-between mb-1.5">
@@ -864,19 +802,6 @@
                         class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-black bg-white text-left" dir="ltr">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-1">
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-700 mb-1">سعر الصرف ($1) *</label>
-                        <input type="text" inputmode="decimal" id="exRate" required placeholder="14,500" oninput="handleExchangeInput('RATE')"
-                            class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none text-sm font-black bg-slate-50 text-left" dir="ltr">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-700 mb-1">التاريخ *</label>
-                        <input type="date" id="exDate" required
-                            class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-bold bg-slate-50">
-                    </div>
-                </div>
-
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">ملاحظات (اختياري)</label>
                     <input type="text" id="exDescription" placeholder="مثال: تصريف بسعر اليوم..."
@@ -904,10 +829,10 @@
             </div>
             <form onsubmit="executePrintOrPdf(event)" class="p-5 space-y-3.5">
                 <input type="hidden" id="printActionMode" value="print">
-                <p class="text-xs font-bold text-slate-500">يمكنك إدخال البيانات التالية لإظهارها في أعلى الورقة، أو الضغط على زر التنفيذ مباشرةً:</p>
+                <p class="text-xs font-bold text-slate-500">يمكنك إدخال البيانات التالية لإظهارها في أعلى الكشف الرسمي، أو المتابعة مباشرةً:</p>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم الشركة / المؤسسة (اختياري)</label>
-                    <input type="text" id="printInputCompany" placeholder="مثال: شركة البناء الحديث للمقاولات..."
+                    <input type="text" id="printInputCompany" placeholder="مثال: شركة البناء الحديث للمقاولات الهندسية..."
                         class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-bold bg-slate-50">
                 </div>
                 <div>
@@ -922,7 +847,7 @@
                 </div>
                 <div class="flex items-center gap-2.5 pt-2">
                     <button type="submit" id="btnExecutePrintPdf" class="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm shadow-lg transition">
-                        تنفيذ الطباعة الآن
+                        طباعة / حفظ PDF الآن
                     </button>
                     <button type="button" onclick="closeModal('printDetailsModal')" class="px-5 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-sm transition">
                         إلغاء
@@ -1220,6 +1145,7 @@
         let isReorderMode = false;
         let draggedWorkshopId = null;
         let exchangeDirection = 'USD_TO_SYP';
+        let lastEditedExchangeCurrency = 'USD';
 
         let cloudConnected = false;
         let hasFetchedInitialCloud = false;
@@ -1352,7 +1278,7 @@
             if (!safeCategories.includes('عام')) {
                 safeCategories.unshift('عام');
             }
-            const safeTxs = Array.isArray(ws.transactions) ? ws.transactions.map(tx => {
+            const safeTxs = Array.isArray(ws.transactions) ? ws.transactions.map((tx, txIdx) => {
                 if (tx.type === 'exchange') {
                     return {
                         id: tx.id || generateId('tx'),
@@ -1364,7 +1290,7 @@
                         rate: Number(tx.rate) || 0,
                         date: tx.date || todayISO(),
                         description: tx.description || tx.desc || '',
-                        createdAt: tx.createdAt || Date.now()
+                        createdAt: tx.createdAt || (Date.now() + txIdx)
                     };
                 }
                 return {
@@ -1375,7 +1301,7 @@
                     category: tx.category || 'عام',
                     date: tx.date || todayISO(),
                     description: tx.description || tx.desc || 'بدون وصف',
-                    createdAt: tx.createdAt || Date.now()
+                    createdAt: tx.createdAt || (Date.now() + txIdx)
                 };
             }) : [];
 
@@ -1442,7 +1368,7 @@
             };
         }
 
-        // ==================== 5. LEGACY COLLECTIONS RECOVERY (workshops_system_items & workshops_system) ====================
+        // ==================== 5. LEGACY COLLECTIONS RECOVERY ====================
         async function fetchAllDocsInCollection(collectionName) {
             const docs = [];
             let pageToken = '';
@@ -1470,10 +1396,8 @@
                     fetchAllDocsInCollection('workshops_docs')
                 ]);
 
-                let recoveredWorkshopsCount = 0;
                 const workshopsMap = new Map(appState.workshops.map(w => [w.id, w]));
 
-                // 1. Extract all workshops from workshops_system_items and workshops_docs
                 for (const doc of [...legacyWsDocs, ...legacyDocsCol]) {
                     const parsed = parseFirestoreDocument(doc);
                     if (parsed && (parsed.name || Array.isArray(parsed.transactions))) {
@@ -1486,12 +1410,10 @@
                         const existing = workshopsMap.get(normalizedWs.id);
                         if (!existing || normalizedWs.transactions.length >= existing.transactions.length) {
                             workshopsMap.set(normalizedWs.id, normalizedWs);
-                            recoveredWorkshopsCount++;
                         }
                     }
                 }
 
-                // 2. Extract admin & sub-users from workshops_system
                 for (const doc of legacySysDocs) {
                     const parsed = parseFirestoreDocument(doc);
                     if (!parsed) continue;
@@ -1660,7 +1582,6 @@
                     }
                 }
 
-                // Auto-recover from workshops_system_items if primary cloud is empty
                 if (appState.workshops.length === 0 && !isBackgroundPoll) {
                     await recoverLegacyCloudCollections(false);
                 }
@@ -1956,7 +1877,6 @@
             document.getElementById('txActionButtonsBar').classList.toggle('hidden', !perms.addEditTx);
             document.getElementById('btnManageCategories').classList.toggle('hidden', !perms.manageCats);
             document.getElementById('btnEditWsInfo').classList.toggle('hidden', !perms.manageWs);
-            document.getElementById('btnToggleWsStatus').classList.toggle('hidden', !perms.manageWs);
             document.getElementById('exportPrintGroup').classList.toggle('hidden', !perms.printExport);
             document.getElementById('btnExportWsJson').classList.toggle('hidden', !perms.printExport);
         }
@@ -2039,11 +1959,11 @@
         function styleDynamicCashbox(boxEl, netEl, netVal, formattedStr) {
             netEl.textContent = formattedStr;
             if (netVal < 0) {
-                boxEl.className = 'print-box-compact rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-red-50 to-rose-100 p-5 transition-all shadow-md';
-                netEl.className = 'box-amount text-2xl sm:text-3xl font-black tracking-tight my-1.5 text-rose-700';
+                boxEl.className = 'rounded-2xl border-2 border-rose-500 bg-gradient-to-br from-rose-50 via-red-50 to-rose-100 p-5 transition-all shadow-md';
+                netEl.className = 'text-2xl sm:text-3xl font-black tracking-tight my-1.5 text-rose-700';
             } else {
-                boxEl.className = 'print-box-compact rounded-2xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 p-5 transition-all shadow-md';
-                netEl.className = 'box-amount text-2xl sm:text-3xl font-black tracking-tight my-1.5 text-emerald-800';
+                boxEl.className = 'rounded-2xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 p-5 transition-all shadow-md';
+                netEl.className = 'text-2xl sm:text-3xl font-black tracking-tight my-1.5 text-emerald-800';
             }
         }
 
@@ -2081,7 +2001,7 @@
             );
         }
 
-        // ==================== 9. WORKSHOPS GRID, SELECTION & DRAG-AND-DROP REORDER ====================
+        // ==================== 9. WORKSHOPS GRID, SELECTION & OWNER PASSWORD LOCK ====================
         function setWorkshopFilter(status) {
             workshopFilterStatus = status;
             const btnAll = document.getElementById('wsFilterAll');
@@ -2200,15 +2120,17 @@
                 const totals = calculateWorkshopTotals(ws);
                 const isSelected = ws.id === activeWorkshopId;
                 const isInactive = ws.active === false;
-                const canManage = currentUser.permissions.manageWs;
+                const canDeleteWs = currentUser.permissions.manageWs;
 
                 let cardClasses = 'relative rounded-2xl p-4 transition-all border-2 flex flex-col justify-between ';
                 if (isReorderMode) {
                     cardClasses += 'ws-draggable-card border-amber-400/70 bg-slate-800 shadow-lg ';
+                } else if (isInactive) {
+                    cardClasses += isSelected
+                        ? 'border-slate-400 bg-slate-800/90 grayscale shadow-xl ring-2 ring-slate-400/40 cursor-pointer '
+                        : 'border-slate-700 bg-slate-800/40 grayscale opacity-75 hover:opacity-95 cursor-pointer ';
                 } else if (isSelected) {
                     cardClasses += 'border-amber-400 bg-gradient-to-br from-indigo-950 via-slate-800 to-slate-900 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400/50 cursor-pointer ';
-                } else if (isInactive) {
-                    cardClasses += 'border-slate-700 bg-slate-800/40 opacity-75 hover:opacity-100 cursor-pointer ';
                 } else {
                     cardClasses += 'border-slate-700 bg-slate-800/90 hover:border-indigo-400/70 hover:bg-slate-800 cursor-pointer ';
                 }
@@ -2240,7 +2162,7 @@
                                 `}
                             </div>
 
-                            <h3 class="text-base font-black ${isSelected ? 'text-amber-300' : 'text-white'} truncate">${escapeHtml(ws.name)}</h3>
+                            <h3 class="text-base font-black ${isSelected && !isInactive ? 'text-amber-300' : 'text-white'} truncate">${escapeHtml(ws.name)}</h3>
                             <p class="text-xs font-semibold text-slate-400 mt-0.5 truncate min-h-[18px]">${escapeHtml(ws.description || 'بدون وصف إضافي')}</p>
                         </div>
 
@@ -2259,16 +2181,18 @@
                             </div>
                         </div>
 
-                        ${(!isReorderMode && canManage) ? `
+                        ${!isReorderMode ? `
                             <div class="flex items-center justify-end gap-1.5 pt-1" onclick="event.stopPropagation()">
-                                <button type="button" onclick="toggleWorkshopStatusById('${ws.id}')"
-                                    class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition ${isInactive ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-700 hover:bg-slate-600 text-amber-300'}">
-                                    ${isInactive ? '▶ تفعيل' : '⏸ إيقاف'}
+                                <button type="button" onclick="requestOwnerPasswordForWorkshopStatus('${ws.id}')"
+                                    class="no-grayscale-btn px-2.5 py-1 rounded-lg text-[11px] font-black transition shadow ${isInactive ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30'}">
+                                    ${isInactive ? '▶ تشغيل' : '⏸ إيقاف'}
                                 </button>
-                                <button type="button" onclick="deleteWorkshopById('${ws.id}')"
-                                    class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white text-[11px] font-extrabold transition">
-                                    🗑️ حذف
-                                </button>
+                                ${canDeleteWs ? `
+                                    <button type="button" onclick="deleteWorkshopById('${ws.id}')"
+                                        class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white text-[11px] font-extrabold transition">
+                                        🗑️ حذف
+                                    </button>
+                                ` : ''}
                             </div>
                         ` : ''}
                     </div>
@@ -2313,6 +2237,7 @@
 
         function selectWorkshop(wsId) {
             activeWorkshopId = wsId;
+            document.getElementById('chkPersistDateSort').checked = false;
             resetTxFilters();
             refreshAllViewsAfterSync();
         }
@@ -2322,18 +2247,56 @@
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        async function toggleWorkshopStatusById(wsId) {
-            if (!currentUser.permissions.manageWs) return;
+        // طلب كلمة سر المالك حصراً لتشغيل أو إيقاف الورشة
+        function requestOwnerPasswordForWorkshopStatus(wsId) {
             const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
+            const willActivate = ws.active === false;
+
+            document.getElementById('pendingStatusWsId').value = wsId;
+            document.getElementById('ownerAuthPasswordInput').value = '';
+            document.getElementById('ownerAuthStatusMessage').textContent = willActivate
+                ? `إعادة تشغيل وتفعيل ورشة "${ws.name}" تتطلب إدخال كلمة سر حساب المالك حصراً:`
+                : `إيقاف نشاط ورشة "${ws.name}" يتطلب إدخال كلمة سر حساب المالك حصراً:`;
+
+            const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
+            if (willActivate) {
+                confirmBtn.textContent = '▶ تأكيد تشغيل الورشة';
+                confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow';
+            } else {
+                confirmBtn.textContent = '⏸ تأكيد إيقاف الورشة';
+                confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow';
+            }
+
+            openModal('ownerAuthStatusModal');
+            setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
+        }
+
+        async function confirmOwnerPasswordForWorkshopStatus(e) {
+            e.preventDefault();
+            const enteredPass = document.getElementById('ownerAuthPasswordInput').value.trim();
+            const ownerPass = String(appState.admin.password || '123').trim();
+
+            if (enteredPass !== ownerPass) {
+                showToast('❌ كلمة سر حساب المالك غير صحيحة! لا يمكن تنفيذ العملية.', '🔒');
+                document.getElementById('ownerAuthPasswordInput').value = '';
+                document.getElementById('ownerAuthPasswordInput').focus();
+                return;
+            }
+
+            const wsId = document.getElementById('pendingStatusWsId').value;
+            const ws = appState.workshops.find(w => w.id === wsId);
+            closeModal('ownerAuthStatusModal');
+            if (!ws) return;
+
             ws.active = ws.active === false ? true : false;
             refreshAllViewsAfterSync();
             await saveToCloud(ws.id);
-            showToast(ws.active ? 'تم تفعيل الورشة' : 'تم إيقاف نشاط الورشة', ws.active ? '✅' : '⏸');
+            showToast(ws.active ? `تم تشغيل وتفعيل ورشة "${ws.name}" بنجاح` : `تم إيقاف ورشة "${ws.name}" بنجاح`, ws.active ? '▶' : '⏸');
         }
 
         function toggleCurrentWorkshopStatus() {
-            if (activeWorkshopId) toggleWorkshopStatusById(activeWorkshopId);
+            if (activeWorkshopId) requestOwnerPasswordForWorkshopStatus(activeWorkshopId);
         }
 
         function deleteWorkshopById(wsId) {
@@ -2424,14 +2387,17 @@
                 stickyDesc.classList.add('hidden');
             }
 
+            const wsHeaderBar = document.getElementById('activeWsHeaderBar');
             const wsBody = document.getElementById('activeWorkshopBody');
             const toggleBtn = document.getElementById('btnToggleWsStatus');
             if (ws.active === false) {
-                wsBody.classList.add('workshop-inactive-mode');
-                toggleBtn.innerHTML = '<span>▶</span><span>تفعيل الورشة</span>';
-                toggleBtn.className = 'no-grayscale-btn px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/40 transition flex items-center gap-1.5';
+                wsHeaderBar.classList.add('workshop-inactive-header');
+                wsBody.classList.add('workshop-inactive-body');
+                toggleBtn.innerHTML = '<span>▶</span><span>تشغيل وتفعيل الورشة</span>';
+                toggleBtn.className = 'no-grayscale-btn px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/40 transition flex items-center gap-1.5';
             } else {
-                wsBody.classList.remove('workshop-inactive-mode');
+                wsHeaderBar.classList.remove('workshop-inactive-header');
+                wsBody.classList.remove('workshop-inactive-body');
                 toggleBtn.innerHTML = '<span>⏸</span><span>إيقاف الورشة</span>';
                 toggleBtn.className = 'no-grayscale-btn px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-extrabold transition flex items-center gap-1.5';
             }
@@ -2538,14 +2504,59 @@
             sel.value = ws.categories.includes(selectedCat) ? selectedCat : 'عام';
         }
 
-        // ==================== 11. TRANSACTIONS TABLE & FILTERING ====================
-        function getFilteredTransactions(ws, forceAscending = false) {
+        // ==================== 11. TRANSACTIONS TABLE, DATE SORT & CLOUD RE-ORDERING ====================
+        function handleSortOrderSelectChange() {
+            renderTransactionsTable();
+            const chk = document.getElementById('chkPersistDateSort');
+            if (chk && chk.checked) {
+                persistTransactionsOrderByDate();
+            }
+        }
+
+        async function handlePersistDateSortCheckbox(checkboxEl) {
+            if (!checkboxEl.checked) return;
+            await persistTransactionsOrderByDate();
+        }
+
+        async function persistTransactionsOrderByDate() {
+            const ws = getActiveWorkshop();
+            if (!ws || !Array.isArray(ws.transactions) || ws.transactions.length === 0) return;
+
+            const sortDir = document.getElementById('txSortOrderSelect').value; // 'asc' or 'desc'
+            const isAsc = sortDir === 'asc';
+
+            // فرز فعلي للمصفوفة وتحديث طوابع الترتيب لحفظها في السحابة بشكل دائم
+            ws.transactions.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return isAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+                }
+                return isAsc ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            const baseTime = Date.now();
+            ws.transactions.forEach((tx, idx) => {
+                tx.createdAt = isAsc ? (baseTime + idx * 10) : (baseTime - idx * 10);
+            });
+
+            renderTransactionsTable();
+            await saveToCloud(ws.id);
+            showToast(
+                isAsc
+                    ? '✅ تمت إعادة ترتيب حركات الورشة تصاعدياً (من الأقدم للأحدث) وحفظها في السحابة'
+                    : '✅ تمت إعادة ترتيب حركات الورشة تنازلياً (من الأحدث للأقدم) وحفظها في السحابة',
+                '📅'
+            );
+        }
+
+        function getFilteredTransactions(ws, overrideSortDirection = null) {
             const searchQ = (document.getElementById('txSearchInput').value || '').trim().toLowerCase();
             const fType = document.getElementById('txFilterType').value;
             const fCat = document.getElementById('txFilterCategory').value;
             const fCurr = document.getElementById('txFilterCurrency').value;
             const dFrom = document.getElementById('txFilterDateFrom').value;
             const dTo = document.getElementById('txFilterDateTo').value;
+            const sortDir = overrideSortDirection || document.getElementById('txSortOrderSelect').value || 'desc';
+            const isAsc = sortDir === 'asc';
 
             const list = (ws.transactions || []).filter(tx => {
                 if (fType === 'income' && tx.type !== 'income') return false;
@@ -2587,9 +2598,9 @@
 
             list.sort((a, b) => {
                 if (a.date !== b.date) {
-                    return forceAscending ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+                    return isAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
                 }
-                return forceAscending ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
+                return isAsc ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
             });
 
             return list;
@@ -2602,15 +2613,17 @@
             document.getElementById('txFilterCurrency').value = 'all';
             document.getElementById('txFilterDateFrom').value = '';
             document.getElementById('txFilterDateTo').value = '';
+            document.getElementById('txSortOrderSelect').value = 'desc';
+            document.getElementById('chkPersistDateSort').checked = false;
             renderTransactionsTable();
         }
 
-        function renderTransactionsTable(forceAscending = false) {
+        function renderTransactionsTable() {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             const fType = document.getElementById('txFilterType').value;
-            const filtered = getFilteredTransactions(ws, forceAscending);
+            const filtered = getFilteredTransactions(ws);
             document.getElementById('txFilteredCount').textContent = filtered.length;
 
             const isFiltered = (
@@ -2851,7 +2864,7 @@
             );
         }
 
-        // ==================== 13. CURRENCY EXCHANGE MODAL ====================
+        // ==================== 13. CURRENCY EXCHANGE MODAL (BIDIRECTIONAL AUTO-CALCULATION) ====================
         function updateExchangeVisuals() {
             const usdCard = document.getElementById('exUsdCard');
             const sypCard = document.getElementById('exSypCard');
@@ -2892,22 +2905,40 @@
             const sypEl = document.getElementById('exSypAmount');
             const rateEl = document.getElementById('exRate');
 
-            if (changedField === 'USD') formatLiveNumberInput(usdEl);
-            if (changedField === 'SYP') formatLiveNumberInput(sypEl);
-            if (changedField === 'RATE') formatLiveNumberInput(rateEl);
+            if (changedField === 'USD') {
+                formatLiveNumberInput(usdEl);
+                lastEditedExchangeCurrency = 'USD';
+            } else if (changedField === 'SYP') {
+                formatLiveNumberInput(sypEl);
+                lastEditedExchangeCurrency = 'SYP';
+            } else if (changedField === 'RATE') {
+                formatLiveNumberInput(rateEl);
+            }
 
             const usdVal = parseFormattedNum(usdEl.value);
             const sypVal = parseFormattedNum(sypEl.value);
             const rateVal = parseFormattedNum(rateEl.value);
 
-            if (changedField === 'USD' && rateVal > 0) {
-                sypEl.value = formatNum(Math.round(usdVal * rateVal), 0);
-            } else if (changedField === 'RATE' && usdVal > 0 && rateVal > 0) {
-                sypEl.value = formatNum(Math.round(usdVal * rateVal), 0);
-            } else if (changedField === 'SYP' && rateVal > 0 && usdVal === 0) {
-                usdEl.value = formatNum(sypVal / rateVal, 2);
-            } else if (changedField === 'SYP' && usdVal > 0 && sypVal > 0) {
-                rateEl.value = formatNum(sypVal / usdVal, 2);
+            if (changedField === 'USD') {
+                if (rateVal > 0) {
+                    sypEl.value = usdVal > 0 ? formatNum(Math.round(usdVal * rateVal), 0) : '';
+                } else if (usdVal > 0 && sypVal > 0) {
+                    rateEl.value = formatNum(sypVal / usdVal, 2);
+                }
+            } else if (changedField === 'SYP') {
+                if (rateVal > 0) {
+                    usdEl.value = sypVal > 0 ? formatNum(sypVal / rateVal, 2) : '';
+                } else if (usdVal > 0 && sypVal > 0) {
+                    rateEl.value = formatNum(sypVal / usdVal, 2);
+                }
+            } else if (changedField === 'RATE' && rateVal > 0) {
+                if (lastEditedExchangeCurrency === 'SYP' && sypVal > 0) {
+                    usdEl.value = formatNum(sypVal / rateVal, 2);
+                } else if (usdVal > 0) {
+                    sypEl.value = formatNum(Math.round(usdVal * rateVal), 0);
+                } else if (sypVal > 0) {
+                    usdEl.value = formatNum(sypVal / rateVal, 2);
+                }
             }
         }
 
@@ -2922,6 +2953,7 @@
                 document.getElementById('exEditId').value = tx.id;
                 document.getElementById('exModalTitle').textContent = '✏️ تعديل عملية الصرافة';
                 exchangeDirection = tx.fromCurrency === 'USD' ? 'USD_TO_SYP' : 'SYP_TO_USD';
+                lastEditedExchangeCurrency = tx.fromCurrency || 'USD';
 
                 const usdAmt = tx.fromCurrency === 'USD' ? tx.fromAmount : tx.toAmount;
                 const sypAmt = tx.fromCurrency === 'SYP' ? tx.fromAmount : tx.toAmount;
@@ -2935,6 +2967,7 @@
                 document.getElementById('exEditId').value = '';
                 document.getElementById('exModalTitle').textContent = '⇄ إضافة تحويل / صرافة';
                 exchangeDirection = 'USD_TO_SYP';
+                lastEditedExchangeCurrency = 'USD';
                 document.getElementById('exUsdAmount').value = '';
                 document.getElementById('exSypAmount').value = '';
                 document.getElementById('exRate').value = '';
@@ -3004,18 +3037,18 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. PRINT, A4 PDF & EXCEL EXPORT ====================
+        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (NO BROKEN ARABIC) ====================
         function openPrintDetailsModal(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             document.getElementById('printActionMode').value = mode;
             document.getElementById('printDetailsTitle').textContent = mode === 'pdf'
-                ? '📄 بيانات ترويسة ملف الـ PDF (اختياري)'
-                : '🖨 بيانات ترويسة الطباعة (اختياري)';
+                ? '📄 بيانات ترويسة ملف الـ PDF الرسمي (اختياري)'
+                : '🖨 بيانات ترويسة الطباعة الرسمية (اختياري)';
             document.getElementById('btnExecutePrintPdf').textContent = mode === 'pdf'
-                ? '📄 تصدير PDF الآن'
-                : '🖨 طباعة الآن';
+                ? '📄 إنشاء وحفظ PDF الرسمي الآن'
+                : '🖨 طباعة الكشف الرسمي الآن';
 
             const personInput = document.getElementById('printInputPerson');
             if (!personInput.value.trim() && currentUser?.fullName) {
@@ -3025,83 +3058,207 @@
             openModal('printDetailsModal');
         }
 
-        function preparePrintHeaderData() {
+        function buildOfficialCorporatePrintSheet() {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             const company = document.getElementById('printInputCompany').value.trim();
             const person = document.getElementById('printInputPerson').value.trim();
             const phone = document.getElementById('printInputPhone').value.trim();
+            const fType = document.getElementById('txFilterType').value;
 
-            document.getElementById('printCustomCompany').textContent = company || 'كشف حساب ورشة';
-            const metaParts = [];
-            if (person) metaParts.push(`المسؤول: ${person}`);
-            if (phone) metaParts.push(`هاتف: ${phone}`);
-            document.getElementById('printCustomPersonPhone').textContent = metaParts.join('  |  ');
-
-            document.getElementById('printReportDate').textContent = todayISO();
-            document.getElementById('printWsNameHeader').textContent = ws.name;
-            document.getElementById('printWsDescRow').textContent = ws.description ? `الوصف: ${ws.description}` : '';
+            const rows = getFilteredTransactions(ws, 'asc');
+            const totals = calculateFilteredListTotals(rows, fType);
 
             const typeSelect = document.getElementById('txFilterType');
             const catSelect = document.getElementById('txFilterCategory');
             const currSelect = document.getElementById('txFilterCurrency');
-            const summaryParts = [
-                typeSelect.options[typeSelect.selectedIndex]?.text || '',
+            const dFrom = document.getElementById('txFilterDateFrom').value;
+            const dTo = document.getElementById('txFilterDateTo').value;
+
+            const filterNotes = [
+                typeSelect.options[typeSelect.selectedIndex]?.text || 'كل الحركات',
                 `البند: ${catSelect.value === 'all' ? 'الكل' : catSelect.value}`,
                 `العملة: ${currSelect.value === 'all' ? 'الكل' : currSelect.value}`
             ];
-            document.getElementById('printActiveFilterSummary').textContent = summaryParts.join(' • ');
+            if (dFrom) filterNotes.push(`من: ${dFrom}`);
+            if (dTo) filterNotes.push(`إلى: ${dTo}`);
+
+            const contactLine = [
+                person ? `إعداد / المسؤول: ${escapeHtml(person)}` : '',
+                phone ? `هاتف: ${escapeHtml(phone)}` : ''
+            ].filter(Boolean).join('   •   ');
+
+            const usdBoxBg = totals.usdNet < 0 ? '#fff1f2' : '#ecfdf5';
+            const usdBoxBorder = totals.usdNet < 0 ? '#f43f5e' : '#10b981';
+            const usdTextColor = totals.usdNet < 0 ? '#be123c' : '#065f46';
+
+            const sypBoxBg = totals.sypNet < 0 ? '#fff1f2' : '#eff6ff';
+            const sypBoxBorder = totals.sypNet < 0 ? '#f43f5e' : '#2563eb';
+            const sypTextColor = totals.sypNet < 0 ? '#be123c' : '#1e3a8a';
+
+            const rowsHtml = rows.length === 0
+                ? `<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b; font-weight:700;">لا توجد حركات مالية مطابقة للتصفية</td></tr>`
+                : rows.map((tx, idx) => {
+                    let rowCls = '';
+                    let typeHtml = '';
+                    let catHtml = escapeHtml(tx.category || 'عام');
+                    let amountHtml = '';
+
+                    if (tx.type === 'income') {
+                        rowCls = 'corp-row-inc';
+                        typeHtml = `<span style="display:inline-block; padding:2px 8px; border-radius:6px; background:#047857; color:#fff; font-size:10px; font-weight:800;">إيراد</span>`;
+                        const sym = tx.currency === 'USD' ? '$' : 'ل.س';
+                        const dec = tx.currency === 'USD' ? 2 : 0;
+                        amountHtml = `<span dir="ltr" style="color:#065f46; font-weight:900;">+ ${formatNum(tx.amount, dec)} ${sym}</span>`;
+                    } else if (tx.type === 'expense') {
+                        rowCls = 'corp-row-exp';
+                        typeHtml = `<span style="display:inline-block; padding:2px 8px; border-radius:6px; background:#be123c; color:#fff; font-size:10px; font-weight:800;">مصروف</span>`;
+                        const sym = tx.currency === 'USD' ? '$' : 'ل.س';
+                        const dec = tx.currency === 'USD' ? 2 : 0;
+                        amountHtml = `<span dir="ltr" style="color:#9f1239; font-weight:900;">- ${formatNum(tx.amount, dec)} ${sym}</span>`;
+                    } else if (tx.type === 'exchange') {
+                        rowCls = 'corp-row-exc';
+                        const fromSym = tx.fromCurrency === 'USD' ? '$' : 'ل.س';
+                        const toSym = tx.toCurrency === 'USD' ? '$' : 'ل.س';
+                        const fromDec = tx.fromCurrency === 'USD' ? 2 : 0;
+                        const toDec = tx.toCurrency === 'USD' ? 2 : 0;
+
+                        catHtml = `<div>صرافة</div>${tx.rate ? `<div style="font-size:9.5px; color:#92400e; font-weight:800;">سعر الصرف: ${formatNum(tx.rate, 2)}</div>` : ''}`;
+
+                        if (fType === 'income_with_in_exchange') {
+                            typeHtml = `<span style="display:inline-block; padding:2px 8px; border-radius:6px; background:#0f766e; color:#fff; font-size:10px; font-weight:800;">تحويل وارد</span>`;
+                            amountHtml = `<span dir="ltr" style="color:#065f46; font-weight:900;">+ ${formatNum(tx.toAmount, toDec)} ${toSym}</span>`;
+                        } else if (fType === 'expense_with_out_exchange') {
+                            typeHtml = `<span style="display:inline-block; padding:2px 8px; border-radius:6px; background:#c2410c; color:#fff; font-size:10px; font-weight:800;">تحويل صادر</span>`;
+                            amountHtml = `<span dir="ltr" style="color:#9f1239; font-weight:900;">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</span>`;
+                        } else {
+                            typeHtml = `<span style="display:inline-block; padding:2px 8px; border-radius:6px; background:#b45309; color:#fff; font-size:10px; font-weight:800;">صرافة</span>`;
+                            amountHtml = `
+                                <div dir="ltr" style="color:#9f1239; font-weight:800; font-size:10.5px;">- ${formatNum(tx.fromAmount, fromDec)} ${fromSym}</div>
+                                <div dir="ltr" style="color:#065f46; font-weight:800; font-size:10.5px;">+ ${formatNum(tx.toAmount, toDec)} ${toSym}</div>
+                            `;
+                        }
+                    }
+
+                    return `
+                        <tr class="${rowCls}">
+                            <td style="width:12%; white-space:nowrap; font-weight:700; color:#334155;">${escapeHtml(tx.date)}</td>
+                            <td style="width:12%; white-space:nowrap;">${typeHtml}</td>
+                            <td style="width:16%; font-weight:700;">${catHtml}</td>
+                            <td style="width:38%; font-weight:600; color:#0f172a;">${escapeHtml(tx.description || '—')}</td>
+                            <td style="width:22%; white-space:nowrap;">${amountHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            const sheet = document.getElementById('officialPrintSheet');
+            sheet.innerHTML = `
+                <div style="border:2px solid #0f172a; border-radius:14px; overflow:hidden; margin-bottom:14px;">
+                    <div style="background:#0f172a; color:#ffffff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #f59e0b;">
+                        <div>
+                            <div style="font-size:18px; font-weight:900; color:#fbbf24;">${escapeHtml(company || 'كشف حساب مالي رسمي')}</div>
+                            ${contactLine ? `<div style="font-size:11px; color:#e2e8f0; margin-top:3px; font-weight:700;">${contactLine}</div>` : ''}
+                        </div>
+                        <div style="text-align:left; font-size:11px; color:#f8fafc;">
+                            <div style="font-weight:800;">تاريخ الإصدار: <span style="color:#fbbf24;">${todayISO()}</span></div>
+                            <div style="font-weight:800; margin-top:2px;">عدد الحركات: <span style="color:#38bdf8;">${rows.length}</span></div>
+                        </div>
+                    </div>
+                    <div style="background:#f8fafc; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px;">
+                        <div>
+                            <span style="color:#475569; font-weight:700;">المشروع / الورشة: </span>
+                            <span style="color:#0f172a; font-weight:900; font-size:14px;">${escapeHtml(ws.name)}</span>
+                            ${ws.description ? `<span style="color:#64748b; font-weight:700;"> (${escapeHtml(ws.description)})</span>` : ''}
+                        </div>
+                        <div style="font-size:10.5px; color:#1e3a8a; font-weight:800; background:#e0e7ff; padding:3px 10px; border-radius:999px;">
+                            ${escapeHtml(filterNotes.join(' • '))}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                    <div style="background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:11px; font-weight:800; color:#334155;">ملخص صندوق الدولار الأمريكي</span>
+                            <span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span>
+                        </div>
+                        <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:4px 0;">
+                            ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">
+                            <span style="color:#065f46;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</span>
+                            <span style="color:#9f1239;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</span>
+                        </div>
+                    </div>
+
+                    <div style="background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:11px; font-weight:800; color:#334155;">ملخص صندوق الليرة السورية</span>
+                            <span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span>
+                        </div>
+                        <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:4px 0;">
+                            ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.1); padding-top:5px;">
+                            <span style="color:#065f46;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</span>
+                            <span style="color:#9f1239;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</span>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="corp-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>النوع</th>
+                            <th>البند / التصنيف</th>
+                            <th>البيان / الوصف التفصيلي</th>
+                            <th>المبلغ والعملة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+
+                <div class="corp-signatures" style="margin-top:26px; padding-top:12px; border-top:1.5px solid #cbd5e1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; text-align:center; font-size:11px; font-weight:800; color:#1e293b;">
+                    <div>
+                        <div style="margin-bottom:28px;">توقيع المحاسب</div>
+                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                    </div>
+                    <div>
+                        <div style="margin-bottom:28px;">مدير الورشة / المشروع</div>
+                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                    </div>
+                    <div>
+                        <div style="margin-bottom:28px;">الختم والاعتماد</div>
+                        <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                    </div>
+                </div>
+            `;
         }
 
-        async function executePrintOrPdf(e) {
+        function executePrintOrPdf(e) {
             e.preventDefault();
             const mode = document.getElementById('printActionMode').value;
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             closeModal('printDetailsModal');
-            preparePrintHeaderData();
+            buildOfficialCorporatePrintSheet();
 
-            renderTransactionsTable(true);
+            const prevTitle = document.title;
+            document.title = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}`;
 
-            if (mode === 'print') {
-                setTimeout(() => {
-                    window.print();
-                    renderTransactionsTable(false);
-                }, 200);
-            } else {
-                document.body.classList.add('pdf-exporting');
-                const element = document.getElementById('activeWorkshopSection');
-
-                const opt = {
-                    margin: [8, 8, 8, 8],
-                    filename: `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        scrollX: 0,
-                        scrollY: 0,
-                        x: 0,
-                        windowWidth: 740
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-
-                try {
-                    await html2pdf().set(opt).from(element).save();
-                    showToast('تم تصدير ملف PDF بنجاح بدون أي تقطيع', '📄');
-                } catch (err) {
-                    console.error('PDF Error:', err);
-                    showToast('تعذر إنشاء الـ PDF، جاري فتح نافذة الطباعة كبديل', '⚠️');
-                    window.print();
-                } finally {
-                    document.body.classList.remove('pdf-exporting');
-                    renderTransactionsTable(false);
-                }
+            if (mode === 'pdf') {
+                showToast('اختر "حفظ بتنسيق PDF / Save as PDF" من نافذة الطباعة لحفظ الملف بأعلى جودة وألوان رسمية', '📄');
             }
+
+            setTimeout(() => {
+                window.print();
+                document.title = prevTitle;
+            }, 250);
         }
 
         function exportWorkshopExcel() {
@@ -3109,7 +3266,7 @@
             if (!ws) return;
 
             const fType = document.getElementById('txFilterType').value;
-            const rows = getFilteredTransactions(ws, true);
+            const rows = getFilteredTransactions(ws, 'asc');
 
             let trHtml = '';
             rows.forEach((tx) => {
