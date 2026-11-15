@@ -24,12 +24,12 @@
     </script>
     <style>
         * { box-sizing: border-box; }
-        body {
+        html, body {
             font-family: 'Cairo', sans-serif;
             background-color: #0b1120;
             color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
@@ -274,23 +274,23 @@
             </div>
         </header>
 
-        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR -->
-        <div id="stickyWorkshopBar" class="no-print sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b-2 border-indigo-500/50 shadow-lg">
-            <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 shrink-0"></span>
-                    <span class="text-xs font-bold text-slate-400 shrink-0">الورشة الحالية:</span>
-                    <span id="stickyWorkshopName" class="text-sm sm:text-base font-black text-amber-300 truncate">لم يتم تحديد ورشة</span>
-                    <span id="stickyWorkshopStatus" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-black shrink-0"></span>
-                    <span id="stickyWorkshopDesc" class="hidden md:inline text-xs font-semibold text-slate-300 truncate border-r border-slate-700 pr-2.5"></span>
+        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR (OPTIMIZED FOR MOBILE & DESKTOP) -->
+        <div id="stickyWorkshopBar" class="no-print sticky top-0 z-40 w-full bg-slate-900/95 backdrop-blur-md text-white border-b-2 border-indigo-500/60 shadow-xl">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 overflow-hidden">
+                    <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400 shrink-0"></span>
+                    <span class="text-[11px] sm:text-xs font-bold text-slate-400 shrink-0">الورشة:</span>
+                    <span id="stickyWorkshopName" class="text-xs sm:text-base font-black text-amber-300 truncate block">لم يتم تحديد ورشة</span>
+                    <span id="stickyWorkshopStatus" class="hidden px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shrink-0"></span>
+                    <span id="stickyWorkshopDesc" class="hidden lg:inline text-xs font-semibold text-slate-300 truncate border-r border-slate-700 pr-2.5"></span>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <div id="stickyCloudIndicator" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[11px] font-extrabold">
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <div id="stickyCloudIndicator" class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[10px] sm:text-[11px] font-extrabold">
                         <span id="stickyCloudDot" class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
-                        <span id="stickyCloudLabel">متصل بالسحابة</span>
+                        <span id="stickyCloudLabel" class="hidden xs:inline sm:inline">متصل</span>
                     </div>
-                    <button onclick="scrollToActiveWorkshop()" id="btnJumpToWs" class="hidden px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-[11px] font-extrabold text-white transition">
-                        ⬆️ أعلى الورشة
+                    <button onclick="scrollToActiveWorkshop()" id="btnJumpToWs" class="hidden px-2 sm:px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-[10px] sm:text-[11px] font-extrabold text-white transition shrink-0">
+                        ⬆️ الورشة
                     </button>
                 </div>
             </div>
@@ -559,7 +559,7 @@
                             </div>
                         </div>
 
-                        <!-- صف التواريخ + تصنيف التاريخ (تصاعدي / تنازلي) + تشيك بوكس إعادة الترتيب الفعلي في السحابة -->
+                        <!-- صف التواريخ + خيار الحفاظ على ترتيب تنزيل البنود الأصلي أو الترتيب حسب التاريخ -->
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1 items-center">
                             <div class="sm:col-span-3 flex items-center gap-1.5">
                                 <span class="text-[11px] font-extrabold text-slate-500 shrink-0">من:</span>
@@ -571,16 +571,17 @@
                                 <input type="date" id="txFilterDateTo" onchange="renderTransactionsTable()"
                                     class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white">
                             </div>
-                            <div class="sm:col-span-4 flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300">
+                            <div class="sm:col-span-4 flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-slate-300">
                                 <select id="txSortOrderSelect" onchange="handleSortOrderSelectChange()"
-                                    class="text-xs font-extrabold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                                    class="text-xs font-extrabold text-slate-800 bg-transparent focus:outline-none cursor-pointer flex-1 min-w-0">
+                                    <option value="entry">📋 الترتيب الأصلي (حسب التنزيل)</option>
                                     <option value="desc">📅 التاريخ: تنازلي (الأحدث أولاً)</option>
                                     <option value="asc">📅 التاريخ: تصاعدي (الأقدم أولاً)</option>
                                 </select>
-                                <label class="inline-flex items-center gap-1.5 border-r border-slate-200 pr-2 cursor-pointer select-none shrink-0" title="تثبيت وإعادة ترتيب الحركات في السحابة حسب التاريخ المختار">
-                                    <input type="checkbox" id="chkPersistDateSort" onchange="handlePersistDateSortCheckbox(this)"
+                                <label class="inline-flex items-center gap-1.5 border-r border-slate-200 pr-2 cursor-pointer select-none shrink-0" title="تفعيل الفرز حسب التاريخ (وعند إزالته يعود الترتيب الأصلي حسب التنزيل)">
+                                    <input type="checkbox" id="chkEnableDateSort" onchange="handleEnableDateSortCheckbox(this)"
                                         class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-                                    <span class="text-[11px] font-black text-indigo-700">إعادة ترتيبها</span>
+                                    <span class="text-[11px] font-black text-indigo-700">ترتيب بالتاريخ</span>
                                 </label>
                             </div>
                             <div class="sm:col-span-2 flex items-center justify-end text-xs font-extrabold text-slate-600">
@@ -1204,6 +1205,12 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function isValidCredentialStr(val) {
+            if (val === null || val === undefined) return false;
+            const s = String(val).trim();
+            return s !== '' && s.toLowerCase() !== 'undefined' && s.toLowerCase() !== 'null';
+        }
+
         function showToast(msg, icon = '✅') {
             const toast = document.getElementById('toastNotification');
             document.getElementById('toastIcon').textContent = icon;
@@ -1279,6 +1286,7 @@
                 safeCategories.unshift('عام');
             }
             const safeTxs = Array.isArray(ws.transactions) ? ws.transactions.map((tx, txIdx) => {
+                const entryOrder = typeof tx.entryOrder === 'number' ? tx.entryOrder : txIdx;
                 if (tx.type === 'exchange') {
                     return {
                         id: tx.id || generateId('tx'),
@@ -1290,6 +1298,7 @@
                         rate: Number(tx.rate) || 0,
                         date: tx.date || todayISO(),
                         description: tx.description || tx.desc || '',
+                        entryOrder,
                         createdAt: tx.createdAt || (Date.now() + txIdx)
                     };
                 }
@@ -1301,6 +1310,7 @@
                     category: tx.category || 'عام',
                     date: tx.date || todayISO(),
                     description: tx.description || tx.desc || 'بدون وصف',
+                    entryOrder,
                     createdAt: tx.createdAt || (Date.now() + txIdx)
                 };
             }) : [];
@@ -1318,38 +1328,46 @@
         }
 
         function normalizeFullState(raw) {
-            let adminUsername = 'anas';
-            let adminPassword = '123';
-            let adminFullName = '';
+            let adminUsername = isValidCredentialStr(appState.admin?.username) ? appState.admin.username : 'anas';
+            let adminPassword = isValidCredentialStr(appState.admin?.password) ? appState.admin.password : '123';
+            let adminFullName = isValidCredentialStr(appState.admin?.fullName) ? appState.admin.fullName : '';
 
             if (raw && raw.admin) {
-                adminUsername = raw.admin.username || raw.admin.user || 'anas';
-                adminPassword = raw.admin.password || raw.admin.pass || '123';
-                adminFullName = raw.admin.fullName || raw.admin.name || '';
-            } else if (raw && (raw.adminUser || raw.adminUsername)) {
-                adminUsername = raw.adminUser || raw.adminUsername || 'anas';
-                adminPassword = raw.adminPass || raw.adminPassword || '123';
-                adminFullName = raw.adminFullName || '';
+                const candU = raw.admin.username ?? raw.admin.user;
+                const candP = raw.admin.password ?? raw.admin.pass;
+                const candF = raw.admin.fullName ?? raw.admin.name;
+                if (isValidCredentialStr(candU)) adminUsername = String(candU).trim();
+                if (isValidCredentialStr(candP)) adminPassword = String(candP).trim();
+                if (isValidCredentialStr(candF)) adminFullName = String(candF).trim();
+            } else if (raw && (raw.adminUser || raw.adminUsername || raw.adminPass || raw.adminPassword)) {
+                const candU = raw.adminUser ?? raw.adminUsername;
+                const candP = raw.adminPass ?? raw.adminPassword;
+                const candF = raw.adminFullName;
+                if (isValidCredentialStr(candU)) adminUsername = String(candU).trim();
+                if (isValidCredentialStr(candP)) adminPassword = String(candP).trim();
+                if (isValidCredentialStr(candF)) adminFullName = String(candF).trim();
             }
 
             const rawSubs = Array.isArray(raw?.subUsers)
                 ? raw.subUsers
                 : (Array.isArray(raw?.users) ? raw.users.filter(u => u.role !== 'admin' && !u.isAdmin) : []);
 
-            const subUsersArr = rawSubs.map(u => ({
-                username: u.username || u.user || '',
-                password: u.password || u.pass || '',
-                fullName: u.fullName || u.name || '',
-                allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
-                permissions: {
-                    addEditTx: u.permissions?.addEditTx !== false,
-                    deleteTx: !!(u.permissions?.deleteTx || u.permissions?.editDeleteTx),
-                    addWs: !!(u.permissions?.addWs || u.permissions?.manageWorkshops),
-                    manageWs: !!(u.permissions?.manageWs || u.permissions?.manageWorkshops),
-                    printExport: u.permissions?.printExport !== false && u.permissions?.print !== false,
-                    manageCats: u.permissions?.manageCats !== false
-                }
-            }));
+            const subUsersArr = rawSubs
+                .filter(u => isValidCredentialStr(u.username ?? u.user))
+                .map(u => ({
+                    username: String(u.username ?? u.user).trim(),
+                    password: isValidCredentialStr(u.password ?? u.pass) ? String(u.password ?? u.pass).trim() : '',
+                    fullName: isValidCredentialStr(u.fullName ?? u.name) ? String(u.fullName ?? u.name).trim() : '',
+                    allowedWorkshops: Array.isArray(u.allowedWorkshops) ? u.allowedWorkshops : [],
+                    permissions: {
+                        addEditTx: u.permissions?.addEditTx !== false,
+                        deleteTx: !!(u.permissions?.deleteTx || u.permissions?.editDeleteTx),
+                        addWs: !!(u.permissions?.addWs || u.permissions?.manageWorkshops),
+                        manageWs: !!(u.permissions?.manageWs || u.permissions?.manageWorkshops),
+                        printExport: u.permissions?.printExport !== false && u.permissions?.print !== false,
+                        manageCats: u.permissions?.manageCats !== false
+                    }
+                }));
 
             const workshopsArr = Array.isArray(raw?.workshops)
                 ? raw.workshops.map((w, idx) => normalizeWorkshopData(w, idx))
@@ -1359,9 +1377,9 @@
 
             return {
                 admin: {
-                    username: String(adminUsername).trim(),
-                    password: String(adminPassword).trim(),
-                    fullName: String(adminFullName).trim()
+                    username: adminUsername,
+                    password: adminPassword,
+                    fullName: adminFullName
                 },
                 subUsers: subUsersArr,
                 workshops: workshopsArr
@@ -1417,27 +1435,27 @@
                 for (const doc of legacySysDocs) {
                     const parsed = parseFirestoreDocument(doc);
                     if (!parsed) continue;
-                    if (parsed.admin && parsed.admin.username) {
-                        appState.admin.username = String(parsed.admin.username).trim();
-                        appState.admin.password = String(parsed.admin.password || appState.admin.password).trim();
-                        if (parsed.admin.fullName) appState.admin.fullName = parsed.admin.fullName;
-                    } else if (parsed.username && (parsed.isAdmin || doc.name.includes('admin'))) {
+                    if (parsed.admin) {
+                        if (isValidCredentialStr(parsed.admin.username)) appState.admin.username = String(parsed.admin.username).trim();
+                        if (isValidCredentialStr(parsed.admin.password)) appState.admin.password = String(parsed.admin.password).trim();
+                        if (isValidCredentialStr(parsed.admin.fullName)) appState.admin.fullName = String(parsed.admin.fullName).trim();
+                    } else if (isValidCredentialStr(parsed.username) && (parsed.isAdmin || doc.name.includes('admin'))) {
                         appState.admin.username = String(parsed.username).trim();
-                        appState.admin.password = String(parsed.password || appState.admin.password).trim();
+                        if (isValidCredentialStr(parsed.password)) appState.admin.password = String(parsed.password).trim();
                     }
 
                     if (Array.isArray(parsed.subUsers) && parsed.subUsers.length > 0) {
                         for (const su of parsed.subUsers) {
-                            if (su.username && !appState.subUsers.some(x => x.username === su.username)) {
+                            if (isValidCredentialStr(su.username) && !appState.subUsers.some(x => x.username === su.username)) {
                                 appState.subUsers.push(normalizeFullState({ subUsers: [su] }).subUsers[0]);
                             }
                         }
                     } else if (Array.isArray(parsed.users) && parsed.users.length > 0) {
                         for (const u of parsed.users) {
                             if (u.isAdmin || u.role === 'admin') {
-                                appState.admin.username = String(u.username).trim();
-                                appState.admin.password = String(u.password).trim();
-                            } else if (u.username && !appState.subUsers.some(x => x.username === u.username)) {
+                                if (isValidCredentialStr(u.username)) appState.admin.username = String(u.username).trim();
+                                if (isValidCredentialStr(u.password)) appState.admin.password = String(u.password).trim();
+                            } else if (isValidCredentialStr(u.username) && !appState.subUsers.some(x => x.username === u.username)) {
                                 appState.subUsers.push(normalizeFullState({ subUsers: [u] }).subUsers[0]);
                             }
                         }
@@ -1615,7 +1633,11 @@
                 const keepTxsInMaster = fullBytes < 850000;
 
                 const masterCompact = {
-                    admin: appState.admin,
+                    admin: {
+                        username: String(appState.admin.username || 'anas').trim(),
+                        password: String(appState.admin.password || '123').trim(),
+                        fullName: String(appState.admin.fullName || '').trim()
+                    },
                     subUsers: appState.subUsers,
                     workshops: appState.workshops.map((w, idx) => ({
                         id: w.id,
@@ -1734,7 +1756,7 @@
             }
         }
 
-        // ==================== 7. AUTHENTICATION & PERSONAL NAME REQUIREMENT ====================
+        // ==================== 7. AUTHENTICATION & STRICT PASSWORD VALIDATION ====================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -1757,10 +1779,10 @@
                 return;
             }
 
-            const adminU = String(appState.admin.username || 'anas').trim();
-            const adminP = String(appState.admin.password || '123').trim();
+            const adminU = isValidCredentialStr(appState.admin.username) ? String(appState.admin.username).trim() : 'anas';
+            const adminP = isValidCredentialStr(appState.admin.password) ? String(appState.admin.password).trim() : '123';
 
-            if (u === adminU && (p === adminP || p === '2521' || p === '123')) {
+            if (u === adminU && p === adminP) {
                 currentUser = {
                     role: 'admin',
                     username: adminU,
@@ -1780,7 +1802,7 @@
             }
 
             const subIdx = appState.subUsers.findIndex(sub =>
-                String(sub.username).trim() === u && String(sub.password).trim() === p
+                String(sub.username).trim() === u && String(sub.password).trim() === p && p !== ''
             );
             if (subIdx !== -1) {
                 const sub = appState.subUsers[subIdx];
@@ -2237,7 +2259,6 @@
 
         function selectWorkshop(wsId) {
             activeWorkshopId = wsId;
-            document.getElementById('chkPersistDateSort').checked = false;
             resetTxFilters();
             refreshAllViewsAfterSync();
         }
@@ -2247,7 +2268,6 @@
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // طلب كلمة سر المالك حصراً لتشغيل أو إيقاف الورشة
         function requestOwnerPasswordForWorkshopStatus(wsId) {
             const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
@@ -2374,10 +2394,10 @@
             stickyStatus.classList.remove('hidden');
             if (ws.active === false) {
                 stickyStatus.textContent = '⏸ متوقفة';
-                stickyStatus.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-black bg-slate-700 text-slate-300 shrink-0';
+                stickyStatus.className = 'px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black bg-slate-700 text-slate-300 shrink-0';
             } else {
                 stickyStatus.textContent = '● نشطة';
-                stickyStatus.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0';
+                stickyStatus.className = 'px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0';
             }
 
             if (ws.description) {
@@ -2504,61 +2524,40 @@
             sel.value = ws.categories.includes(selectedCat) ? selectedCat : 'عام';
         }
 
-        // ==================== 11. TRANSACTIONS TABLE, DATE SORT & CLOUD RE-ORDERING ====================
+        // ==================== 11. TRANSACTIONS TABLE: ENTRY ORDER PRESERVATION & OPTIONAL DATE SORT ====================
         function handleSortOrderSelectChange() {
-            renderTransactionsTable();
-            const chk = document.getElementById('chkPersistDateSort');
-            if (chk && chk.checked) {
-                persistTransactionsOrderByDate();
+            const selVal = document.getElementById('txSortOrderSelect').value;
+            const chk = document.getElementById('chkEnableDateSort');
+            if (chk) {
+                chk.checked = (selVal === 'asc' || selVal === 'desc');
             }
-        }
-
-        async function handlePersistDateSortCheckbox(checkboxEl) {
-            if (!checkboxEl.checked) return;
-            await persistTransactionsOrderByDate();
-        }
-
-        async function persistTransactionsOrderByDate() {
-            const ws = getActiveWorkshop();
-            if (!ws || !Array.isArray(ws.transactions) || ws.transactions.length === 0) return;
-
-            const sortDir = document.getElementById('txSortOrderSelect').value; // 'asc' or 'desc'
-            const isAsc = sortDir === 'asc';
-
-            // فرز فعلي للمصفوفة وتحديث طوابع الترتيب لحفظها في السحابة بشكل دائم
-            ws.transactions.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return isAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
-                }
-                return isAsc ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
-            });
-
-            const baseTime = Date.now();
-            ws.transactions.forEach((tx, idx) => {
-                tx.createdAt = isAsc ? (baseTime + idx * 10) : (baseTime - idx * 10);
-            });
-
             renderTransactionsTable();
-            await saveToCloud(ws.id);
-            showToast(
-                isAsc
-                    ? '✅ تمت إعادة ترتيب حركات الورشة تصاعدياً (من الأقدم للأحدث) وحفظها في السحابة'
-                    : '✅ تمت إعادة ترتيب حركات الورشة تنازلياً (من الأحدث للأقدم) وحفظها في السحابة',
-                '📅'
-            );
         }
 
-        function getFilteredTransactions(ws, overrideSortDirection = null) {
+        function handleEnableDateSortCheckbox(checkboxEl) {
+            const sel = document.getElementById('txSortOrderSelect');
+            if (checkboxEl.checked) {
+                if (sel.value === 'entry') {
+                    sel.value = 'desc';
+                }
+            } else {
+                sel.value = 'entry';
+            }
+            renderTransactionsTable();
+        }
+
+        function getFilteredTransactions(ws, overrideSortMode = null) {
             const searchQ = (document.getElementById('txSearchInput').value || '').trim().toLowerCase();
             const fType = document.getElementById('txFilterType').value;
             const fCat = document.getElementById('txFilterCategory').value;
             const fCurr = document.getElementById('txFilterCurrency').value;
             const dFrom = document.getElementById('txFilterDateFrom').value;
             const dTo = document.getElementById('txFilterDateTo').value;
-            const sortDir = overrideSortDirection || document.getElementById('txSortOrderSelect').value || 'desc';
-            const isAsc = sortDir === 'asc';
+            const sortMode = overrideSortMode || document.getElementById('txSortOrderSelect').value || 'entry';
 
-            const list = (ws.transactions || []).filter(tx => {
+            const indexedList = (ws.transactions || []).map((tx, idx) => ({ tx, originalIndex: idx }));
+
+            const filteredIndexed = indexedList.filter(({ tx }) => {
                 if (fType === 'income' && tx.type !== 'income') return false;
                 if (fType === 'expense' && tx.type !== 'expense') return false;
                 if (fType === 'exchange' && tx.type !== 'exchange') return false;
@@ -2596,14 +2595,20 @@
                 return true;
             });
 
-            list.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return isAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
-                }
-                return isAsc ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
-            });
+            if (sortMode === 'entry') {
+                // الحفاظ التام على الترتيب الأصلي لتنزيل البنود (الأحدث تنزيلاً في الأعلى كما نُزّل)
+                filteredIndexed.sort((a, b) => b.originalIndex - a.originalIndex);
+            } else {
+                const isAsc = sortMode === 'asc';
+                filteredIndexed.sort((a, b) => {
+                    if (a.tx.date !== b.tx.date) {
+                        return isAsc ? a.tx.date.localeCompare(b.tx.date) : b.tx.date.localeCompare(a.tx.date);
+                    }
+                    return isAsc ? (a.originalIndex - b.originalIndex) : (b.originalIndex - a.originalIndex);
+                });
+            }
 
-            return list;
+            return filteredIndexed.map(item => item.tx);
         }
 
         function resetTxFilters() {
@@ -2613,8 +2618,8 @@
             document.getElementById('txFilterCurrency').value = 'all';
             document.getElementById('txFilterDateFrom').value = '';
             document.getElementById('txFilterDateTo').value = '';
-            document.getElementById('txSortOrderSelect').value = 'desc';
-            document.getElementById('chkPersistDateSort').checked = false;
+            document.getElementById('txSortOrderSelect').value = 'entry';
+            document.getElementById('chkEnableDateSort').checked = false;
             renderTransactionsTable();
         }
 
@@ -2837,6 +2842,7 @@
                     category,
                     date,
                     description,
+                    entryOrder: ws.transactions.length,
                     createdAt: Date.now()
                 });
             }
@@ -3027,6 +3033,7 @@
                     rate: rateVal,
                     date,
                     description,
+                    entryOrder: ws.transactions.length,
                     createdAt: Date.now()
                 });
             }
@@ -3067,7 +3074,7 @@
             const phone = document.getElementById('printInputPhone').value.trim();
             const fType = document.getElementById('txFilterType').value;
 
-            const rows = getFilteredTransactions(ws, 'asc');
+            const rows = getFilteredTransactions(ws);
             const totals = calculateFilteredListTotals(rows, fType);
 
             const typeSelect = document.getElementById('txFilterType');
@@ -3099,7 +3106,7 @@
 
             const rowsHtml = rows.length === 0
                 ? `<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b; font-weight:700;">لا توجد حركات مالية مطابقة للتصفية</td></tr>`
-                : rows.map((tx, idx) => {
+                : rows.map((tx) => {
                     let rowCls = '';
                     let typeHtml = '';
                     let catHtml = escapeHtml(tx.category || 'عام');
@@ -3266,7 +3273,7 @@
             if (!ws) return;
 
             const fType = document.getElementById('txFilterType').value;
-            const rows = getFilteredTransactions(ws, 'asc');
+            const rows = getFilteredTransactions(ws);
 
             let trHtml = '';
             rows.forEach((tx) => {
@@ -3418,9 +3425,9 @@
         // ==================== 16. USERS & GRANULAR PERMISSIONS MANAGER ====================
         function openUsersModal() {
             if (currentUser.role !== 'admin') return;
-            document.getElementById('adminUsernameInput').value = appState.admin.username;
-            document.getElementById('adminPasswordInput').value = appState.admin.password;
-            document.getElementById('adminFullNameInput').value = appState.admin.fullName || '';
+            document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
+            document.getElementById('adminPasswordInput').value = isValidCredentialStr(appState.admin.password) ? appState.admin.password : '';
+            document.getElementById('adminFullNameInput').value = isValidCredentialStr(appState.admin.fullName) ? appState.admin.fullName : '';
             resetSubUserForm();
             renderSubUsersList();
             openModal('usersModal');
@@ -3431,7 +3438,10 @@
             const u = document.getElementById('adminUsernameInput').value.trim();
             const p = document.getElementById('adminPasswordInput').value.trim();
             const fn = document.getElementById('adminFullNameInput').value.trim();
-            if (!u || !p || !fn) return;
+            if (!isValidCredentialStr(u) || !isValidCredentialStr(p) || !fn) {
+                showToast('يرجى إدخال اسم مستخدم وكلمة مرور صالحة!', '⚠️');
+                return;
+            }
 
             appState.admin.username = u;
             appState.admin.password = p;
@@ -3444,7 +3454,7 @@
             }
 
             await saveToCloud();
-            showToast('تم تحديث بيانات المدير في السحابة', '🛡️');
+            showToast('تم تحديث وحفظ بيانات المدير وكلمة المرور في السحابة بنجاح', '🛡️');
         }
 
         function renderSubUserWorkshopCheckboxes(selectedIds = []) {
@@ -3509,7 +3519,7 @@
             const password = document.getElementById('subPassword').value.trim();
             const fullName = document.getElementById('subFullName').value.trim();
 
-            if (!username || !password) return;
+            if (!isValidCredentialStr(username) || !isValidCredentialStr(password)) return;
             if (username === appState.admin.username) {
                 showToast('لا يمكن استخدام نفس اسم دخول المدير!', '⚠️');
                 return;
