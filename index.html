@@ -1169,7 +1169,7 @@
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + LEGACY RECOVERY MERGER) ==================== -->
+    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + SESSION PERSISTENCE ON REFRESH) ==================== -->
     <script>
         // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
         const FIREBASE_PROJECT_ID = 'anas-alasfar';
@@ -1179,8 +1179,9 @@
         const BACKUP_LATEST_DOC_ID = 'cloud_backup_latest';
         const FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_URL}/${FIRESTORE_COLLECTION}`;
         const CLOUD_MAX_BYTES = 1024 * 1024 * 1024; // 1 GB
+        const AUTH_SESSION_KEY = 'workshops_cloud_auth_session_v1';
 
-        // ==================== 2. IN-MEMORY APPLICATION STATE (NO LOCAL STORAGE) ====================
+        // ==================== 2. IN-MEMORY APPLICATION STATE (NO LOCAL DATA STORAGE) ====================
         let appState = {
             admin: {
                 username: 'anas',
@@ -1822,7 +1823,67 @@
             }
         }
 
-        // ==================== 7. AUTHENTICATION & STRICT PASSWORD VALIDATION ====================
+        // ==================== 7. AUTHENTICATION & SESSION PERSISTENCE ON REFRESH ====================
+        function persistAuthSession(username, password) {
+            try {
+                sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                    username,
+                    password,
+                    activeWorkshopId: activeWorkshopId || null
+                }));
+            } catch (e) {}
+        }
+
+        function clearAuthSession() {
+            try {
+                sessionStorage.removeItem(AUTH_SESSION_KEY);
+            } catch (e) {}
+        }
+
+        function authenticateAgainstCloudState(u, p) {
+            const adminU = isValidCredentialStr(appState.admin.username) ? String(appState.admin.username).trim() : 'anas';
+            const adminP = isValidCredentialStr(appState.admin.password) ? String(appState.admin.password).trim() : '123';
+
+            if (u === adminU && p === adminP) {
+                currentUser = {
+                    role: 'admin',
+                    username: adminU,
+                    password: adminP,
+                    fullName: appState.admin.fullName || '',
+                    permissions: {
+                        addEditTx: true,
+                        deleteTx: true,
+                        addWs: true,
+                        editWs: true,
+                        toggleWs: true,
+                        deleteWs: true,
+                        printExport: true,
+                        manageCats: true
+                    },
+                    allowedWorkshops: 'ALL'
+                };
+                return true;
+            }
+
+            const subIdx = appState.subUsers.findIndex(sub =>
+                String(sub.username).trim() === u && String(sub.password).trim() === p && p !== ''
+            );
+            if (subIdx !== -1) {
+                const sub = appState.subUsers[subIdx];
+                currentUser = {
+                    role: 'sub',
+                    subIndex: subIdx,
+                    username: sub.username,
+                    password: sub.password,
+                    fullName: sub.fullName || '',
+                    permissions: sub.permissions,
+                    allowedWorkshops: sub.allowedWorkshops || []
+                };
+                return true;
+            }
+            return false;
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('loginUsername').value.trim();
@@ -1845,45 +1906,8 @@
                 return;
             }
 
-            const adminU = isValidCredentialStr(appState.admin.username) ? String(appState.admin.username).trim() : 'anas';
-            const adminP = isValidCredentialStr(appState.admin.password) ? String(appState.admin.password).trim() : '123';
-
-            if (u === adminU && p === adminP) {
-                currentUser = {
-                    role: 'admin',
-                    username: adminU,
-                    password: adminP,
-                    fullName: appState.admin.fullName || '',
-                    permissions: {
-                        addEditTx: true,
-                        deleteTx: true,
-                        addWs: true,
-                        editWs: true,
-                        toggleWs: true,
-                        deleteWs: true,
-                        printExport: true,
-                        manageCats: true
-                    },
-                    allowedWorkshops: 'ALL'
-                };
-                enterApplication();
-                return;
-            }
-
-            const subIdx = appState.subUsers.findIndex(sub =>
-                String(sub.username).trim() === u && String(sub.password).trim() === p && p !== ''
-            );
-            if (subIdx !== -1) {
-                const sub = appState.subUsers[subIdx];
-                currentUser = {
-                    role: 'sub',
-                    subIndex: subIdx,
-                    username: sub.username,
-                    password: sub.password,
-                    fullName: sub.fullName || '',
-                    permissions: sub.permissions,
-                    allowedWorkshops: sub.allowedWorkshops || []
-                };
+            if (authenticateAgainstCloudState(u, p)) {
+                persistAuthSession(u, p);
                 enterApplication();
                 return;
             }
@@ -1902,6 +1926,9 @@
             const accessible = getAccessibleWorkshops();
             if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
                 activeWorkshopId = accessible[0].id;
+            }
+            if (currentUser) {
+                persistAuthSession(currentUser.username, currentUser.password);
             }
 
             refreshAllViewsAfterSync();
@@ -1976,6 +2003,7 @@
 
         function logout() {
             clearInterval(syncIntervalHandle);
+            clearAuthSession();
             currentUser = null;
             activeWorkshopId = null;
             isReorderMode = false;
@@ -2325,6 +2353,7 @@
             nameInput.value = '';
             descInput.value = '';
             activeWorkshopId = newWs.id;
+            if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
 
             refreshAllViewsAfterSync();
             await saveToCloud(newWs.id);
@@ -2333,6 +2362,7 @@
 
         function selectWorkshop(wsId) {
             activeWorkshopId = wsId;
+            if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
             resetTxFilters();
             refreshAllViewsAfterSync();
         }
@@ -2414,6 +2444,7 @@
                     if (activeWorkshopId === wsId) {
                         const rem = getAccessibleWorkshops();
                         activeWorkshopId = rem.length > 0 ? rem[0].id : null;
+                        if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
                     }
                     refreshAllViewsAfterSync();
                     await saveToCloud(null, wsId, appState.workshops.length === 0);
@@ -2664,7 +2695,6 @@
             });
 
             if (sortByDateEnabled) {
-                // عند تفعيل "حسب التاريخ": التصاعدي والتنازلي يرتبان حسب تاريخ الحركة
                 filteredIndexed.sort((a, b) => {
                     if (a.tx.date !== b.tx.date) {
                         return isAsc ? a.tx.date.localeCompare(b.tx.date) : b.tx.date.localeCompare(a.tx.date);
@@ -2672,7 +2702,6 @@
                     return isAsc ? (a.originalIndex - b.originalIndex) : (b.originalIndex - a.originalIndex);
                 });
             } else {
-                // عند عدم تفعيل "حسب التاريخ": التصاعدي والتنازلي يرتبان حسب ترتيب تنزيل البنود الأصلي
                 filteredIndexed.sort((a, b) => {
                     return isAsc ? (a.originalIndex - b.originalIndex) : (b.originalIndex - a.originalIndex);
                 });
@@ -3490,6 +3519,7 @@
                     }
 
                     activeWorkshopId = normalizedWs.id;
+                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
                     refreshAllViewsAfterSync();
                     await saveToCloud(normalizedWs.id);
                     showToast(`تم استيراد ورشة "${normalizedWs.name}" وحفظها في السحابة!`, '📥');
@@ -3531,6 +3561,7 @@
                 currentUser.username = u;
                 currentUser.password = p;
                 currentUser.fullName = fn;
+                persistAuthSession(u, p);
                 updateCurrentUserHeaderBadge();
             }
 
@@ -3729,6 +3760,7 @@
                     appState = normalizeFullState(rawData);
                     const acc = getAccessibleWorkshops();
                     activeWorkshopId = acc.length > 0 ? acc[0].id : null;
+                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
                     closeModal('backupModal');
                     refreshAllViewsAfterSync();
                     await saveToCloud();
@@ -3791,6 +3823,7 @@
                 const oldWorkshopIds = appState.workshops.map(w => w.id);
                 appState.workshops = [];
                 activeWorkshopId = null;
+                if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
                 cancelFactoryReset();
                 closeModal('backupModal');
                 refreshAllViewsAfterSync();
@@ -3818,8 +3851,31 @@
             renderActiveWorkshopWorkspace();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchFromCloud(false);
+        window.addEventListener('DOMContentLoaded', async () => {
+            let savedSession = null;
+            try {
+                const raw = sessionStorage.getItem(AUTH_SESSION_KEY);
+                if (raw) savedSession = JSON.parse(raw);
+            } catch (e) {}
+
+            if (savedSession && isValidCredentialStr(savedSession.username) && isValidCredentialStr(savedSession.password)) {
+                const loginText = document.getElementById('loginCloudText');
+                if (loginText) loginText.textContent = 'جاري استعادة جلستك وجلب البيانات من السحابة...';
+            }
+
+            const ok = await fetchFromCloud(false);
+
+            if (ok && savedSession && isValidCredentialStr(savedSession.username) && isValidCredentialStr(savedSession.password)) {
+                if (authenticateAgainstCloudState(String(savedSession.username).trim(), String(savedSession.password).trim())) {
+                    if (savedSession.activeWorkshopId) {
+                        activeWorkshopId = savedSession.activeWorkshopId;
+                    }
+                    enterApplication();
+                    return;
+                } else {
+                    clearAuthSession();
+                }
+            }
         });
     </script>
 </body>
