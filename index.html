@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- html2pdf for Direct Real A4 PDF Download with Intact Arabic Shaping -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -128,10 +130,65 @@
         }
         .live-dot { animation: pulseGlow 2s infinite; }
 
-        /* تنسيقات الطباعة الرسمية المباشرة (A4 نظيف وبدون تكسير للعربي) */
+        /* تنسيقات الكشف الرسمي للطباعة وتوليد PDF */
         #officialPrintSheet {
             display: none;
+            font-family: 'Cairo', sans-serif !important;
+            direction: rtl !important;
+            color: #0f172a !important;
+            background: #ffffff !important;
         }
+        #officialPrintSheet * {
+            font-family: 'Cairo', sans-serif !important;
+            letter-spacing: 0px !important;
+            word-spacing: normal !important;
+        }
+        .corp-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 11px !important;
+            margin-top: 10px !important;
+        }
+        .corp-table thead {
+            display: table-header-group !important;
+        }
+        .corp-table tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .corp-table th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            border: 1px solid #0f172a !important;
+            padding: 7px 8px !important;
+            font-weight: 800 !important;
+            text-align: right !important;
+        }
+        .corp-table td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 6px 8px !important;
+            text-align: right !important;
+            vertical-align: middle !important;
+        }
+        .corp-row-inc { background-color: #ecfdf5 !important; }
+        .corp-row-exp { background-color: #fff1f2 !important; }
+        .corp-row-exc { background-color: #fefce8 !important; }
+        .corp-signatures {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* وضع التصدير المباشر لملف PDF */
+        #officialPrintSheet.pdf-render-active {
+            display: block !important;
+            width: 720px !important;
+            max-width: 720px !important;
+            margin: 0 auto !important;
+            padding: 6px !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+
         @media print {
             @page {
                 size: A4 portrait;
@@ -146,7 +203,7 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            #loginScreen, #appContainer, .modal-backdrop, #toastNotification {
+            #loginScreen, #appContainer, .modal-backdrop, #toastNotification, #pdfGeneratingOverlay {
                 display: none !important;
             }
             #officialPrintSheet {
@@ -155,45 +212,6 @@
                 background: #ffffff !important;
                 color: #0f172a !important;
                 direction: rtl !important;
-            }
-            #officialPrintSheet * {
-                font-family: 'Cairo', sans-serif !important;
-                letter-spacing: 0 !important;
-                word-spacing: normal !important;
-            }
-            .corp-table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                font-size: 11px !important;
-                margin-top: 10px !important;
-            }
-            .corp-table thead {
-                display: table-header-group !important;
-            }
-            .corp-table tr {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            .corp-table th {
-                background-color: #0f172a !important;
-                color: #ffffff !important;
-                border: 1px solid #0f172a !important;
-                padding: 7px 8px !important;
-                font-weight: 800 !important;
-                text-align: right !important;
-            }
-            .corp-table td {
-                border: 1px solid #cbd5e1 !important;
-                padding: 6px 8px !important;
-                text-align: right !important;
-                vertical-align: middle !important;
-            }
-            .corp-row-inc { background-color: #ecfdf5 !important; }
-            .corp-row-exp { background-color: #fff1f2 !important; }
-            .corp-row-exc { background-color: #fefce8 !important; }
-            .corp-signatures {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
             }
         }
     </style>
@@ -318,7 +336,7 @@
             </div>
         </header>
 
-        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR (OPTIMIZED FOR MOBILE & DESKTOP) -->
+        <!-- DEDICATED STICKY CURRENT WORKSHOP BAR -->
         <div id="stickyWorkshopBar" class="no-print sticky top-0 z-40 w-full bg-slate-900/95 backdrop-blur-md text-white border-b-2 border-indigo-500/60 shadow-xl">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 overflow-hidden">
@@ -651,8 +669,17 @@
         </main>
     </div>
 
-    <!-- ==================== OFFICIAL CORPORATE A4 PRINT SHEET (CLEAN & CRISP ARABIC) ==================== -->
+    <!-- ==================== OFFICIAL CORPORATE A4 PRINT & PDF SHEET ==================== -->
     <div id="officialPrintSheet"></div>
+
+    <!-- PDF GENERATION LOADING OVERLAY -->
+    <div id="pdfGeneratingOverlay" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl border-2 border-indigo-200 text-slate-800 space-y-3">
+            <div class="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin mx-auto"></div>
+            <div class="text-sm font-black text-slate-900">جاري تجهيز وتنزيل ملف الـ PDF</div>
+            <div class="text-xs font-bold text-slate-500">يرجى الانتظار لحظات لضمان ضبط الخط العربي وتنسيق صفحات A4...</div>
+        </div>
+    </div>
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
@@ -1196,7 +1223,7 @@
         <span id="toastMessage">تم الحفظ في السحابة</span>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC (100% CLOUD-ONLY + SESSION PERSISTENCE + SMART PRINT HEADER) ==================== -->
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
         // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
         const FIREBASE_PROJECT_ID = 'anas-alasfar';
@@ -3278,7 +3305,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. CORPORATE A4 PRINT & VECTOR PDF (FIXED COMPANY + ROLE-BASED PERSON/PHONE) ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD (INTACT ARABIC) & UNCHANGED PRINT ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3287,7 +3314,6 @@
             const isAdmin = currentUser?.role === 'admin';
 
             if (!isAdmin) {
-                // للمستخدم الفرعي: اسم الشركة ثابت من المدير، واسم ورقم الهاتف يحددهما المدير من الصلاحيات (إما صاحب الحساب الفرعي أو المهندس المسؤول)
                 document.getElementById('printInputCompany').value = eff.companyName || '';
                 document.getElementById('printInputPerson').value = eff.personName || '';
                 document.getElementById('printInputPhone').value = eff.phone || '';
@@ -3309,7 +3335,7 @@
                 ? '📄 بيانات ترويسة ملف الـ PDF الرسمي'
                 : '🖨 بيانات ترويسة الطباعة الرسمية';
             document.getElementById('btnExecutePrintPdf').textContent = mode === 'pdf'
-                ? '📄 إنشاء وحفظ PDF الرسمي الآن'
+                ? '📄 تنزيل ملف PDF (A4) الآن'
                 : '🖨 طباعة الكشف الرسمي الآن';
 
             document.getElementById('printInputCompany').value = eff.companyName || '';
@@ -3326,7 +3352,6 @@
             const eff = getEffectiveUserPrintProfile();
             const isAdmin = currentUser?.role === 'admin';
 
-            // اسم الشركة ثابت دائماً من المدير الأساسي
             const company = isAdmin
                 ? (document.getElementById('printInputCompany').value.trim() || eff.companyName)
                 : eff.companyName;
@@ -3511,18 +3536,78 @@
             `;
         }
 
+        async function downloadDirectRealPdf(ws) {
+            const overlay = document.getElementById('pdfGeneratingOverlay');
+            const appEl = document.getElementById('appContainer');
+            const sheet = document.getElementById('officialPrintSheet');
+            const fileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.pdf`;
+
+            overlay.classList.remove('hidden');
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                // إظهار ورقة الكشف الرسمي البيضاء في أعلى الصفحة لضمان تصويرها بدقة 100% دون تداخل أو قص
+                appEl.classList.add('hidden');
+                sheet.classList.add('pdf-render-active');
+                window.scrollTo(0, 0);
+
+                await new Promise(resolve => setTimeout(resolve, 250));
+
+                const opt = {
+                    margin: [10, 8, 10, 8],
+                    filename: fileName,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 750,
+                        letterRendering: false
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: {
+                        mode: ['avoid-all', 'css', 'legacy']
+                    }
+                };
+
+                await html2pdf().set(opt).from(sheet).save();
+                showToast('تم تنزيل ملف PDF بنجاح وبخط عربي سليم 100%', '📄');
+            } catch (err) {
+                console.error('Direct PDF generation failed:', err);
+                showToast('تعذر التنزيل المباشر، جاري فتح نافذة الطباعة لحفظ PDF...', '⚠️');
+                sheet.classList.remove('pdf-render-active');
+                appEl.classList.remove('hidden');
+                window.print();
+            } finally {
+                sheet.classList.remove('pdf-render-active');
+                appEl.classList.remove('hidden');
+                overlay.classList.add('hidden');
+            }
+        }
+
         function triggerActualPrintOrPdf(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
             buildOfficialCorporatePrintSheet();
 
+            if (mode === 'pdf') {
+                downloadDirectRealPdf(ws);
+                return;
+            }
+
+            // الطباعة المباشرة تبقى كما هي تماماً
             const prevTitle = document.title;
             document.title = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}`;
-
-            if (mode === 'pdf') {
-                showToast('اختر "حفظ بتنسيق PDF / Save as PDF" من نافذة الطباعة لحفظ الملف بأعلى جودة وألوان رسمية', '📄');
-            }
 
             setTimeout(() => {
                 window.print();
