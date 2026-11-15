@@ -179,7 +179,7 @@
             break-inside: avoid !important;
         }
 
-        /* وضع التصدير المباشر لملف PDF: تثبيت الحاوية عند (0,0) لمنع أي إزاحة أو قص جانبي على الجوال */
+        /* وضع التصدير المباشر لملف PDF */
         body.pdf-export-mode {
             background: #ffffff !important;
             margin: 0 !important;
@@ -273,14 +273,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                 </button>
             </form>
-
-            <div class="mt-4 pt-4 border-t border-slate-200 text-center">
-                <button type="button" onclick="recoverLegacyCloudCollections(true)"
-                    class="w-full py-2.5 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-black transition flex items-center justify-center gap-2">
-                    <span>🔄</span>
-                    <span>استرجاع ودمج كافة الورشات والحسابات من السحابة</span>
-                </button>
-            </div>
         </div>
     </div>
 
@@ -302,10 +294,6 @@
                             <h1 class="text-base sm:text-lg font-black tracking-tight text-white">نظام إدارة محاسبة الورشات</h1>
                             <div class="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-300 mt-0.5">
                                 <span id="currentUserBadge" class="text-amber-300">👤 --</span>
-                                <button id="btnEditOwnProfileName" onclick="openEditProfileNameModal()" title="تعديل بياناتك الشخصية (الاسم ورقم الجوال)"
-                                    class="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-sky-200 border border-white/15 transition text-[10px] font-extrabold">
-                                    ✏️ بياناتي الشخصية (الاسم والجوال)
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -328,6 +316,13 @@
                             class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/10 transition flex items-center gap-1.5">
                             <span id="syncSpinnerIcon">🔄</span>
                             <span>تحديث</span>
+                        </button>
+
+                        <button id="btnTrashManager" onclick="openTrashModal()"
+                            class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-extrabold border border-rose-400/30 transition flex items-center gap-1.5">
+                            <span>🗑️</span>
+                            <span>سلة المهملات</span>
+                            <span id="trashCountBadge" class="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black">0</span>
                         </button>
 
                         <button id="btnUsersManager" onclick="openUsersModal()"
@@ -698,18 +693,19 @@
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
-    <!-- MODAL: PASSWORD VERIFICATION FOR ACTIVATING / DEACTIVATING WORKSHOP -->
+    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS OR TRASH MOVE -->
     <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
-                <h3 class="text-base font-black text-amber-300">🔐 تأكيد كلمة مرور الحساب</h3>
+                <h3 id="ownerAuthModalTitle" class="text-base font-black text-amber-300">🔐 تأكيد كلمة مرور الحساب</h3>
                 <button type="button" onclick="closeModal('ownerAuthStatusModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
-            <form onsubmit="confirmOwnerPasswordForWorkshopStatus(event)" class="p-5 space-y-4">
-                <input type="hidden" id="pendingStatusWsId">
+            <form onsubmit="confirmOwnerPasswordAction(event)" class="p-5 space-y-4">
+                <input type="hidden" id="pendingActionWsId">
+                <input type="hidden" id="pendingActionType" value="toggleStatus">
                 <p id="ownerAuthStatusMessage" class="text-xs font-extrabold text-slate-700 leading-relaxed"></p>
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">أدخل كلمة مرور حسابك الشخصي للمتابعة *</label>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">أدخل كلمة مرور حسابك الحالي للمتابعة *</label>
                     <input type="password" id="ownerAuthPasswordInput" required placeholder="••••••••"
                         class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none text-sm font-black bg-slate-50 text-center">
                 </div>
@@ -725,11 +721,40 @@
         </div>
     </div>
 
-    <!-- MODAL 0: MANDATORY / EDIT USER PERSONAL PROFILE (NAME + PHONE + ADMIN COMPANY) -->
+    <!-- MODAL: TRASH BIN (30-DAY CLOUD RETENTION) -->
+    <div id="trashModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border-2 border-rose-200 overflow-hidden my-auto text-slate-800">
+            <div class="bg-gradient-to-l from-rose-950 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="text-base sm:text-lg font-black flex items-center gap-2">
+                        <span>🗑️</span>
+                        <span>سلة المهملات السحابية (احتفاظ لمدة 30 يوماً)</span>
+                    </h3>
+                    <p class="text-[11px] font-bold text-rose-200 mt-0.5">تُحذف الورشات تلقائياً بعد مرور 30 يوماً على نقلها للسلة، ويمكنك استعادتها أو تفريغ السلة نهائياً قبل ذلك</p>
+                </div>
+                <button type="button" onclick="closeModal('trashModal')" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+                    <div class="text-xs font-extrabold text-slate-600">
+                        الورشات الموجودة في السلة: <span id="trashModalCountText" class="text-rose-700 font-black">0</span>
+                    </div>
+                    <button type="button" id="btnEmptyTrash" onclick="emptyTrashCompletely()"
+                        class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow transition flex items-center gap-1.5">
+                        <span>🔥</span>
+                        <span>تفريغ السلة وحذف الكل نهائياً</span>
+                    </button>
+                </div>
+                <div id="trashWorkshopsListContainer" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 0: MANDATORY USER PERSONAL PROFILE ON FIRST LOGIN -->
     <div id="profileNameModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-indigo-200 overflow-hidden text-slate-800">
             <div class="bg-gradient-to-l from-indigo-900 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
-                <h3 id="profileNameModalTitle" class="text-base font-black">👤 بياناتك الشخصية للطباعة</h3>
+                <h3 id="profileNameModalTitle" class="text-base font-black">👤 تسجيل بياناتك الشخصية للطباعة</h3>
                 <button id="btnCloseProfileNameModal" onclick="closeModal('profileNameModal')" class="hidden w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
             <form onsubmit="saveUserProfileName(event)" class="p-5 space-y-4">
@@ -1075,7 +1100,7 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم صاحب الحساب الفرعي</label>
-                                <input type="text" id="subFullName" placeholder="يستطيع تعديله من حسابه..."
+                                <input type="text" id="subFullName" placeholder="الاسم للطباعة..."
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-bold bg-white">
                             </div>
                             <div>
@@ -1110,7 +1135,7 @@
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permDeleteWs" class="w-4 h-4 accent-red-600">
-                                    <span>حذف الورشات</span>
+                                    <span>حذف الورشات (نقل للسلة)</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="permPrintExport" checked class="w-4 h-4 accent-blue-600">
@@ -1161,15 +1186,6 @@
                 <button type="button" onclick="closeBackupModalSafe()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
             <div class="p-5 space-y-5">
-                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 space-y-2.5">
-                    <h4 class="text-sm font-black text-emerald-950">🔄 استرجاع ودمج البيانات من مجموعات السحابة السابقة</h4>
-                    <p class="text-xs font-bold text-emerald-800">جلب ودمج جميع الورشات والحسابات من مجموعات السحابة (`workshops_system_items` و `workshops_system`):</p>
-                    <button type="button" onclick="recoverLegacyCloudCollections(true)"
-                        class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow transition">
-                        🔄 تنفيذ الاسترجاع والدمج السحابي الآن
-                    </button>
-                </div>
-
                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-300 space-y-3">
                     <h4 class="text-sm font-black text-slate-900">📦 تصدير أو استعادة ملف نسخة احتياطية</h4>
                     <p class="text-xs font-bold text-slate-500">تنزيل أو رفع كافة بيانات السحابة كملف JSON متوافق مع جميع الإصدارات.</p>
@@ -1248,6 +1264,8 @@
         const BACKUP_LATEST_DOC_ID = 'cloud_backup_latest';
         const FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_URL}/${FIRESTORE_COLLECTION}`;
         const CLOUD_MAX_BYTES = 1024 * 1024 * 1024; // 1 GB
+        const TRASH_RETENTION_DAYS = 30;
+        const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
         const AUTH_SESSION_KEY = 'workshops_cloud_auth_session_v1';
 
         // ==================== 2. IN-MEMORY APPLICATION STATE (NO LOCAL DATA STORAGE) ====================
@@ -1260,7 +1278,8 @@
                 companyName: ''
             },
             subUsers: [],
-            workshops: []
+            workshops: [],
+            deletedWorkshops: []
         };
 
         let currentUser = null;
@@ -1318,6 +1337,14 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
+        function formatDateFromMs(ms) {
+            const d = new Date(Number(ms) || Date.now());
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -1367,7 +1394,7 @@
             openModal('customConfirmModal');
         }
 
-        // ==================== 4. DATA NORMALIZATION & FIRESTORE PARSER ====================
+        // ==================== 4. DATA NORMALIZATION, 30-DAY TRASH EXPIRY & FIRESTORE PARSER ====================
         function decodeFirestoreValue(valObj) {
             if (!valObj || typeof valObj !== 'object') return null;
             if ('stringValue' in valObj) return valObj.stringValue;
@@ -1438,7 +1465,7 @@
                 };
             }) : [];
 
-            return {
+            const baseObj = {
                 id: ws.id || generateId('ws'),
                 name: ws.name || 'ورشة بدون اسم',
                 description: ws.description || ws.desc || '',
@@ -1448,6 +1475,27 @@
                 transactions: safeTxs,
                 createdAt: ws.createdAt || Date.now()
             };
+
+            if (ws.deletedAt) {
+                baseObj.deletedAt = Number(ws.deletedAt) || Date.now();
+                baseObj.deletedBy = ws.deletedBy || '';
+            }
+            return baseObj;
+        }
+
+        function purgeExpiredTrashItems(deletedList) {
+            const now = Date.now();
+            const validItems = [];
+            const expiredIds = [];
+            for (const item of (deletedList || [])) {
+                const deletedAt = Number(item.deletedAt) || now;
+                if ((now - deletedAt) >= TRASH_RETENTION_MS) {
+                    if (item.id) expiredIds.push(item.id);
+                } else {
+                    validItems.push(item);
+                }
+            }
+            return { validItems, expiredIds };
         }
 
         function normalizeFullState(raw) {
@@ -1512,6 +1560,15 @@
 
             workshopsArr.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+            const rawDeleted = Array.isArray(raw?.deletedWorkshops)
+                ? raw.deletedWorkshops.map((w, idx) => normalizeWorkshopData({
+                    ...w,
+                    deletedAt: w.deletedAt || Date.now()
+                }, idx))
+                : [];
+
+            const { validItems: validDeletedWorkshops } = purgeExpiredTrashItems(rawDeleted);
+
             return {
                 admin: {
                     username: adminUsername,
@@ -1521,11 +1578,12 @@
                     companyName: adminCompanyName
                 },
                 subUsers: subUsersArr,
-                workshops: workshopsArr
+                workshops: workshopsArr,
+                deletedWorkshops: validDeletedWorkshops
             };
         }
 
-        // ==================== 5. LEGACY COLLECTIONS RECOVERY ====================
+        // ==================== 5. LEGACY COLLECTIONS AUTO-RECOVERY ====================
         async function fetchAllDocsInCollection(collectionName) {
             const docs = [];
             let pageToken = '';
@@ -1542,10 +1600,7 @@
             return docs;
         }
 
-        async function recoverLegacyCloudCollections(showFeedback = false) {
-            if (showFeedback) {
-                showToast('جاري البحث في مجموعات السحابة واسترجاع ورشاتك وحساباتك...', '🔍');
-            }
+        async function recoverLegacyCloudCollections() {
             try {
                 const [legacyWsDocs, legacySysDocs, legacyDocsCol] = await Promise.all([
                     fetchAllDocsInCollection('workshops_system_items'),
@@ -1605,31 +1660,12 @@
                     appState.workshops = Array.from(workshopsMap.values());
                     appState.workshops.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                     hasFetchedInitialCloud = true;
-
-                    if (currentUser) {
-                        const acc = getAccessibleWorkshops();
-                        if (acc.length > 0 && (!activeWorkshopId || !acc.some(w => w.id === activeWorkshopId))) {
-                            activeWorkshopId = acc[0].id;
-                        }
-                        refreshAllViewsAfterSync();
-                    }
-
                     await saveToCloud();
-                    if (showFeedback) {
-                        showToast(`تم بنجاح استرجاع ${appState.workshops.length} ورشة وحساب المدير (${appState.admin.username})!`, '🎉');
-                    }
                     return true;
-                } else {
-                    if (showFeedback) {
-                        showToast('لم يتم العثور على ورشات إضافية في المجموعات القديمة', 'ℹ️');
-                    }
-                    return false;
                 }
+                return false;
             } catch (err) {
                 console.error('Legacy recovery error:', err);
-                if (showFeedback) {
-                    showToast('حدث خطأ أثناء فحص المجموعات القديمة', '⚠️');
-                }
                 return false;
             }
         }
@@ -1695,6 +1731,7 @@
                 const masterDoc = allDocs.find(d => d.name.endsWith(`/${MASTER_DOC_ID}`));
                 const backupLatestDoc = allDocs.find(d => d.name.endsWith(`/${BACKUP_LATEST_DOC_ID}`));
                 const wsDocs = allDocs.filter(d => d.name.includes('/ws_doc_'));
+                const trashDocs = allDocs.filter(d => d.name.includes('/trash_ws_doc_'));
 
                 let parsedMaster = masterDoc ? parseFirestoreDocument(masterDoc) : null;
                 if ((!parsedMaster || !(parsedMaster.workshops || []).length) && backupLatestDoc) {
@@ -1704,23 +1741,41 @@
                     }
                 }
 
+                // 1. دمج سلة المهملات من السحابة وتنظيف المنتهي (30 يوماً) تلقائياً
+                const trashMap = new Map();
+                if (parsedMaster && Array.isArray(parsedMaster.deletedWorkshops)) {
+                    for (const tw of parsedMaster.deletedWorkshops) {
+                        if (tw && tw.id) trashMap.set(tw.id, tw);
+                    }
+                }
+                for (const d of trashDocs) {
+                    const tw = parseFirestoreDocument(d);
+                    if (tw && tw.id) {
+                        trashMap.set(tw.id, pickRicherWorkshop(trashMap.get(tw.id), tw));
+                    }
+                }
+                const { validItems: validTrashItems, expiredIds: expiredTrashIds } = purgeExpiredTrashItems(Array.from(trashMap.values()));
+                const validTrashIdsSet = new Set(validTrashItems.map(t => t.id));
+
+                // 2. دمج الورشات النشطة واستبعاد المحذوفة إلى السلة
                 const workshopsMap = new Map();
                 if (parsedMaster && Array.isArray(parsedMaster.workshops)) {
                     for (const w of parsedMaster.workshops) {
-                        if (w && w.id) workshopsMap.set(w.id, w);
+                        if (w && w.id && !validTrashIdsSet.has(w.id)) workshopsMap.set(w.id, w);
                     }
                 }
                 for (const d of wsDocs) {
                     const w = parseFirestoreDocument(d);
-                    if (w && w.id) {
+                    if (w && w.id && !validTrashIdsSet.has(w.id)) {
                         workshopsMap.set(w.id, pickRicherWorkshop(workshopsMap.get(w.id), w));
                     }
                 }
 
-                if (parsedMaster || workshopsMap.size > 0) {
+                if (parsedMaster || workshopsMap.size > 0 || validTrashItems.length > 0) {
                     const mergedRaw = {
                         ...(parsedMaster || {}),
-                        workshops: Array.from(workshopsMap.values())
+                        workshops: Array.from(workshopsMap.values()),
+                        deletedWorkshops: validTrashItems
                     };
                     const normalized = normalizeFullState(mergedRaw);
                     const newHash = JSON.stringify(normalized);
@@ -1750,14 +1805,24 @@
                             const accessible = getAccessibleWorkshops();
                             if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
                                 activeWorkshopId = accessible[0].id;
+                            } else if (accessible.length === 0) {
+                                activeWorkshopId = null;
                             }
                             refreshAllViewsAfterSync();
                         }
                     }
                 }
 
-                if (appState.workshops.length === 0 && !isBackgroundPoll) {
-                    await recoverLegacyCloudCollections(false);
+                // حذف العناصر المنتهية (أكثر من 30 يوماً) من السحابة نهائياً
+                if (expiredTrashIds.length > 0 && hasFetchedInitialCloud) {
+                    for (const expId of expiredTrashIds) {
+                        fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${expId}`, { method: 'DELETE' }).catch(() => {});
+                    }
+                    await saveToCloud(null, null, true);
+                }
+
+                if (appState.workshops.length === 0 && appState.deletedWorkshops.length === 0 && !isBackgroundPoll) {
+                    await recoverLegacyCloudCollections();
                 }
 
                 hasFetchedInitialCloud = true;
@@ -1777,7 +1842,7 @@
                 return false;
             }
 
-            if (appState.workshops.length === 0 && !allowEmptyReset && !deletedWorkshopId) {
+            if (appState.workshops.length === 0 && appState.deletedWorkshops.length === 0 && !allowEmptyReset && !deletedWorkshopId) {
                 console.warn('Blocked accidental empty state write to cloud.');
                 return false;
             }
@@ -1786,7 +1851,7 @@
             updateCloudStatusUI(true, 'جاري الحفظ بالسحابة...');
             try {
                 const fullBytes = new TextEncoder().encode(JSON.stringify(appState)).length;
-                const keepTxsInMaster = fullBytes < 850000;
+                const keepTxsInMaster = fullBytes < 800000;
 
                 const masterCompact = {
                     admin: {
@@ -1804,6 +1869,17 @@
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
+                        transactions: keepTxsInMaster ? (w.transactions || []) : []
+                    })),
+                    deletedWorkshops: appState.deletedWorkshops.map((w, idx) => ({
+                        id: w.id,
+                        name: w.name,
+                        description: w.description || '',
+                        active: w.active !== false,
+                        order: idx,
+                        categories: w.categories || ['عام'],
+                        deletedAt: w.deletedAt || Date.now(),
+                        deletedBy: w.deletedBy || '',
                         transactions: keepTxsInMaster ? (w.transactions || []) : []
                     })),
                     updatedAt: Date.now()
@@ -1825,7 +1901,7 @@
                     })
                 );
 
-                if (appState.workshops.length > 0) {
+                if (appState.workshops.length > 0 || appState.deletedWorkshops.length > 0) {
                     requests.push(
                         fetch(`${FIRESTORE_BASE_URL}/${BACKUP_LATEST_DOC_ID}`, {
                             method: 'PATCH',
@@ -1856,6 +1932,21 @@
                             })
                         );
                     }
+                    const targetTrashWs = appState.deletedWorkshops.find(w => w.id === specificWorkshopIdToSync);
+                    if (targetTrashWs) {
+                        requests.push(
+                            fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${targetTrashWs.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fields: {
+                                        payload: { stringValue: JSON.stringify(targetTrashWs) },
+                                        updatedAt: { integerValue: String(Date.now()) }
+                                    }
+                                })
+                            })
+                        );
+                    }
                 } else {
                     for (const ws of appState.workshops) {
                         requests.push(
@@ -1865,6 +1956,20 @@
                                 body: JSON.stringify({
                                     fields: {
                                         payload: { stringValue: JSON.stringify(ws) },
+                                        updatedAt: { integerValue: String(Date.now()) }
+                                    }
+                                })
+                            })
+                        );
+                    }
+                    for (const tws of appState.deletedWorkshops) {
+                        requests.push(
+                            fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${tws.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fields: {
+                                        payload: { stringValue: JSON.stringify(tws) },
                                         updatedAt: { integerValue: String(Date.now()) }
                                     }
                                 })
@@ -2090,24 +2195,6 @@
             openModal('profileNameModal');
         }
 
-        function openEditProfileNameModal() {
-            const isAdmin = currentUser?.role === 'admin';
-            document.getElementById('profileNameModalTitle').textContent = '✏️ تعديل بياناتك الشخصية (الاسم ورقم الجوال)';
-            document.getElementById('btnCloseProfileNameModal').classList.remove('hidden');
-            document.getElementById('profileAdminCompanyWrapper').classList.toggle('hidden', !isAdmin);
-
-            if (isAdmin) {
-                document.getElementById('inputUserFullName').value = appState.admin.fullName || '';
-                document.getElementById('inputUserPhone').value = appState.admin.phone || '';
-                document.getElementById('inputAdminCompanyFromProfile').value = appState.admin.companyName || '';
-            } else {
-                const subObj = appState.subUsers.find(u => u.username === currentUser.username) || currentUser;
-                document.getElementById('inputUserFullName').value = subObj.fullName || '';
-                document.getElementById('inputUserPhone').value = subObj.phone || '';
-            }
-            openModal('profileNameModal');
-        }
-
         async function saveUserProfileName(e) {
             e.preventDefault();
             const nameVal = document.getElementById('inputUserFullName').value.trim();
@@ -2156,7 +2243,7 @@
 
             document.getElementById('btnUsersManager').classList.toggle('hidden', !isAdmin);
             document.getElementById('btnBackupReset').classList.toggle('hidden', !isAdmin);
-            document.getElementById('btnEditOwnProfileName').classList.remove('hidden');
+            document.getElementById('btnTrashManager').classList.toggle('hidden', !perms.deleteWs && !isAdmin);
             document.getElementById('addWorkshopForm').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnImportWorkshop').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnToggleReorderWs').classList.toggle('hidden', !isAdmin);
@@ -2183,6 +2270,14 @@
             if (!currentUser) return [];
             if (currentUser.role === 'admin') return appState.workshops;
             return appState.workshops.filter(w => currentUser.allowedWorkshops.includes(w.id));
+        }
+
+        function getAccessibleDeletedWorkshops() {
+            if (!currentUser) return [];
+            if (currentUser.role === 'admin') return appState.deletedWorkshops;
+            return appState.deletedWorkshops.filter(w =>
+                currentUser.allowedWorkshops.includes(w.id) || w.deletedBy === currentUser.username
+            );
         }
 
         // ==================== 8. FINANCIAL CALCULATIONS ====================
@@ -2289,7 +2384,7 @@
             );
         }
 
-        // ==================== 9. WORKSHOPS GRID, SELECTION & PERMISSION-BASED PASSWORD LOCK ====================
+        // ==================== 9. WORKSHOPS GRID, PASSWORD-VERIFIED TRASH & REORDER ====================
         function setWorkshopFilter(status) {
             workshopFilterStatus = status;
             const btnAll = document.getElementById('wsFilterAll');
@@ -2479,7 +2574,7 @@
                                     </button>
                                 ` : ''}
                                 ${canDeleteWs ? `
-                                    <button type="button" onclick="deleteWorkshopById('${ws.id}')"
+                                    <button type="button" onclick="requestOwnerPasswordForWorkshopDelete('${ws.id}')"
                                         class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white text-[11px] font-extrabold transition">
                                         🗑️ حذف
                                     </button>
@@ -2548,7 +2643,9 @@
             if (!ws) return;
             const willActivate = ws.active === false;
 
-            document.getElementById('pendingStatusWsId').value = wsId;
+            document.getElementById('pendingActionWsId').value = wsId;
+            document.getElementById('pendingActionType').value = 'toggleStatus';
+            document.getElementById('ownerAuthModalTitle').textContent = '🔐 تأكيد كلمة مرور الحساب';
             document.getElementById('ownerAuthPasswordInput').value = '';
             document.getElementById('ownerAuthStatusMessage').textContent = willActivate
                 ? `لتشغيل وتفعيل ورشة "${ws.name}"، يرجى إدخال كلمة مرور حسابك (${currentUser.username}):`
@@ -2567,9 +2664,32 @@
             setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
         }
 
-        async function confirmOwnerPasswordForWorkshopStatus(e) {
+        function requestOwnerPasswordForWorkshopDelete(wsId) {
+            if (!currentUser.permissions.deleteWs) {
+                showToast('ليس لديك صلاحية حذف الورشات', '🔒');
+                return;
+            }
+            const ws = appState.workshops.find(w => w.id === wsId);
+            if (!ws) return;
+
+            document.getElementById('pendingActionWsId').value = wsId;
+            document.getElementById('pendingActionType').value = 'deleteToTrash';
+            document.getElementById('ownerAuthModalTitle').textContent = '🗑️ تأكيد نقل الورشة إلى سلة المهملات';
+            document.getElementById('ownerAuthPasswordInput').value = '';
+            document.getElementById('ownerAuthStatusMessage').textContent =
+                `لحذف ورشة "${ws.name}" (${ws.transactions.length} حركة) ونقلها إلى سلة المهملات لمدة 30 يوماً، يرجى إدخال كلمة مرور حسابك الحالي (${currentUser.username}):`;
+
+            const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
+            confirmBtn.textContent = '🗑️ تأكيد النقل للسلة';
+            confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow';
+
+            openModal('ownerAuthStatusModal');
+            setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
+        }
+
+        async function confirmOwnerPasswordAction(e) {
             e.preventDefault();
-            if (!currentUser.permissions.toggleWs) return;
+            const actionType = document.getElementById('pendingActionType').value;
 
             const enteredPass = document.getElementById('ownerAuthPasswordInput').value.trim();
             const expectedPass = currentUser.role === 'admin'
@@ -2577,17 +2697,40 @@
                 : String(appState.subUsers.find(u => u.username === currentUser.username)?.password || currentUser.password || '').trim();
 
             if (!enteredPass || enteredPass !== expectedPass) {
-                showToast('❌ كلمة مرور الحساب غير صحيحة! لا يمكن تنفيذ العملية.', '🔒');
+                showToast('❌ كلمة مرور الحساب الحالي غير صحيحة! لا يمكن تنفيذ العملية.', '🔒');
                 document.getElementById('ownerAuthPasswordInput').value = '';
                 document.getElementById('ownerAuthPasswordInput').focus();
                 return;
             }
 
-            const wsId = document.getElementById('pendingStatusWsId').value;
+            const wsId = document.getElementById('pendingActionWsId').value;
             const ws = appState.workshops.find(w => w.id === wsId);
             closeModal('ownerAuthStatusModal');
             if (!ws) return;
 
+            if (actionType === 'deleteToTrash') {
+                if (!currentUser.permissions.deleteWs) return;
+                appState.workshops = appState.workshops.filter(w => w.id !== wsId);
+                const trashedWs = {
+                    ...ws,
+                    deletedAt: Date.now(),
+                    deletedBy: currentUser.username
+                };
+                appState.deletedWorkshops.unshift(trashedWs);
+
+                if (activeWorkshopId === wsId) {
+                    const rem = getAccessibleWorkshops();
+                    activeWorkshopId = rem.length > 0 ? rem[0].id : null;
+                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
+                }
+
+                refreshAllViewsAfterSync();
+                await saveToCloud(wsId, wsId, appState.workshops.length === 0);
+                showToast(`تم نقل ورشة "${ws.name}" إلى سلة المهملات (تُحذف تلقائياً بعد 30 يوماً)`, '🗑️');
+                return;
+            }
+
+            if (!currentUser.permissions.toggleWs) return;
             ws.active = ws.active === false ? true : false;
             refreshAllViewsAfterSync();
             await saveToCloud(ws.id);
@@ -2598,24 +2741,130 @@
             if (activeWorkshopId) requestOwnerPasswordForWorkshopStatus(activeWorkshopId);
         }
 
-        function deleteWorkshopById(wsId) {
-            if (!currentUser.permissions.deleteWs) return;
-            const ws = appState.workshops.find(w => w.id === wsId);
+        // ==================== TRASH BIN MODAL: RESTORE, PERMANENT DELETE & EMPTY TRASH ====================
+        function updateTrashBadgeCounter() {
+            const items = getAccessibleDeletedWorkshops();
+            const badge = document.getElementById('trashCountBadge');
+            if (badge) badge.textContent = items.length;
+        }
+
+        function openTrashModal() {
+            renderTrashModalContent();
+            openModal('trashModal');
+        }
+
+        function renderTrashModalContent() {
+            const items = getAccessibleDeletedWorkshops();
+            document.getElementById('trashModalCountText').textContent = items.length;
+            const emptyBtn = document.getElementById('btnEmptyTrash');
+            emptyBtn.classList.toggle('hidden', items.length === 0);
+
+            const container = document.getElementById('trashWorkshopsListContainer');
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 space-y-1.5">
+                        <div class="text-3xl">🗑️</div>
+                        <div class="text-sm font-black text-slate-700">سلة المهملات فارغة حالياً</div>
+                        <div class="text-xs font-bold text-slate-400">أي ورشة يتم حذفها ستبقى هنا لمدة 30 يوماً قبل حذفها تلقائياً</div>
+                    </div>`;
+                return;
+            }
+
+            const now = Date.now();
+            container.innerHTML = items.map(ws => {
+                const deletedAt = Number(ws.deletedAt) || now;
+                const elapsedMs = Math.max(0, now - deletedAt);
+                const remainingDays = Math.max(1, Math.ceil((TRASH_RETENTION_MS - elapsedMs) / (24 * 60 * 60 * 1000)));
+                const totals = calculateWorkshopTotals(ws);
+
+                return `
+                    <div class="p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                        <div class="space-y-1 min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-sm sm:text-base font-black text-slate-900">${escapeHtml(ws.name)}</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-black">
+                                    ⏳ متبقي ${remainingDays} يوم للحذف التلقائي
+                                </span>
+                            </div>
+                            <div class="text-xs font-bold text-slate-500">
+                                تاريخ الحذف: ${formatDateFromMs(deletedAt)} • عدد الحركات: ${(ws.transactions || []).length}
+                                • الصافي: <span dir="ltr" class="font-black text-slate-800">$ ${formatNum(totals.usdNet)}</span> / <span dir="ltr" class="font-black text-slate-800">${formatNum(totals.sypNet, 0)} ل.س</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button type="button" onclick="restoreWorkshopFromTrash('${ws.id}')"
+                                class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow transition flex items-center gap-1">
+                                <span>♻️</span>
+                                <span>استعادة الورشة</span>
+                            </button>
+                            <button type="button" onclick="permanentlyDeleteSingleTrashWorkshop('${ws.id}')"
+                                class="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
+                                حذف نهائي
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function restoreWorkshopFromTrash(wsId) {
+            const idx = appState.deletedWorkshops.findIndex(w => w.id === wsId);
+            if (idx === -1) return;
+
+            const [restored] = appState.deletedWorkshops.splice(idx, 1);
+            delete restored.deletedAt;
+            delete restored.deletedBy;
+            restored.order = appState.workshops.length;
+
+            appState.workshops.push(restored);
+            activeWorkshopId = restored.id;
+            if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
+
+            renderTrashModalContent();
+            refreshAllViewsAfterSync();
+
+            await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${wsId}`, { method: 'DELETE' }).catch(() => {});
+            await saveToCloud(restored.id);
+            showToast(`تمت استعادة ورشة "${restored.name}" بنجاح إلى قائمة الورشات`, '♻️');
+        }
+
+        function permanentlyDeleteSingleTrashWorkshop(wsId) {
+            const ws = appState.deletedWorkshops.find(w => w.id === wsId);
             if (!ws) return;
 
             showCustomConfirm(
-                'حذف الورشة نهائياً',
-                `هل أنت متأكد من حذف ورشة "${ws.name}" وجميع حركاتها المالية (${ws.transactions.length} حركة) من السحابة؟`,
+                'حذف نهائي من السلة',
+                `هل أنت متأكد من حذف ورشة "${ws.name}" نهائياً من السحابة؟ لا يمكن التراجع عن هذا الإجراء.`,
                 async () => {
-                    appState.workshops = appState.workshops.filter(w => w.id !== wsId);
-                    if (activeWorkshopId === wsId) {
-                        const rem = getAccessibleWorkshops();
-                        activeWorkshopId = rem.length > 0 ? rem[0].id : null;
-                        if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
+                    appState.deletedWorkshops = appState.deletedWorkshops.filter(w => w.id !== wsId);
+                    renderTrashModalContent();
+                    updateTrashBadgeCounter();
+                    await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${wsId}`, { method: 'DELETE' }).catch(() => {});
+                    await saveToCloud(null, null, appState.workshops.length === 0);
+                    showToast('تم حذف الورشة نهائياً من السحابة', '🗑️');
+                }
+            );
+        }
+
+        function emptyTrashCompletely() {
+            const accessibleTrash = getAccessibleDeletedWorkshops();
+            if (accessibleTrash.length === 0) return;
+
+            showCustomConfirm(
+                'تفريغ سلة المهملات نهائياً',
+                `سيتم حذف جميع الورشات في سلة المهملات (${accessibleTrash.length} ورشة) بشكل نهائي ودائم من السحابة. هل تريد المتابعة؟`,
+                async () => {
+                    const idsToDelete = new Set(accessibleTrash.map(w => w.id));
+                    appState.deletedWorkshops = appState.deletedWorkshops.filter(w => !idsToDelete.has(w.id));
+
+                    renderTrashModalContent();
+                    updateTrashBadgeCounter();
+
+                    for (const id of idsToDelete) {
+                        await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${id}`, { method: 'DELETE' }).catch(() => {});
                     }
-                    refreshAllViewsAfterSync();
-                    await saveToCloud(null, wsId, appState.workshops.length === 0);
-                    showToast('تم حذف الورشة من السحابة بنجاح', '🗑️');
+                    await saveToCloud(null, null, appState.workshops.length === 0);
+                    showToast('تم تفريغ سلة المهملات وحذف الورشات نهائياً', '🔥');
                 }
             );
         }
@@ -3320,7 +3569,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, UNCHANGED PRINT & NATIVE MOBILE-COMPATIBLE .XLSX EXCEL ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, PRINT & NATIVE .XLSX EXCEL ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -3667,7 +3916,6 @@
             const rows = getFilteredTransactions(ws);
             const cleanFileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.xlsx`;
 
-            // بناء مصفوفة بيانات Excel حقيقية (.xlsx) متوافقة 100% مع الجوال والكمبيوتر
             if (typeof XLSX !== 'undefined') {
                 const aoa = [
                     [`كشف حساب ورشة: ${ws.name} (${todayISO()})`],
@@ -3725,10 +3973,9 @@
                 });
 
                 const lastDataRow = rows.length + 3;
-                const totalRowIdx = aoa.length; // 0-based index for totals row
+                const totalRowIdx = aoa.length;
                 const netRowIdx = totalRowIdx + 1;
 
-                // صف المجموع الكلي مع معادلات Excel حقيقية
                 aoa.push([
                     'المجموع الكلي',
                     '',
@@ -3740,7 +3987,6 @@
                     rows.length > 0 ? { t: 'n', f: `SUM(H4:H${lastDataRow})` } : 0
                 ]);
 
-                // صف الرصيد الصافي مع معادلات الطرح
                 const excelTotalRowNum = totalRowIdx + 1;
                 aoa.push([
                     'الرصيد الصافي (USD / SYP)',
@@ -3755,7 +4001,6 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(aoa);
 
-                // دمج خلايا العنوان والوصف والمجاميع
                 worksheet['!merges'] = [
                     { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
                     { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
@@ -3765,7 +4010,6 @@
                     { s: { r: netRowIdx, c: 6 }, e: { r: netRowIdx, c: 7 } }
                 ];
 
-                // ضبط عرض الأعمدة تلقائياً
                 worksheet['!cols'] = [
                     { wch: 14 },
                     { wch: 14 },
@@ -3777,7 +4021,6 @@
                     { wch: 18 }
                 ];
 
-                // ضبط اتجاه الورقة من اليمين إلى اليسار (RTL)
                 worksheet['!views'] = [{ rightToLeft: true }];
 
                 const workbook = XLSX.utils.book_new();
@@ -3800,7 +4043,6 @@
                 return;
             }
 
-            // خطة بديلة بصيغة CSV UTF-8 BOM في حال تعذر تحميل المكتبة
             let csvRows = [
                 ['التاريخ', 'النوع', 'البند', 'البيان', 'إيراد دولار ($)', 'مصروف دولار ($)', 'إيراد سوري (ل.س)', 'مصروف سوري (ل.س)']
             ];
@@ -3872,6 +4114,8 @@
                     const normalizedWs = normalizeWorkshopData(rawWs, appState.workshops.length);
                     normalizedWs.id = generateId('ws');
                     normalizedWs.order = appState.workshops.length;
+                    delete normalizedWs.deletedAt;
+                    delete normalizedWs.deletedBy;
 
                     appState.workshops.push(normalizedWs);
                     if (currentUser.role === 'sub') {
@@ -4048,11 +4292,21 @@
             showToast('تم حفظ بيانات وصلاحيات المستخدم في السحابة', '👥');
         }
 
-        async function deleteSubUser(idx) {
-            appState.subUsers.splice(idx, 1);
-            renderSubUsersList();
-            await saveToCloud();
-            showToast('تم حذف المستخدم الفرعي', '🗑️');
+        function deleteSubUser(idx) {
+            const sub = appState.subUsers[idx];
+            if (!sub) return;
+            const userLabel = sub.fullName ? `${sub.fullName} (${sub.username})` : sub.username;
+
+            showCustomConfirm(
+                'حذف حساب المستخدم الفرعي',
+                `هل تريد حذف حساب المستخدم الفرعي "${userLabel}" بالفعل من السحابة؟`,
+                async () => {
+                    appState.subUsers.splice(idx, 1);
+                    renderSubUsersList();
+                    await saveToCloud();
+                    showToast('تم حذف المستخدم الفرعي من السحابة', '🗑️');
+                }
+            );
         }
 
         function renderSubUsersList() {
@@ -4201,7 +4455,9 @@
                 }, 1000);
             } else if (resetStage === 4) {
                 const oldWorkshopIds = appState.workshops.map(w => w.id);
+                const oldTrashIds = appState.deletedWorkshops.map(w => w.id);
                 appState.workshops = [];
+                appState.deletedWorkshops = [];
                 activeWorkshopId = null;
                 if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
                 cancelFactoryReset();
@@ -4210,6 +4466,9 @@
 
                 for (const oldId of oldWorkshopIds) {
                     await fetch(`${FIRESTORE_BASE_URL}/ws_doc_${oldId}`, { method: 'DELETE' }).catch(() => {});
+                }
+                for (const tId of oldTrashIds) {
+                    await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${tId}`, { method: 'DELETE' }).catch(() => {});
                 }
                 await fetch(`${FIRESTORE_BASE_URL}/${BACKUP_LATEST_DOC_ID}`, { method: 'DELETE' }).catch(() => {});
                 await saveToCloud(null, null, true);
@@ -4226,6 +4485,7 @@
 
         // ==================== 18. MASTER UI REFRESH & INITIALIZATION ====================
         function refreshAllViewsAfterSync() {
+            updateTrashBadgeCounter();
             renderGlobalSummary();
             renderWorkshopsList();
             renderActiveWorkshopWorkspace();
