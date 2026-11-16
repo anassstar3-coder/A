@@ -1083,6 +1083,33 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT CATEGORY NAME -->
+    <div id="editCategoryModal" class="hidden fixed inset-0 z-[65] modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-indigo-200 overflow-hidden text-slate-800">
+            <div class="bg-indigo-950 px-5 py-4 text-white flex items-center justify-between">
+                <h3 class="text-base font-black">✏️ تعديل اسم التصنيف</h3>
+                <button type="button" onclick="closeModal('editCategoryModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <form onsubmit="saveEditedCategoryName(event)" class="p-5 space-y-4">
+                <input type="hidden" id="editCategoryIndex">
+                <p id="editCategoryHint" class="text-xs font-bold text-slate-600 leading-relaxed"></p>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">الاسم الجديد للتصنيف *</label>
+                    <input type="text" id="editCategoryNewNameInput" required placeholder="أدخل اسم التصنيف الجديد..."
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-black bg-slate-50">
+                </div>
+                <div class="flex items-center gap-2.5 pt-1">
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow">
+                        💾 حفظ وتحديث البنود
+                    </button>
+                    <button type="button" onclick="closeModal('editCategoryModal')" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 5: EDIT WORKSHOP NAME & DESCRIPTION -->
     <div id="editWorkshopModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-slate-200 overflow-hidden text-slate-800">
@@ -3343,24 +3370,102 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
             const isWsActive = ws.active !== false;
+            const canEditCats = isWsActive && !!currentUser.permissions.manageCats;
             const container = document.getElementById('categoriesListContainer');
             container.innerHTML = ws.categories.map((cat, idx) => {
                 const isFixedGeneral = cat === 'عام';
+                const linkedCount = (ws.transactions || []).filter(tx => tx.category === cat).length;
                 return `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl border ${isFixedGeneral ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'}">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-black text-slate-800">${escapeHtml(cat)}</span>
-                            ${isFixedGeneral ? `<span class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">ثابت</span>` : ''}
+                    <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border ${isFixedGeneral ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'}">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-xs font-black text-slate-800 truncate">${escapeHtml(cat)}</span>
+                            ${isFixedGeneral
+                                ? `<span class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold shrink-0">ثابت</span>`
+                                : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold shrink-0">${linkedCount} بند</span>`
+                            }
                         </div>
-                        ${(!isFixedGeneral && isWsActive) ? `
-                            <button type="button" onclick="deleteCategoryFromWorkshop(${idx})"
-                                class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
-                                حذف
-                            </button>
+                        ${(!isFixedGeneral && canEditCats) ? `
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button type="button" onclick="openEditCategoryModal(${idx})"
+                                    class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-800 hover:text-white text-xs font-extrabold transition">
+                                    ✏️ تعديل
+                                </button>
+                                <button type="button" onclick="deleteCategoryFromWorkshop(${idx})"
+                                    class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
+                                    حذف
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 `;
             }).join('');
+        }
+
+        function openEditCategoryModal(idx) {
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
+            if (!currentUser.permissions.manageCats) return;
+
+            const oldCatName = ws.categories[idx];
+            if (!oldCatName || oldCatName === 'عام') return;
+
+            const affectedCount = (ws.transactions || []).filter(tx => tx.category === oldCatName).length;
+            document.getElementById('editCategoryIndex').value = String(idx);
+            document.getElementById('editCategoryNewNameInput').value = oldCatName;
+            document.getElementById('editCategoryHint').textContent = affectedCount > 0
+                ? `عند تعديل اسم التصنيف "${oldCatName}" سيتم تحديثه تلقائياً في جميع البنود المرتبطة به في هذه الورشة (${affectedCount} بند).`
+                : `أدخل الاسم الجديد للتصنيف "${oldCatName}":`;
+
+            openModal('editCategoryModal');
+            setTimeout(() => document.getElementById('editCategoryNewNameInput').focus(), 100);
+        }
+
+        async function saveEditedCategoryName(e) {
+            e.preventDefault();
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
+            if (!currentUser.permissions.manageCats) return;
+
+            const idx = parseInt(document.getElementById('editCategoryIndex').value, 10);
+            const oldCatName = ws.categories[idx];
+            const newCatName = document.getElementById('editCategoryNewNameInput').value.trim();
+
+            if (!oldCatName || oldCatName === 'عام' || !newCatName) return;
+
+            if (newCatName === oldCatName) {
+                closeModal('editCategoryModal');
+                return;
+            }
+
+            if (ws.categories.some((c, i) => i !== idx && c === newCatName)) {
+                showToast('يوجد تصنيف آخر بهذا الاسم مسبقاً في هذه الورشة!', '⚠️');
+                return;
+            }
+
+            ws.categories[idx] = newCatName;
+            let updatedTxCount = 0;
+            (ws.transactions || []).forEach(tx => {
+                if (tx.category === oldCatName) {
+                    tx.category = newCatName;
+                    updatedTxCount++;
+                }
+            });
+
+            const catFilter = document.getElementById('txFilterCategory');
+            const wasFilteredByOld = catFilter && catFilter.value === oldCatName;
+
+            closeModal('editCategoryModal');
+            renderCategoriesListInModal();
+            renderActiveWorkshopWorkspace();
+            if (wasFilteredByOld && catFilter) {
+                catFilter.value = newCatName;
+                renderTransactionsTable();
+            }
+
+            await saveToCloud(ws.id);
+            showToast(`تم تعديل التصنيف إلى "${newCatName}" وتحديث ${updatedTxCount} بند في السحابة`, '✏️');
         }
 
         async function addCategoryToWorkshop(e) {
@@ -4187,7 +4292,7 @@
             openModal('printDetailsModal');
         }
 
-        function buildOfficialCorporatePrintSheet(isCompactPdf = false) {
+        function buildOfficialCorporatePrintSheet(isPdfMode = false) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
@@ -4291,28 +4396,8 @@
                     `;
                 }).join('');
 
-            const headerBannerHtml = isCompactPdf
-                ? `
-                <div style="border:1.5px solid #cbd5e1; border-radius:10px; background:#f8fafc; padding:8px 12px; margin-bottom:10px;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <tr>
-                            <td style="text-align:right; vertical-align:middle;">
-                                <span style="color:#0f172a; font-weight:900; font-size:13px;">${escapeHtml(ws.name)}</span>
-                                ${ws.description ? `<span style="color:#64748b; font-weight:700;">&nbsp;(${escapeHtml(ws.description)})</span>` : ''}
-                                ${company ? `<span style="color:#475569; font-weight:800;">&nbsp;•&nbsp;${escapeHtml(company)}</span>` : ''}
-                            </td>
-                            <td style="text-align:left; vertical-align:middle; white-space:nowrap; color:#334155; font-weight:800; font-size:10.5px;">
-                                ${todayISO()} • ${rows.length} حركة
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="padding-top:4px; font-size:10px; color:#1e3a8a; font-weight:700;">
-                                ${escapeHtml(filterNotes.join('  •  '))}${contactLine ? `&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#334155;">${contactLine}</span>` : ''}
-                            </td>
-                        </tr>
-                    </table>
-                </div>`
-                : `
+            const sheet = document.getElementById('officialPrintSheet');
+            sheet.innerHTML = `
                 <div style="border:2px solid #0f172a; border-radius:14px; overflow:hidden; margin-bottom:14px;">
                     <table style="width:100%; border-collapse:collapse; background:#0f172a; color:#ffffff; border-bottom:4px solid #f59e0b;">
                         <tr>
@@ -4340,22 +4425,18 @@
                             </td>
                         </tr>
                     </table>
-                </div>`;
+                </div>
 
-            const sheet = document.getElementById('officialPrintSheet');
-            sheet.innerHTML = `
-                ${headerBannerHtml}
-
-                <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px ${isCompactPdf ? '10px' : '14px'} -10px;">
+                <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px 14px -10px;">
                     <tr>
-                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:${isCompactPdf ? '9px 12px' : '12px 14px'}; vertical-align:top;">
+                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
                             <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
                                 <tr>
                                     <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الدولار الأمريكي</td>
                                     <td style="text-align:left;"><span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span></td>
                                 </tr>
                             </table>
-                            <div dir="ltr" style="font-size:${isCompactPdf ? '18px' : '20px'}; font-weight:900; color:${usdTextColor}; margin:3px 0; text-align:right;">
+                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:3px 0; text-align:right;">
                                 ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
                             </div>
                             <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
@@ -4366,14 +4447,14 @@
                             </table>
                         </td>
 
-                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:${isCompactPdf ? '9px 12px' : '12px 14px'}; vertical-align:top;">
+                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
                             <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
                                 <tr>
                                     <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الليرة السورية</td>
                                     <td style="text-align:left;"><span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span></td>
                                 </tr>
                             </table>
-                            <div dir="ltr" style="font-size:${isCompactPdf ? '18px' : '20px'}; font-weight:900; color:${sypTextColor}; margin:3px 0; text-align:right;">
+                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:3px 0; text-align:right;">
                                 ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
                             </div>
                             <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
@@ -4401,7 +4482,7 @@
                     </tbody>
                 </table>
 
-                ${isCompactPdf ? '' : `
+                ${isPdfMode ? '' : `
                 <table class="corp-signatures" style="width:100%; border-collapse:collapse; margin-top:26px; font-size:11px; font-weight:800; color:#334155;">
                     <tr>
                         <td style="width:33.33%; text-align:center; padding:8px 10px; vertical-align:bottom;">
@@ -5105,10 +5186,3 @@
     </script>
 </body>
 </html>
-```
-
-### ملخص التعديلات المنفذة:
-1. **إيقاف تعديل اسم الورشة ووصفها عند إيقافها:** تم قفل وإخفاء زر `✏️ تعديل الاسم/الوصف` عند إيقاف الورشة (`active === false`) مع التحقق البرمجي داخل `openEditWorkshopModal` و`saveEditedWorkshopInfo` لمنع أي تعديل حتى يتم تفعيل الورشة.
-2. **قفل تعديل وحذف البنود والتصنيفات في الورشة المتوقفة:** عند إيقاف الورشة يتم قفل كافة أزرار الإضافة والتعديل والحذف للبنود والتصنيفات وإظهار رسالة تنبيه واضحة بأن الورشة متوقفة ولا يمكن تعديل اسمها أو بنودها أو تصنيفاتها إلا بعد تفعيلها.
-3. **إخفاء حسابات المدراء عن بعضهم البعض:** تم تحديث قائمة الحسابات (`renderSubUsersList`) بحيث يرى **المدير الأساسي فقط** جميع المدراء والحسابات الفرعية، بينما لا يرى أي مدير فرعي حسابات المدراء الآخرين ولا يرى سوى المستخدمين الفرعيين.
-4. **تنزيل مباشر ومختصر لملف PDF (A4):** تم تعديل زر `تصدير PDF (A4)` ليقوم بالتنزيل المباشر الفوري دون فتح نافذة منبثقة مسبقة، مع إزالة الترويسة السوداء الكبيرة وتوقيعات المحاسب ومدير الورشة والاعتماد الإداري من ملف الـ PDF والاكتفاء بعنوان مدمج أنيق في أعلى الصفحة الأولى مع الحفاظ على الترويسة الرسمية الكاملة والتوقيعات عند الضغط على زر `طباعة مباشرة`.
