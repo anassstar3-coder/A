@@ -12,8 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <!-- html2pdf for Direct Real A4 PDF Download with Intact Arabic Shaping -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- SheetJS for Real Native .xlsx Excel Files Compatible with Mobile & Desktop -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- xlsx-js-style for Styled Real Native .xlsx Excel Files Compatible with Mobile & Desktop -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     
     <script>
         tailwind.config = {
@@ -521,7 +521,7 @@
                         </button>
 
                         <button id="btnExportWsJson" onclick="exportSingleWorkshopJson()"
-                            class="grayable-header-item px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/15 transition flex items-center gap-1.5">
+                            class="grayable-header-item px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold border border-white/15 transition flex items-center gap-1.5">
                             <span>📤</span>
                             <span>تصدير ملف</span>
                         </button>
@@ -4252,7 +4252,7 @@
             showToast(editId ? 'تم تعديل الصرافة في السحابة' : 'تم حفظ عملية الصرافة في السحابة', '⇄');
         }
 
-        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, PRINT & ENHANCED EXCEL EXPORT ====================
+        // ==================== 14. DIRECT REAL A4 PDF DOWNLOAD, PRINT & STYLED EXCEL EXPORT ====================
         function handlePrintOrPdfRequest(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -4633,19 +4633,86 @@
                 return;
             }
 
+            const borderThin = {
+                top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+                bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+                left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+                right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+            };
+            const borderMedDark = {
+                top: { style: 'medium', color: { rgb: '0F172A' } },
+                bottom: { style: 'medium', color: { rgb: '0F172A' } },
+                left: { style: 'thin', color: { rgb: '334155' } },
+                right: { style: 'thin', color: { rgb: '334155' } }
+            };
+
+            const titleStyle = {
+                font: { name: 'Cairo', sz: 15, bold: true, color: { rgb: 'FBBF24' } },
+                fill: { fgColor: { rgb: '0F172A' } },
+                alignment: { horizontal: 'right', vertical: 'center' }
+            };
+            const metaStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: '1E293B' } },
+                fill: { fgColor: { rgb: 'F1F5F9' } },
+                alignment: { horizontal: 'right', vertical: 'center' },
+                border: borderThin
+            };
+            const summaryHeaderStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '1E3A8A' } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                border: borderMedDark
+            };
+            const summaryLabelStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: '0F172A' } },
+                fill: { fgColor: { rgb: 'EFF6FF' } },
+                alignment: { horizontal: 'right', vertical: 'center' },
+                border: borderThin
+            };
+            const summaryInStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: '065F46' } },
+                fill: { fgColor: { rgb: 'ECFDF5' } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                numFmt: '#,##0.00',
+                border: borderThin
+            };
+            const summaryOutStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: '9F1239' } },
+                fill: { fgColor: { rgb: 'FFF1F2' } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                numFmt: '#,##0.00',
+                border: borderThin
+            };
+            const getSummaryNetStyle = (val, isSyp = false) => ({
+                font: { name: 'Cairo', sz: 12, bold: true, color: { rgb: val < 0 ? 'BE123C' : '065F46' } },
+                fill: { fgColor: { rgb: val < 0 ? 'FFE4E6' : 'D1FAE5' } },
+                alignment: { horizontal: 'center', vertical: 'center' },
+                numFmt: isSyp ? '#,##0' : '#,##0.00',
+                border: borderThin
+            });
+
+            const tableHeaderStyle = {
+                font: { name: 'Cairo', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '0F172A' } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                border: borderMedDark
+            };
+
             const aoaData = [
-                [eff.companyName || 'نظام إدارة محاسبة الورشات'],
-                [`كشف حساب الورشة: ${ws.name}`, '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`],
-                ws.description ? [`الوصف: ${ws.description}`] : [''],
-                [],
-                ['ملخص الصندوق المالي', 'الإيرادات', 'المصروفات', 'الصافي الحالي'],
-                ['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2))],
-                ['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet)],
-                [],
+                [eff.companyName || 'نظام إدارة محاسبة الورشات', '', '', '', '', '', '', ''],
+                [`كشف حساب الورشة: ${ws.name}`, '', '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`, '', ''],
+                [ws.description ? `الوصف: ${ws.description}` : 'كشف الحركات المالية التفصيلي', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['ملخص الصندوق المالي', 'الإيرادات (+)', 'المصروفات (-)', 'الصافي الحالي', '', '', '', ''],
+                ['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', ''],
+                ['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
                 ['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']
             ];
 
+            const rowTypes = [];
             rows.forEach(tx => {
+                rowTypes.push(tx.type);
                 if (tx.type === 'income') {
                     aoaData.push([
                         tx.date,
@@ -4683,13 +4750,109 @@
             });
 
             const worksheet = XLSX.utils.aoa_to_sheet(aoaData);
+
+            // تطبيق الأنماط والألوان والحدود على كافة الخلايا
+            for (let c = 0; c < 8; c++) {
+                const cell0 = XLSX.utils.encode_cell({ r: 0, c });
+                if (worksheet[cell0]) worksheet[cell0].s = titleStyle;
+
+                const cell1 = XLSX.utils.encode_cell({ r: 1, c });
+                if (worksheet[cell1]) worksheet[cell1].s = metaStyle;
+
+                const cell2 = XLSX.utils.encode_cell({ r: 2, c });
+                if (worksheet[cell2]) worksheet[cell2].s = metaStyle;
+
+                const cell8 = XLSX.utils.encode_cell({ r: 8, c });
+                if (worksheet[cell8]) worksheet[cell8].s = tableHeaderStyle;
+            }
+
+            // تنسيق جدول الملخص المالي (الصفوف 4 و 5 و 6)
+            for (let c = 0; c < 4; c++) {
+                const c4 = XLSX.utils.encode_cell({ r: 4, c });
+                if (worksheet[c4]) worksheet[c4].s = summaryHeaderStyle;
+            }
+            worksheet[XLSX.utils.encode_cell({ r: 5, c: 0 })].s = summaryLabelStyle;
+            worksheet[XLSX.utils.encode_cell({ r: 5, c: 1 })].s = summaryInStyle;
+            worksheet[XLSX.utils.encode_cell({ r: 5, c: 2 })].s = summaryOutStyle;
+            worksheet[XLSX.utils.encode_cell({ r: 5, c: 3 })].s = getSummaryNetStyle(totals.usdNet, false);
+
+            worksheet[XLSX.utils.encode_cell({ r: 6, c: 0 })].s = summaryLabelStyle;
+            worksheet[XLSX.utils.encode_cell({ r: 6, c: 1 })].s = { ...summaryInStyle, numFmt: '#,##0' };
+            worksheet[XLSX.utils.encode_cell({ r: 6, c: 2 })].s = { ...summaryOutStyle, numFmt: '#,##0' };
+            worksheet[XLSX.utils.encode_cell({ r: 6, c: 3 })].s = getSummaryNetStyle(totals.sypNet, true);
+
+            // تنسيق صفوف الحركات بألوان مطابقة لنوع الحركة (أخضر للإيراد، وردي للمصروف، أصفر للصرافة)
+            rowTypes.forEach((tType, idx) => {
+                const r = 9 + idx;
+                let rowBg = 'FFFFFF';
+                let typeColor = '0F172A';
+                if (tType === 'income') {
+                    rowBg = 'ECFDF5';
+                    typeColor = '065F46';
+                } else if (tType === 'expense') {
+                    rowBg = 'FFF1F2';
+                    typeColor = '9F1239';
+                } else if (tType === 'exchange') {
+                    rowBg = 'FEFCE8';
+                    typeColor = '92400E';
+                }
+
+                for (let c = 0; c < 8; c++) {
+                    const addr = XLSX.utils.encode_cell({ r, c });
+                    if (!worksheet[addr]) continue;
+                    const isNumCol = (c === 4 || c === 5 || (c === 7 && typeof worksheet[addr].v === 'number'));
+                    let fontColor = '0F172A';
+                    if (c === 1) fontColor = typeColor;
+                    if (c === 4 && Number(worksheet[addr].v) > 0) fontColor = '9F1239';
+                    if (c === 5 && Number(worksheet[addr].v) > 0) fontColor = '065F46';
+
+                    worksheet[addr].s = {
+                        font: {
+                            name: 'Cairo',
+                            sz: 10.5,
+                            bold: (c === 1 || c === 4 || c === 5),
+                            color: { rgb: fontColor }
+                        },
+                        fill: { fgColor: { rgb: rowBg } },
+                        alignment: {
+                            horizontal: c === 3 ? 'right' : 'center',
+                            vertical: 'center',
+                            wrapText: true
+                        },
+                        numFmt: isNumCol ? '#,##0.00' : undefined,
+                        border: borderThin
+                    };
+                }
+            });
+
+            // دمج خلايا العنوان والترويسة بشكل أنيق
+            worksheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+                { s: { r: 1, c: 3 }, e: { r: 1, c: 4 } },
+                { s: { r: 1, c: 5 }, e: { r: 1, c: 7 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
+            ];
+
+            worksheet['!rows'] = [
+                { hpt: 30 },
+                { hpt: 24 },
+                { hpt: 22 },
+                { hpt: 12 },
+                { hpt: 24 },
+                { hpt: 22 },
+                { hpt: 22 },
+                { hpt: 12 },
+                { hpt: 26 }
+            ];
+
             worksheet['!cols'] = [
-                { wch: 14 },
-                { wch: 16 },
+                { wch: 15 },
+                { wch: 17 },
+                { wch: 20 },
+                { wch: 38 },
                 { wch: 18 },
-                { wch: 36 },
-                { wch: 16 },
-                { wch: 16 },
+                { wch: 18 },
                 { wch: 16 },
                 { wch: 14 }
             ];
@@ -4706,7 +4869,7 @@
 
             const safeFileName = `كشف_${(ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}.xlsx`;
             XLSX.writeFile(workbook, safeFileName);
-            showToast(`تم تصدير ملف Excel الحقيقي بنجاح (${safeFileName})`, '📊');
+            showToast(`تم تصدير ملف Excel المنسق بنجاح (${safeFileName})`, '📊');
         }
 
         // ==================== 15. ACCOUNTS, MANAGERS & GRANULAR PERMISSIONS MANAGER ====================
