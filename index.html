@@ -4482,7 +4482,6 @@
                     </tbody>
                 </table>
 
-                ${isPdfMode ? '' : `
                 <table class="corp-signatures" style="width:100%; border-collapse:collapse; margin-top:26px; font-size:11px; font-weight:800; color:#334155;">
                     <tr>
                         <td style="width:33.33%; text-align:center; padding:8px 10px; vertical-align:bottom;">
@@ -4498,7 +4497,7 @@
                             <div>الختم والاعتماد الإداري</div>
                         </td>
                     </tr>
-                </table>`}
+                </table>
             `;
         }
 
@@ -4573,6 +4572,60 @@
                 window.scrollTo(0, 0);
 
                 await new Promise(resolve => setTimeout(resolve, 250));
+
+                // تقسيم الجدول إلى صفحات A4 مع تكرار رأسية الجدول تلقائياً في أعلى كل صفحة
+                const A4_PAGE_CONTENT_PX = 1015;
+                const tableEl = sheet.querySelector('.corp-table');
+                const theadEl = tableEl ? tableEl.querySelector('thead') : null;
+                const tbodyEl = tableEl ? tableEl.querySelector('tbody') : null;
+                const sigEl = sheet.querySelector('.corp-signatures');
+
+                if (tableEl && theadEl && tbodyEl) {
+                    const sheetTop = sheet.getBoundingClientRect().top;
+                    const tbodyRows = Array.from(tbodyEl.querySelectorAll('tr'));
+                    const theadHeight = Math.ceil(theadEl.getBoundingClientRect().height || 34);
+                    const sigHeight = sigEl ? Math.ceil(sigEl.getBoundingClientRect().height + 28) : 0;
+
+                    if (tbodyRows.length > 0) {
+                        const pageTables = [];
+                        let currentTable = tableEl.cloneNode(false);
+                        currentTable.appendChild(theadEl.cloneNode(true));
+                        let currentTbody = document.createElement('tbody');
+                        currentTable.appendChild(currentTbody);
+                        pageTables.push(currentTable);
+
+                        let currentUsedHeight = Math.max(0, Math.ceil(tableEl.getBoundingClientRect().top - sheetTop)) + theadHeight;
+
+                        for (const row of tbodyRows) {
+                            const rowH = Math.max(24, Math.ceil(row.getBoundingClientRect().height || 28));
+                            if (currentUsedHeight + rowH > A4_PAGE_CONTENT_PX && currentTbody.children.length > 0) {
+                                currentTable.style.pageBreakAfter = 'always';
+                                currentTable.style.breakAfter = 'page';
+
+                                currentTable = tableEl.cloneNode(false);
+                                currentTable.style.marginTop = '0px';
+                                currentTable.appendChild(theadEl.cloneNode(true));
+                                currentTbody = document.createElement('tbody');
+                                currentTable.appendChild(currentTbody);
+                                pageTables.push(currentTable);
+
+                                currentUsedHeight = theadHeight;
+                            }
+                            currentTbody.appendChild(row.cloneNode(true));
+                            currentUsedHeight += rowH;
+                        }
+
+                        if (sigEl && sigHeight > 0 && (currentUsedHeight + sigHeight > A4_PAGE_CONTENT_PX)) {
+                            sigEl.style.pageBreakBefore = 'always';
+                            sigEl.style.breakBefore = 'page';
+                            sigEl.style.marginTop = '16px';
+                        }
+
+                        const frag = document.createDocumentFragment();
+                        pageTables.forEach(tbl => frag.appendChild(tbl));
+                        tableEl.replaceWith(frag);
+                    }
+                }
 
                 const opt = {
                     margin: [10, 8, 10, 8],
