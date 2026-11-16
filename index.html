@@ -4340,27 +4340,113 @@
             `;
         }
 
+        // تقسيم نسخة العرض فقط؛ لا يقرأ أو يكتب أي بيانات في السحابة أو التخزين المحلي.
+        async function buildMeasuredPdfPages(sheet) {
+            const sourceTable = sheet.querySelector('.corp-table');
+            if (!sourceTable || !sourceTable.tHead || !sourceTable.tBodies[0]) {
+                throw new Error('جدول الكشف غير جاهز للتصدير');
+            }
+            const sourceRows = Array.from(sourceTable.tBodies[0].rows);
+            const sourceHeader = sheet.firstElementChild;
+            const sourceSummary = sourceHeader.nextElementSibling;
+            const sourceSignatures = sheet.querySelector('.corp-signatures');
+            const host = document.createElement('div');
+            host.setAttribute('data-pdf-pages', '');
+            host.style.cssText = 'position:absolute;left:0;top:0;width:730px;background:#fff;pointer-events:none;';
+            sheet.appendChild(host);
+            // مساحة A4 بين الهوامش، مع احتياط أسفل الصفحة للترقيم وفروق التقريب.
+            const maxHeight = Math.floor(730 * 281 / 198) - 14;
+            const pages = [];
+            const makePage = (first) => {
+                const page = document.createElement('div');
+                page.dir = 'rtl';
+                page.style.cssText = 'display:flow-root;position:relative;box-sizing:border-box;width:730px;padding:8px 10px;margin:0;background:#fff;color:#0f172a;font-family:Cairo,sans-serif;letter-spacing:0;text-align:right;';
+                host.appendChild(page);
+                page.appendChild(sourceHeader.cloneNode(true));
+                if (first) page.appendChild(sourceSummary.cloneNode(true));
+                const table = sourceTable.cloneNode(false);
+                table.style.tableLayout = 'fixed';
+                const cols = document.createElement('colgroup');
+                [13, 12, 16, 37, 22].forEach(width => {
+                    const col = document.createElement('col');
+                    col.style.width = width + '%';
+                    cols.appendChild(col);
+                });
+                table.appendChild(cols);
+                table.appendChild(sourceTable.tHead.cloneNode(true));
+                const body = document.createElement('tbody');
+                table.appendChild(body);
+                page.appendChild(table);
+                const info = { element: page, table, body };
+                pages.push(info);
+                return info;
+            };
+            const fits = info => info.element.getBoundingClientRect().height <= maxHeight;
+            try {
+                let current = makePage(true);
+                for (let i = 0; i < sourceRows.length; i++) {
+                    const row = sourceRows[i].cloneNode(true);
+                    Array.from(row.cells).forEach(cell => {
+                        cell.style.overflowWrap = 'anywhere';
+                        cell.style.wordBreak = 'normal';
+                        // إبقاء التاريخ والمبلغ بسطر واحد، والسماح بلف الوصف الطويل.
+                        if (cell.cellIndex === 2 || cell.cellIndex === 3) cell.style.whiteSpace = 'normal';
+                    });
+                    current.body.appendChild(row);
+                    if (!fits(current) && (current.body.rows.length > 1 || pages.length === 1)) {
+                        row.remove();
+                        // إذا لم يتسع أول بند مع الملخص، نبدأ الجدول في الصفحة التالية.
+                        if (!current.body.rows.length) current.table.remove();
+                        current = makePage(false);
+                        current.body.appendChild(row);
+                    }
+                    // البند الاستثنائي الأطول من صفحة يبقى كاملاً؛ يُصغّر عند الرسم فقط.
+                    if (i % 60 === 59) await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                if (sourceSignatures) {
+                    const signatures = sourceSignatures.cloneNode(true);
+                    current.element.appendChild(signatures);
+                    if (!fits(current)) {
+                        signatures.remove();
+                        current = makePage(false);
+                        current.table.remove();
+                        current.element.appendChild(signatures);
+                    }
+                }
+                const copiedRows = pages.flatMap(info => Array.from(info.body.rows));
+                if (copiedRows.length !== sourceRows.length || copiedRows.some((row, i) => row.textContent !== sourceRows[i].textContent)) {
+                    throw new Error('تعذر التحقق من اكتمال بنود الكشف');
+                }
+                return { host, pages: pages.map(info => info.element) };
+            } catch (error) {
+                host.remove();
+                throw error;
+            }
+        }
+
         async function downloadDirectRealPdf(ws) {
             const overlay = document.getElementById('pdfGeneratingOverlay');
             const appEl = document.getElementById('appContainer');
             const sheet = document.getElementById('officialPrintSheet');
             const fileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.pdf`;
-
+            if (sheet.dataset.pdfBusy === '1') return;
+            sheet.dataset.pdfBusy = '1';
+            const appWasHidden = appEl.classList.contains('hidden');
+            const originalScroll = { x: window.scrollX, y: window.scrollY };
+            let prepared = null;
+            let seed = null;
             overlay.classList.remove('hidden');
 
             try {
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
-                }
-
                 appEl.classList.add('hidden');
                 document.body.classList.add('pdf-export-mode');
                 sheet.classList.add('pdf-render-active');
                 window.scrollTo(0, 0);
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                prepared = await buildMeasuredPdfPages(sheet);
 
-                await new Promise(resolve => setTimeout(resolve, 250));
-
-                const opt = {
+                const baseOptions = {
                     margin: [8, 6, 8, 6],
                     filename: fileName,
                     image: { type: 'jpeg', quality: 0.98 },
@@ -4368,39 +4454,79 @@
                         scale: 2,
                         useCORS: true,
                         backgroundColor: '#ffffff',
-                        x: 0,
-                        y: 0,
                         scrollX: 0,
                         scrollY: 0,
                         width: 730,
                         windowWidth: 730,
-                        letterRendering: false
+                        letterRendering: false,
+                        logging: false
                     },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait'
-                    },
-                    pagebreak: {
-                        mode: ['css', 'legacy'],
-                        avoid: ['tr', '.corp-signatures']
-                    }
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: [] }
                 };
-
-                await html2pdf().set(opt).from(sheet).save();
-                showToast('تم تنزيل ملف PDF بنجاح وبشكل كامل وسليم 100%', '📄');
+                // تهيئة PDF فارغ عبر المكتبة الموجودة، دون تحميل مكتبات إضافية.
+                seed = document.createElement('div');
+                seed.style.cssText = 'width:730px;height:1px;background:white;';
+                prepared.host.appendChild(seed);
+                const pdf = await html2pdf().set(baseOptions).from(seed).toPdf().get('pdf');
+                seed.remove();
+                seed = null;
+                for (let i = 0; i < prepared.pages.length; i++) {
+                    const page = prepared.pages[i];
+                    const pageHeight = Math.ceil(page.getBoundingClientRect().height) + 2;
+                    const options = {
+                        ...baseOptions,
+                        html2canvas: {
+                            ...baseOptions.html2canvas,
+                            height: pageHeight,
+                            // رسم صفحة واحدة في كل مرة يمنع تجاوز حدود Canvas على الهاتف.
+                            scale: Math.min(2, 8000 / pageHeight)
+                        }
+                    };
+                    const worker = html2pdf().set(options).from(page).toContainer();
+                    await worker.get('container', container => {
+                        // مطابقة عرض حاوية المكتبة مع العرض المقاس تمنع قص الطرف في RTL.
+                        container.style.width = '730px';
+                        container.style.margin = '0';
+                        const captureOverlay = container.parentElement;
+                        captureOverlay.style.width = '730px';
+                        captureOverlay.style.left = '0';
+                        captureOverlay.style.right = 'auto';
+                    });
+                    const canvas = await worker.toCanvas().get('canvas');
+                    if (!canvas.width || !canvas.height) throw new Error('تعذر رسم صفحة الكشف');
+                    if (i > 0) pdf.addPage();
+                    const imageWidth = Math.min(198, 277 * canvas.width / canvas.height);
+                    const imageHeight = imageWidth * canvas.height / canvas.width;
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 6 + (198 - imageWidth) / 2, 8, imageWidth, imageHeight);
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`${i + 1} / ${prepared.pages.length}`, 105, 292, { align: 'center' });
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                if (pdf.internal.getNumberOfPages() !== prepared.pages.length) throw new Error('عدد صفحات الكشف غير مطابق');
+                pdf.save(fileName);
+                showToast('تم تنزيل ملف PDF مع تكرار ترويسة الجدول والحفاظ على جميع البنود', '📄');
             } catch (err) {
                 console.error('Direct PDF generation failed:', err);
+                if (prepared) prepared.host.remove();
+                if (seed) seed.remove();
                 showToast('تعذر التنزيل المباشر، جاري فتح نافذة الطباعة لحفظ PDF...', '⚠️');
                 sheet.classList.remove('pdf-render-active');
                 document.body.classList.remove('pdf-export-mode');
-                appEl.classList.remove('hidden');
+                appEl.classList.toggle('hidden', appWasHidden);
                 window.print();
             } finally {
+                if (prepared) prepared.host.remove();
+                if (seed) seed.remove();
                 sheet.classList.remove('pdf-render-active');
                 document.body.classList.remove('pdf-export-mode');
-                appEl.classList.remove('hidden');
+                appEl.classList.toggle('hidden', appWasHidden);
                 overlay.classList.add('hidden');
+                delete sheet.dataset.pdfBusy;
+                window.scrollTo(originalScroll.x, originalScroll.y);
             }
         }
 
