@@ -148,9 +148,7 @@
             width: 100% !important;
             border-collapse: collapse !important;
             font-size: 11px !important;
-            margin-top: 10px !important;
-        }
-        .corp-table {
+            margin-top: 8px !important;
             page-break-inside: auto !important;
             break-inside: auto !important;
         }
@@ -531,6 +529,10 @@
                 </div>
 
                 <div id="activeWorkshopBody" class="p-4 sm:p-6 space-y-6 text-slate-800 transition-all">
+                    <div id="inactiveWorkshopNoticeBanner" class="hidden no-print p-3.5 rounded-2xl bg-slate-800 text-amber-300 border-2 border-slate-600 flex items-center justify-between gap-2 text-xs font-black shadow">
+                        <span>⏸ هذه الورشة متوقفة حالياً — لا يمكن تعديل اسمها أو إضافة أو تعديل أو حذف أي بند أو تصنيف حتى يتم تفعيلها.</span>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div id="wsUsdBox" class="rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
@@ -1176,7 +1178,7 @@
                         <div id="accountRoleSelectorWrapper" class="p-3 rounded-xl bg-amber-50 border border-amber-300 flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <label class="block text-xs font-black text-amber-950">رتبة الحساب:</label>
-                                <p class="text-[11px] font-bold text-amber-800">المدير يمتلك تحكماً كاملاً بالنظام والورشات والحسابات الفرعية، ويبقى أقل رتبة من حسابك الأساسي</p>
+                                <p class="text-[11px] font-bold text-amber-800">المدير يمتلك تحكماً كاملاً بالنظام والورشات والحسابات الفرعية، ولا يرى حسابات المدراء الآخرين</p>
                             </div>
                             <select id="subUserRoleSelect" onchange="handleAccountRoleTypeChange()"
                                 class="px-3.5 py-2 rounded-xl border-2 border-amber-400 bg-white text-xs sm:text-sm font-black text-slate-900 focus:outline-none">
@@ -1210,7 +1212,7 @@
 
                         <div id="managerFullAccessBanner" class="hidden p-3.5 rounded-xl bg-indigo-50 border-2 border-indigo-300 text-xs font-extrabold text-indigo-950 flex items-center gap-2">
                             <span class="text-lg">🛡️</span>
-                            <span>حساب <strong>مدير</strong>: يمتلك تلقائياً جميع الصلاحيات والوصول لكافة الورشات وإدارة المستخدمين الفرعيين وسلة المهملات والطباعة، ولا يمكنه المساس بحساب المدير الأساسي.</span>
+                            <span>حساب <strong>مدير</strong>: يمتلك تلقائياً جميع الصلاحيات والوصول لكافة الورشات وإدارة المستخدمين الفرعيين وسلة المهملات والطباعة، وتكون حسابات المدراء مخفية عن بعضها البعض ولا يراها إلا المدير الأساسي.</span>
                         </div>
 
                         <div id="subUserPermissionsSection" class="space-y-4">
@@ -1247,7 +1249,7 @@
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer bg-amber-50 p-1.5 rounded-lg border border-amber-200">
                                         <input type="checkbox" id="permUseOwnPrintInfo" class="w-4 h-4 accent-amber-600">
-                                        <span class="text-amber-950">الطباعة باسم وجوال الحساب الفرعي (وإلا باسم المدير)</span>
+                                        <span class="text-amber-950">توقيع الكشف باسمه وجواله (وإلا باسم المدير الأساسي)</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer bg-teal-50 p-1.5 rounded-lg border border-teal-200">
                                         <input type="checkbox" id="permEditOwnProfile" class="w-4 h-4 accent-teal-600">
@@ -1280,7 +1282,7 @@
                 </div>
 
                 <div>
-                    <h4 class="text-sm font-black text-slate-900 mb-2.5">📋 قائمة المدراء والحسابات الفرعية المسجلة</h4>
+                    <h4 id="subUsersListHeaderTitle" class="text-sm font-black text-slate-900 mb-2.5">📋 قائمة الحسابات المسجلة</h4>
                     <div id="subUsersListContainer" class="space-y-2.5"></div>
                 </div>
             </div>
@@ -2121,7 +2123,6 @@
                 }
 
                 // مزامنة صور البنود في مستندات سحابية مستقلة، مع حذف الصور اليتيمة فقط.
-                // كل صورة مضغوطة مسبقاً، ولا تُحفظ أي نسخة محلية دائمة.
                 const allCloudDocsForPhotos = await fetchAllDocsInCollection(FIRESTORE_COLLECTION);
                 const existingPhotoDocs = allCloudDocsForPhotos.filter(d => d.name.includes('/tx_photo_doc_'));
                 const desiredPhotoDocIds = new Set();
@@ -3208,6 +3209,7 @@
             if (!currentUser.permissions.editWs) return;
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             document.getElementById('editWsNameInput').value = ws.name;
             document.getElementById('editWsDescInput').value = ws.description || '';
             openModal('editWorkshopModal');
@@ -3218,6 +3220,7 @@
             if (!currentUser.permissions.editWs) return;
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             const newName = document.getElementById('editWsNameInput').value.trim();
             const newDesc = document.getElementById('editWsDescInput').value.trim();
             if (!newName) return;
@@ -3234,6 +3237,16 @@
         function getActiveWorkshop() {
             if (!activeWorkshopId) return null;
             return getAccessibleWorkshops().find(w => w.id === activeWorkshopId) || null;
+        }
+
+        function ensureActiveWorkshopIsEnabled() {
+            const ws = getActiveWorkshop();
+            if (!ws) return false;
+            if (ws.active === false) {
+                showToast('هذه الورشة متوقفة حالياً! يرجى تفعيلها أولاً لتعديل اسمها أو أي بند أو تصنيف.', '⏸');
+                return false;
+            }
+            return true;
         }
 
         function renderActiveWorkshopWorkspace() {
@@ -3276,16 +3289,28 @@
             const wsHeaderBar = document.getElementById('activeWsHeaderBar');
             const wsBody = document.getElementById('activeWorkshopBody');
             const toggleBtn = document.getElementById('btnToggleWsStatus');
+            const inactiveBanner = document.getElementById('inactiveWorkshopNoticeBanner');
+            const txActionBar = document.getElementById('txActionButtonsBar');
+            const btnManageCats = document.getElementById('btnManageCategories');
+            const btnEditWsInfo = document.getElementById('btnEditWsInfo');
             toggleBtn.classList.toggle('hidden', !currentUser.permissions.toggleWs);
 
             if (ws.active === false) {
                 wsHeaderBar.classList.add('workshop-inactive-header');
                 wsBody.classList.add('workshop-inactive-body');
+                inactiveBanner.classList.remove('hidden');
+                txActionBar.classList.add('hidden');
+                btnManageCats.classList.add('hidden');
+                btnEditWsInfo.classList.add('hidden');
                 toggleBtn.innerHTML = '<span>▶</span><span>تشغيل وتفعيل الورشة</span>';
                 toggleBtn.className = `${!currentUser.permissions.toggleWs ? 'hidden ' : ''}no-grayscale-btn px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/40 transition flex items-center gap-1.5`;
             } else {
                 wsHeaderBar.classList.remove('workshop-inactive-header');
                 wsBody.classList.remove('workshop-inactive-body');
+                inactiveBanner.classList.add('hidden');
+                txActionBar.classList.toggle('hidden', !currentUser.permissions.addEditTx);
+                btnManageCats.classList.toggle('hidden', !currentUser.permissions.manageCats);
+                btnEditWsInfo.classList.toggle('hidden', !currentUser.permissions.editWs);
                 toggleBtn.innerHTML = '<span>⏸</span><span>إيقاف الورشة</span>';
                 toggleBtn.className = `${!currentUser.permissions.toggleWs ? 'hidden ' : ''}no-grayscale-btn px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-extrabold transition flex items-center gap-1.5`;
             }
@@ -3307,6 +3332,7 @@
         function openCategoriesModal() {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             document.getElementById('catModalWsName').textContent = `الورشة: ${ws.name}`;
             document.getElementById('newCategoryInput').value = '';
             renderCategoriesListInModal();
@@ -3316,6 +3342,7 @@
         function renderCategoriesListInModal() {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            const isWsActive = ws.active !== false;
             const container = document.getElementById('categoriesListContainer');
             container.innerHTML = ws.categories.map((cat, idx) => {
                 const isFixedGeneral = cat === 'عام';
@@ -3325,7 +3352,7 @@
                             <span class="text-xs font-black text-slate-800">${escapeHtml(cat)}</span>
                             ${isFixedGeneral ? `<span class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">ثابت</span>` : ''}
                         </div>
-                        ${!isFixedGeneral ? `
+                        ${(!isFixedGeneral && isWsActive) ? `
                             <button type="button" onclick="deleteCategoryFromWorkshop(${idx})"
                                 class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
                                 حذف
@@ -3340,6 +3367,7 @@
             e.preventDefault();
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             const input = document.getElementById('newCategoryInput');
             const val = input.value.trim();
             if (!val) return;
@@ -3355,25 +3383,43 @@
             showToast(`تمت إضافة تصنيف "${val}"`, '🏷️');
         }
 
-        async function deleteCategoryFromWorkshop(idx) {
+        function deleteCategoryFromWorkshop(idx) {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             const catName = ws.categories[idx];
             if (!catName || catName === 'عام') return;
 
-            ws.categories.splice(idx, 1);
-            ws.transactions.forEach(tx => {
-                if (tx.category === catName) tx.category = 'عام';
-            });
-            renderCategoriesListInModal();
-            renderActiveWorkshopWorkspace();
-            await saveToCloud(ws.id);
-            showToast(`تم حذف التصنيف "${catName}" ونقل بنوده إلى عام`, '🗑️');
+            const affectedCount = (ws.transactions || []).filter(tx => tx.category === catName).length;
+            const warningMessage = affectedCount > 0
+                ? `تحذير: عند حذف التصنيف "${catName}"، سيتم تحويل تصنيف جميع البنود المرتبطة به (${affectedCount} بند) تلقائياً إلى التصنيف "عام". هل تريد المتابعة؟`
+                : `تحذير: عند حذف التصنيف "${catName}"، سيصبح تصنيف أي بنود مرتبطة به "عام" تلقائياً. هل تريد المتابعة؟`;
+
+            showCustomConfirm(
+                'تأكيد حذف التصنيف',
+                warningMessage,
+                async () => {
+                    const currentWs = getActiveWorkshop();
+                    if (!currentWs || !ensureActiveWorkshopIsEnabled()) return;
+                    const currentIdx = currentWs.categories.indexOf(catName);
+                    if (currentIdx === -1 || catName === 'عام') return;
+
+                    currentWs.categories.splice(currentIdx, 1);
+                    currentWs.transactions.forEach(tx => {
+                        if (tx.category === catName) tx.category = 'عام';
+                    });
+                    renderCategoriesListInModal();
+                    renderActiveWorkshopWorkspace();
+                    await saveToCloud(currentWs.id);
+                    showToast(`تم حذف التصنيف "${catName}" وتحويل بنوده إلى تصنيف عام`, '🗑️');
+                }
+            );
         }
 
         async function quickAddCategoryFromModal() {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
             const name = prompt('أدخل اسم التصنيف الجديد للورشة:');
             if (!name || !name.trim()) return;
             const clean = name.trim();
@@ -3556,8 +3602,9 @@
                 return;
             }
 
-            const canEdit = currentUser.permissions.addEditTx;
-            const canDelete = currentUser.permissions.deleteTx;
+            const isWsActive = ws.active !== false;
+            const canEdit = isWsActive && currentUser.permissions.addEditTx;
+            const canDelete = isWsActive && currentUser.permissions.deleteTx;
 
             tbody.innerHTML = filtered.map(tx => {
                 let rowClass = '';
@@ -3607,14 +3654,23 @@
                 }
 
                 const editFn = tx.type === 'exchange' ? `openExchangeModal('${tx.id}')` : `openTxModal('${tx.type}', '${tx.id}')`;
+                const hasPhotos = (tx.photos || []).some(Boolean);
 
-                const mobileActionsHtml = (canEdit || canDelete) ? `
+                const mobileActionsHtml = (canEdit || canDelete || hasPhotos) ? `
                     <div class="sm:hidden no-print flex items-center gap-1 mt-1.5 pt-1 border-t border-black/10">
                         ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2 py-0.5 rounded bg-white/90 text-indigo-800 border border-slate-300 text-[10px] font-extrabold">تعديل</button>` : ''}
-                        ${(tx.photos || []).some(Boolean) ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-sky-800 border border-slate-300 text-[10px] font-extrabold">الصور</button>` : ''}
+                        ${hasPhotos ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-sky-800 border border-slate-300 text-[10px] font-extrabold">الصور</button>` : ''}
                         ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2 py-0.5 rounded bg-white/90 text-rose-700 border border-slate-300 text-[10px] font-extrabold">حذف</button>` : ''}
                     </div>
                 ` : '';
+
+                const desktopActionsHtml = (canEdit || canDelete || hasPhotos) ? `
+                    <div class="inline-flex items-center gap-1.5">
+                        ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-indigo-600 text-indigo-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">تعديل</button>` : ''}
+                        ${hasPhotos ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-sky-600 text-sky-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">الصور</button>` : ''}
+                        ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-rose-600 text-rose-700 hover:text-white border border-slate-300 text-xs font-extrabold transition">حذف</button>` : ''}
+                    </div>
+                ` : `<span class="text-[11px] font-bold text-slate-500">🔒 مقفلة</span>`;
 
                 return `
                     <tr class="${rowClass} border-b border-slate-300">
@@ -3627,11 +3683,7 @@
                         </td>
                         <td class="col-amount py-2.5 px-3 sm:whitespace-nowrap">${amountColHtml}</td>
                         <td class="hidden sm:table-cell no-print py-2.5 px-3 text-center whitespace-nowrap">
-                            <div class="inline-flex items-center gap-1.5">
-                                ${canEdit ? `<button type="button" onclick="${editFn}" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-indigo-600 text-indigo-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">تعديل</button>` : ''}
-                                ${(tx.photos || []).some(Boolean) ? `<button type="button" onclick="showTransactionPhotos('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-sky-600 text-sky-800 hover:text-white border border-slate-300 text-xs font-extrabold transition">الصور</button>` : ''}
-                                ${canDelete ? `<button type="button" onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-rose-600 text-rose-700 hover:text-white border border-slate-300 text-xs font-extrabold transition">حذف</button>` : ''}
-                            </div>
+                            ${desktopActionsHtml}
                         </td>
                     </tr>
                 `;
@@ -3651,8 +3703,6 @@
             }
         }
 
-        // صور الحركات: تُضغط في المتصفح ثم تُحفظ في مستندات Firestore مستقلة
-        // حتى لا تكبر مستندات الورشات أو تتأثر تقارير PDF والطباعة وExcel.
         let txPendingPhotos = [];
 
         function compressTxImage(file) {
@@ -3670,7 +3720,6 @@
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d', { alpha: false });
                         let compressed = '';
-                        // إبقاء مستند الصورة أقل بكثير من حد Firestore البالغ 1 MiB.
                         for (const quality of [0.68, 0.58, 0.48, 0.40]) {
                             canvas.width = Math.max(1, Math.round(img.naturalWidth * ratio));
                             canvas.height = Math.max(1, Math.round(img.naturalHeight * ratio));
@@ -3797,6 +3846,7 @@
         function openTxModal(type, editTxId = null) {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
 
             document.getElementById('txModalWsSubtitle').textContent = `الورشة: ${ws.name}`;
             const editTypeWrapper = document.getElementById('txEditTypeWrapper');
@@ -3840,6 +3890,7 @@
             e.preventDefault();
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
 
             const editId = document.getElementById('txEditId').value;
             const finalType = editId
@@ -3904,14 +3955,17 @@
             if (!currentUser.permissions.deleteTx) return;
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
 
             showCustomConfirm(
                 'حذف الحركة المالية',
                 'هل أنت متأكد من حذف هذه الحركة نهائياً من السحابة؟',
                 async () => {
-                    ws.transactions = ws.transactions.filter(t => t.id !== txId);
+                    const currentWs = getActiveWorkshop();
+                    if (!currentWs || !ensureActiveWorkshopIsEnabled()) return;
+                    currentWs.transactions = currentWs.transactions.filter(t => t.id !== txId);
                     refreshAllViewsAfterSync();
-                    await saveToCloud(ws.id);
+                    await saveToCloud(currentWs.id);
                     showToast('تم حذف الحركة من السحابة', '🗑️');
                 }
             );
@@ -3998,6 +4052,7 @@
         function openExchangeModal(editTxId = null) {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
 
             document.getElementById('exModalWsSubtitle').textContent = `الورشة: ${ws.name}`;
             if (editTxId) {
@@ -4036,6 +4091,7 @@
             e.preventDefault();
             const ws = getActiveWorkshop();
             if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
 
             const editId = document.getElementById('exEditId').value;
             const usdVal = parseFormattedNum(document.getElementById('exUsdAmount').value);
@@ -4099,7 +4155,7 @@
             const eff = getEffectiveUserPrintProfile();
             const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
-            if (!isAnyManager) {
+            if (mode === 'pdf' || !isAnyManager) {
                 document.getElementById('printInputCompany').value = eff.companyName || '';
                 document.getElementById('printInputPerson').value = eff.personName || '';
                 document.getElementById('printInputPhone').value = eff.phone || '';
@@ -4131,7 +4187,7 @@
             openModal('printDetailsModal');
         }
 
-        function buildOfficialCorporatePrintSheet() {
+        function buildOfficialCorporatePrintSheet(isCompactPdf = false) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
@@ -4235,8 +4291,28 @@
                     `;
                 }).join('');
 
-            const sheet = document.getElementById('officialPrintSheet');
-            sheet.innerHTML = `
+            const headerBannerHtml = isCompactPdf
+                ? `
+                <div style="border:1.5px solid #cbd5e1; border-radius:10px; background:#f8fafc; padding:8px 12px; margin-bottom:10px;">
+                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                        <tr>
+                            <td style="text-align:right; vertical-align:middle;">
+                                <span style="color:#0f172a; font-weight:900; font-size:13px;">${escapeHtml(ws.name)}</span>
+                                ${ws.description ? `<span style="color:#64748b; font-weight:700;">&nbsp;(${escapeHtml(ws.description)})</span>` : ''}
+                                ${company ? `<span style="color:#475569; font-weight:800;">&nbsp;•&nbsp;${escapeHtml(company)}</span>` : ''}
+                            </td>
+                            <td style="text-align:left; vertical-align:middle; white-space:nowrap; color:#334155; font-weight:800; font-size:10.5px;">
+                                ${todayISO()} • ${rows.length} حركة
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding-top:4px; font-size:10px; color:#1e3a8a; font-weight:700;">
+                                ${escapeHtml(filterNotes.join('  •  '))}${contactLine ? `&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#334155;">${contactLine}</span>` : ''}
+                            </td>
+                        </tr>
+                    </table>
+                </div>`
+                : `
                 <div style="border:2px solid #0f172a; border-radius:14px; overflow:hidden; margin-bottom:14px;">
                     <table style="width:100%; border-collapse:collapse; background:#0f172a; color:#ffffff; border-bottom:4px solid #f59e0b;">
                         <tr>
@@ -4264,42 +4340,46 @@
                             </td>
                         </tr>
                     </table>
-                </div>
+                </div>`;
 
-                <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px 14px -10px;">
+            const sheet = document.getElementById('officialPrintSheet');
+            sheet.innerHTML = `
+                ${headerBannerHtml}
+
+                <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px ${isCompactPdf ? '10px' : '14px'} -10px;">
                     <tr>
-                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:${isCompactPdf ? '9px 12px' : '12px 14px'}; vertical-align:top;">
                             <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
                                 <tr>
                                     <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الدولار الأمريكي</td>
                                     <td style="text-align:left;"><span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span></td>
                                 </tr>
                             </table>
-                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:4px 0; text-align:right;">
+                            <div dir="ltr" style="font-size:${isCompactPdf ? '18px' : '20px'}; font-weight:900; color:${usdTextColor}; margin:3px 0; text-align:right;">
                                 ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
                             </div>
-                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:5px; margin-top:4px;">
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
                                 <tr>
-                                    <td style="color:#065f46; text-align:right; padding-top:5px;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</td>
-                                    <td style="color:#9f1239; text-align:left; padding-top:5px;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</td>
+                                    <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</td>
+                                    <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</td>
                                 </tr>
                             </table>
                         </td>
 
-                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:${isCompactPdf ? '9px 12px' : '12px 14px'}; vertical-align:top;">
                             <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
                                 <tr>
                                     <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الليرة السورية</td>
                                     <td style="text-align:left;"><span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span></td>
                                 </tr>
                             </table>
-                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:4px 0; text-align:right;">
+                            <div dir="ltr" style="font-size:${isCompactPdf ? '18px' : '20px'}; font-weight:900; color:${sypTextColor}; margin:3px 0; text-align:right;">
                                 ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
                             </div>
-                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:5px; margin-top:4px;">
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
                                 <tr>
-                                    <td style="color:#065f46; text-align:right; padding-top:5px;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</td>
-                                    <td style="color:#9f1239; text-align:left; padding-top:5px;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</td>
+                                    <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</td>
+                                    <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</td>
                                 </tr>
                             </table>
                         </td>
@@ -4309,11 +4389,11 @@
                 <table class="corp-table">
                     <thead>
                         <tr>
-                            <th>التاريخ</th>
-                            <th>النوع</th>
-                            <th>البند / التصنيف</th>
-                            <th>البيان / الوصف التفصيلي</th>
-                            <th>المبلغ والعملة</th>
+                            <th style="width:13%;">التاريخ</th>
+                            <th style="width:12%;">النوع</th>
+                            <th style="width:16%;">البند</th>
+                            <th style="width:37%;">البيان / الوصف</th>
+                            <th style="width:22%;">المبلغ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -4321,537 +4401,234 @@
                     </tbody>
                 </table>
 
-                <table class="corp-signatures" style="width:100%; border-collapse:collapse; margin-top:26px; border-top:1.5px solid #cbd5e1; text-align:center; font-size:11px; font-weight:800; color:#1e293b;">
+                ${isCompactPdf ? '' : `
+                <table class="corp-signatures" style="width:100%; border-collapse:collapse; margin-top:26px; font-size:11px; font-weight:800; color:#334155;">
                     <tr>
-                        <td style="width:33.33%; padding-top:12px;">
-                            <div style="margin-bottom:28px;">توقيع المحاسب</div>
-                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        <td style="width:33.33%; text-align:center; padding:8px 10px; vertical-align:bottom;">
+                            <div style="border-bottom:1.5px dashed #94a3b8; height:28px; margin-bottom:6px;"></div>
+                            <div>توقيع المحاسب / المُعِدّ</div>
                         </td>
-                        <td style="width:33.33%; padding-top:12px;">
-                            <div style="margin-bottom:28px;">مدير الورشة / المشروع</div>
-                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        <td style="width:33.33%; text-align:center; padding:8px 10px; vertical-align:bottom;">
+                            <div style="border-bottom:1.5px dashed #94a3b8; height:28px; margin-bottom:6px;"></div>
+                            <div>توقيع مدير الورشة</div>
                         </td>
-                        <td style="width:33.33%; padding-top:12px;">
-                            <div style="margin-bottom:28px;">الختم والاعتماد</div>
-                            <div style="border-bottom:1px dashed #64748b; width:75%; margin:0 auto;"></div>
+                        <td style="width:33.33%; text-align:center; padding:8px 10px; vertical-align:bottom;">
+                            <div style="border-bottom:1.5px dashed #94a3b8; height:28px; margin-bottom:6px;"></div>
+                            <div>الختم والاعتماد الإداري</div>
                         </td>
                     </tr>
-                </table>
+                </table>`}
             `;
-        }
-
-        // تقسيم نسخة العرض فقط؛ لا يقرأ أو يكتب أي بيانات في السحابة أو التخزين المحلي.
-        async function buildMeasuredPdfPages(sheet) {
-            const sourceTable = sheet.querySelector('.corp-table');
-            if (!sourceTable || !sourceTable.tHead || !sourceTable.tBodies[0]) {
-                throw new Error('جدول الكشف غير جاهز للتصدير');
-            }
-            const sourceRows = Array.from(sourceTable.tBodies[0].rows);
-            const sourceHeader = sheet.firstElementChild;
-            const sourceSummary = sourceHeader.nextElementSibling;
-            const sourceSignatures = sheet.querySelector('.corp-signatures');
-            const host = document.createElement('div');
-            host.setAttribute('data-pdf-pages', '');
-            host.style.cssText = 'position:absolute;left:0;top:0;width:730px;background:#fff;pointer-events:none;';
-            sheet.appendChild(host);
-            // مساحة A4 بين الهوامش، مع احتياط أسفل الصفحة للترقيم وفروق التقريب.
-            const maxHeight = Math.floor(730 * 281 / 198) - 14;
-            const pages = [];
-            const makePage = (first) => {
-                const page = document.createElement('div');
-                page.dir = 'rtl';
-                page.style.cssText = 'display:flow-root;position:relative;box-sizing:border-box;width:730px;padding:8px 10px;margin:0;background:#fff;color:#0f172a;font-family:Cairo,sans-serif;letter-spacing:0;text-align:right;';
-                host.appendChild(page);
-                page.appendChild(sourceHeader.cloneNode(true));
-                if (first) page.appendChild(sourceSummary.cloneNode(true));
-                const table = sourceTable.cloneNode(false);
-                table.style.tableLayout = 'fixed';
-                const cols = document.createElement('colgroup');
-                [13, 12, 16, 37, 22].forEach(width => {
-                    const col = document.createElement('col');
-                    col.style.width = width + '%';
-                    cols.appendChild(col);
-                });
-                table.appendChild(cols);
-                table.appendChild(sourceTable.tHead.cloneNode(true));
-                const body = document.createElement('tbody');
-                table.appendChild(body);
-                page.appendChild(table);
-                const info = { element: page, table, body };
-                pages.push(info);
-                return info;
-            };
-            const fits = info => info.element.getBoundingClientRect().height <= maxHeight;
-            try {
-                let current = makePage(true);
-                for (let i = 0; i < sourceRows.length; i++) {
-                    const row = sourceRows[i].cloneNode(true);
-                    Array.from(row.cells).forEach(cell => {
-                        cell.style.overflowWrap = 'anywhere';
-                        cell.style.wordBreak = 'normal';
-                        // إبقاء التاريخ والمبلغ بسطر واحد، والسماح بلف الوصف الطويل.
-                        if (cell.cellIndex === 2 || cell.cellIndex === 3) cell.style.whiteSpace = 'normal';
-                    });
-                    current.body.appendChild(row);
-                    if (!fits(current) && (current.body.rows.length > 1 || pages.length === 1)) {
-                        row.remove();
-                        // إذا لم يتسع أول بند مع الملخص، نبدأ الجدول في الصفحة التالية.
-                        if (!current.body.rows.length) current.table.remove();
-                        current = makePage(false);
-                        current.body.appendChild(row);
-                    }
-                    // البند الاستثنائي الأطول من صفحة يبقى كاملاً؛ يُصغّر عند الرسم فقط.
-                    if (i % 60 === 59) await new Promise(resolve => setTimeout(resolve, 0));
-                }
-                if (sourceSignatures) {
-                    const signatures = sourceSignatures.cloneNode(true);
-                    current.element.appendChild(signatures);
-                    if (!fits(current)) {
-                        signatures.remove();
-                        current = makePage(false);
-                        current.table.remove();
-                        current.element.appendChild(signatures);
-                    }
-                }
-                const copiedRows = pages.flatMap(info => Array.from(info.body.rows));
-                if (copiedRows.length !== sourceRows.length || copiedRows.some((row, i) => row.textContent !== sourceRows[i].textContent)) {
-                    throw new Error('تعذر التحقق من اكتمال بنود الكشف');
-                }
-                return { host, pages: pages.map(info => info.element) };
-            } catch (error) {
-                host.remove();
-                throw error;
-            }
-        }
-
-        async function downloadDirectRealPdf(ws) {
-            const overlay = document.getElementById('pdfGeneratingOverlay');
-            const appEl = document.getElementById('appContainer');
-            const sheet = document.getElementById('officialPrintSheet');
-            const fileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.pdf`;
-            if (sheet.dataset.pdfBusy === '1') return;
-            sheet.dataset.pdfBusy = '1';
-            const appWasHidden = appEl.classList.contains('hidden');
-            const originalScroll = { x: window.scrollX, y: window.scrollY };
-            let prepared = null;
-            let seed = null;
-            overlay.classList.remove('hidden');
-
-            try {
-                appEl.classList.add('hidden');
-                document.body.classList.add('pdf-export-mode');
-                sheet.classList.add('pdf-render-active');
-                window.scrollTo(0, 0);
-                if (document.fonts && document.fonts.ready) await document.fonts.ready;
-                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                prepared = await buildMeasuredPdfPages(sheet);
-
-                const baseOptions = {
-                    margin: [8, 6, 8, 6],
-                    filename: fileName,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        scrollX: 0,
-                        scrollY: 0,
-                        width: 730,
-                        windowWidth: 730,
-                        letterRendering: false,
-                        logging: false
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: [] }
-                };
-                // تهيئة PDF فارغ عبر المكتبة الموجودة، دون تحميل مكتبات إضافية.
-                seed = document.createElement('div');
-                seed.style.cssText = 'width:730px;height:1px;background:white;';
-                prepared.host.appendChild(seed);
-                const pdf = await html2pdf().set(baseOptions).from(seed).toPdf().get('pdf');
-                seed.remove();
-                seed = null;
-                for (let i = 0; i < prepared.pages.length; i++) {
-                    const page = prepared.pages[i];
-                    const pageHeight = Math.ceil(page.getBoundingClientRect().height) + 2;
-                    const options = {
-                        ...baseOptions,
-                        html2canvas: {
-                            ...baseOptions.html2canvas,
-                            height: pageHeight,
-                            // رسم صفحة واحدة في كل مرة يمنع تجاوز حدود Canvas على الهاتف.
-                            scale: Math.min(2, 8000 / pageHeight)
-                        }
-                    };
-                    const worker = html2pdf().set(options).from(page).toContainer();
-                    await worker.get('container', container => {
-                        // مطابقة عرض حاوية المكتبة مع العرض المقاس تمنع قص الطرف في RTL.
-                        container.style.width = '730px';
-                        container.style.margin = '0';
-                        const captureOverlay = container.parentElement;
-                        captureOverlay.style.width = '730px';
-                        captureOverlay.style.left = '0';
-                        captureOverlay.style.right = 'auto';
-                    });
-                    const canvas = await worker.toCanvas().get('canvas');
-                    if (!canvas.width || !canvas.height) throw new Error('تعذر رسم صفحة الكشف');
-                    if (i > 0) pdf.addPage();
-                    const imageWidth = Math.min(198, 277 * canvas.width / canvas.height);
-                    const imageHeight = imageWidth * canvas.height / canvas.width;
-                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 6 + (198 - imageWidth) / 2, 8, imageWidth, imageHeight);
-                    pdf.setFontSize(9);
-                    pdf.setTextColor(100, 116, 139);
-                    pdf.text(`${i + 1} / ${prepared.pages.length}`, 105, 292, { align: 'center' });
-                    canvas.width = 1;
-                    canvas.height = 1;
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
-                if (pdf.internal.getNumberOfPages() !== prepared.pages.length) throw new Error('عدد صفحات الكشف غير مطابق');
-                pdf.save(fileName);
-                showToast('تم تنزيل ملف PDF مع تكرار ترويسة الجدول والحفاظ على جميع البنود', '📄');
-            } catch (err) {
-                console.error('Direct PDF generation failed:', err);
-                if (prepared) prepared.host.remove();
-                if (seed) seed.remove();
-                showToast('تعذر التنزيل المباشر، جاري فتح نافذة الطباعة لحفظ PDF...', '⚠️');
-                sheet.classList.remove('pdf-render-active');
-                document.body.classList.remove('pdf-export-mode');
-                appEl.classList.toggle('hidden', appWasHidden);
-                window.print();
-            } finally {
-                if (prepared) prepared.host.remove();
-                if (seed) seed.remove();
-                sheet.classList.remove('pdf-render-active');
-                document.body.classList.remove('pdf-export-mode');
-                appEl.classList.toggle('hidden', appWasHidden);
-                overlay.classList.add('hidden');
-                delete sheet.dataset.pdfBusy;
-                window.scrollTo(originalScroll.x, originalScroll.y);
-            }
         }
 
         function triggerActualPrintOrPdf(mode) {
             const ws = getActiveWorkshop();
             if (!ws) return;
 
-            buildOfficialCorporatePrintSheet();
+            buildOfficialCorporatePrintSheet(mode === 'pdf');
 
             if (mode === 'pdf') {
-                downloadDirectRealPdf(ws);
-                return;
+                downloadDirectA4Pdf(ws);
+            } else {
+                setTimeout(() => {
+                    window.print();
+                }, 250);
             }
-
-            const prevTitle = document.title;
-            document.title = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}`;
-
-            setTimeout(() => {
-                window.print();
-                document.title = prevTitle;
-            }, 250);
         }
 
-        function executePrintOrPdf(e) {
+        async function executePrintOrPdf(e) {
             e.preventDefault();
             const mode = document.getElementById('printActionMode').value;
+
+            const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+            if (isAnyManager) {
+                const company = document.getElementById('printInputCompany').value.trim();
+                const person = document.getElementById('printInputPerson').value.trim();
+                const phone = document.getElementById('printInputPhone').value.trim();
+
+                if (currentUser.role === 'admin') {
+                    appState.admin.companyName = company;
+                    if (person) appState.admin.fullName = person;
+                    appState.admin.phone = phone;
+                    currentUser.companyName = company;
+                    currentUser.fullName = appState.admin.fullName;
+                    currentUser.phone = phone;
+                } else {
+                    appState.admin.companyName = company;
+                    const idx = appState.subUsers.findIndex(u => u.username === currentUser.username);
+                    if (idx !== -1) {
+                        if (person) appState.subUsers[idx].fullName = person;
+                        appState.subUsers[idx].phone = phone;
+                    }
+                    if (person) currentUser.fullName = person;
+                    currentUser.phone = phone;
+                }
+                updateCurrentUserHeaderBadge();
+                saveToCloud();
+            }
+
             closeModal('printDetailsModal');
             triggerActualPrintOrPdf(mode);
+        }
+
+        async function downloadDirectA4Pdf(ws) {
+            const overlay = document.getElementById('pdfGeneratingOverlay');
+            const sheet = document.getElementById('officialPrintSheet');
+            const appEl = document.getElementById('appContainer');
+            const safeWsName = (ws.name || 'كشف_حساب').replace(/[\\/:*?"<>|]/g, '_');
+            const fileName = `كشف_حساب_${safeWsName}_${todayISO()}.pdf`;
+
+            const savedScrollY = window.scrollY;
+            overlay.classList.remove('hidden');
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                appEl.classList.add('hidden');
+                document.body.classList.add('pdf-export-mode');
+                sheet.classList.add('pdf-render-active');
+                window.scrollTo(0, 0);
+
+                await new Promise(resolve => setTimeout(resolve, 250));
+
+                const opt = {
+                    margin: [10, 8, 10, 8],
+                    filename: fileName,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        width: 730,
+                        windowWidth: 730,
+                        scrollX: 0,
+                        scrollY: 0,
+                        x: 0,
+                        y: 0
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: {
+                        mode: ['css', 'legacy'],
+                        avoid: ['tr', '.corp-signatures']
+                    }
+                };
+
+                await html2pdf().set(opt).from(sheet).save();
+                showToast(`تم تنزيل ملف الـ PDF بنجاح (${fileName})`, '📄');
+            } catch (err) {
+                console.error('Direct PDF generation error:', err);
+                showToast('تعذر التنزيل المباشر للـ PDF، جاري فتح نافذة الحفظ البديلة...', '⚠️');
+                sheet.classList.remove('pdf-render-active');
+                document.body.classList.remove('pdf-export-mode');
+                appEl.classList.remove('hidden');
+                setTimeout(() => window.print(), 200);
+                return;
+            } finally {
+                sheet.classList.remove('pdf-render-active');
+                document.body.classList.remove('pdf-export-mode');
+                appEl.classList.remove('hidden');
+                overlay.classList.add('hidden');
+                window.scrollTo(0, savedScrollY);
+            }
         }
 
         function exportWorkshopExcel() {
             const ws = getActiveWorkshop();
             if (!ws) return;
-
-            const eff = getEffectiveUserPrintProfile();
-            const fType = document.getElementById('txFilterType').value;
             const rows = getFilteredTransactions(ws);
+            const fType = document.getElementById('txFilterType').value;
             const totals = calculateFilteredListTotals(rows, fType);
-            const cleanFileName = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.xlsx`;
+            const eff = getEffectiveUserPrintProfile();
 
-            const typeSelect = document.getElementById('txFilterType');
-            const catSelect = document.getElementById('txFilterCategory');
-            const currSelect = document.getElementById('txFilterCurrency');
-            const dFrom = document.getElementById('txFilterDateFrom').value;
-            const dTo = document.getElementById('txFilterDateTo').value;
-
-            const filterNotes = [
-                `نوع الحركة: ${typeSelect.options[typeSelect.selectedIndex]?.text || 'كل الحركات'}`,
-                `البند: ${fType === 'exchange' || catSelect.value === 'all' ? 'الكل' : catSelect.value}`,
-                `العملة: ${fType === 'exchange' || currSelect.value === 'all' ? 'الكل' : currSelect.value}`
-            ];
-            if (dFrom) filterNotes.push(`من: ${dFrom}`);
-            if (dTo) filterNotes.push(`إلى: ${dTo}`);
-
-            if (typeof XLSX !== 'undefined') {
-                const companyHeader = eff.companyName
-                    ? `${eff.companyName}  —  كشف حساب ورشة: ${ws.name}`
-                    : `كشف حساب ورشة: ${ws.name}`;
-                const metaSubHeader = [
-                    ws.description ? `الوصف: ${ws.description}` : '',
-                    eff.personName ? `المسؤول: ${eff.personName}` : '',
-                    eff.phone ? `هاتف: ${eff.phone}` : '',
-                    `تاريخ التصدير: ${todayISO()}`
-                ].filter(Boolean).join('   |   ');
-
-                const aoa = [
-                    [companyHeader],
-                    [metaSubHeader],
-                    [`نطاق التصفية: ${filterNotes.join('  •  ')}   |   عدد الحركات: ${rows.length}`],
-                    [],
-                    [
-                        '#',
-                        'التاريخ',
-                        'نوع الحركة',
-                        'البند / التصنيف',
-                        'البيان / الوصف التفصيلي',
-                        'سعر الصرف',
-                        'إيراد دولار ($)',
-                        'مصروف دولار ($)',
-                        'إيراد سوري (ل.س)',
-                        'مصروف سوري (ل.س)'
-                    ]
-                ];
-
-                rows.forEach((tx, index) => {
-                    let typeText = '';
-                    let catText = tx.category || 'عام';
-                    let rateVal = '';
-                    let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
-
-                    if (tx.type === 'income') {
-                        typeText = 'إيراد (+)';
-                        if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
-                        else sypIn = Number(tx.amount) || 0;
-                    } else if (tx.type === 'expense') {
-                        typeText = 'مصروف (-)';
-                        if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
-                        else sypOut = Number(tx.amount) || 0;
-                    } else if (tx.type === 'exchange') {
-                        typeText = fType === 'income_with_in_exchange'
-                            ? 'تحويل وارد (⇄)'
-                            : (fType === 'expense_with_out_exchange' ? 'تحويل صادر (⇄)' : 'صرافة / تحويل (⇄)');
-                        catText = 'صرافة';
-                        rateVal = tx.rate ? Number(tx.rate) : '';
-                        if (fType !== 'income_with_in_exchange') {
-                            if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
-                            else sypOut = Number(tx.fromAmount) || 0;
-                        }
-                        if (fType !== 'expense_with_out_exchange') {
-                            if (tx.toCurrency === 'USD') usdIn = Number(tx.toAmount) || 0;
-                            else sypIn = Number(tx.toAmount) || 0;
-                        }
-                    }
-
-                    aoa.push([
-                        index + 1,
-                        tx.date || '',
-                        typeText,
-                        catText,
-                        tx.description || '',
-                        rateVal,
-                        usdIn,
-                        usdOut,
-                        sypIn,
-                        sypOut
-                    ]);
-                });
-
-                const firstDataRowExcel = 6;
-                const lastDataRowExcel = rows.length + 5;
-                const totalRowIdx = aoa.length;
-                const netRowIdx = totalRowIdx + 1;
-
-                aoa.push([
-                    'المجموع الكلي للإيرادات والمصروفات',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    rows.length > 0 ? { t: 'n', f: `SUM(G${firstDataRowExcel}:G${lastDataRowExcel})`, z: '#,##0.00' } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(H${firstDataRowExcel}:H${lastDataRowExcel})`, z: '#,##0.00' } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(I${firstDataRowExcel}:I${lastDataRowExcel})`, z: '#,##0' } : 0,
-                    rows.length > 0 ? { t: 'n', f: `SUM(J${firstDataRowExcel}:J${lastDataRowExcel})`, z: '#,##0' } : 0
-                ]);
-
-                const excelTotalRowNum = totalRowIdx + 1;
-                aoa.push([
-                    'الرصيد الصافي النهائي للورشة',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    { t: 'n', f: `G${excelTotalRowNum}-H${excelTotalRowNum}`, z: '#,##0.00' },
-                    '',
-                    { t: 'n', f: `I${excelTotalRowNum}-J${excelTotalRowNum}`, z: '#,##0' },
-                    ''
-                ]);
-
-                const worksheet = XLSX.utils.aoa_to_sheet(aoa);
-
-                for (let r = 5; r < 5 + rows.length; r++) {
-                    const rateCell = worksheet[XLSX.utils.encode_cell({ r, c: 5 })];
-                    if (rateCell && typeof rateCell.v === 'number') rateCell.z = '#,##0.00';
-
-                    for (const c of [6, 7]) {
-                        const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
-                        if (cell && typeof cell.v === 'number') cell.z = '#,##0.00';
-                    }
-                    for (const c of [8, 9]) {
-                        const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
-                        if (cell && typeof cell.v === 'number') cell.z = '#,##0';
-                    }
-                }
-
-                worksheet['!merges'] = [
-                    { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
-                    { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
-                    { s: { r: 2, c: 0 }, e: { r: 2, c: 9 } },
-                    { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 5 } },
-                    { s: { r: netRowIdx, c: 0 }, e: { r: netRowIdx, c: 5 } },
-                    { s: { r: netRowIdx, c: 6 }, e: { r: netRowIdx, c: 7 } },
-                    { s: { r: netRowIdx, c: 8 }, e: { r: netRowIdx, c: 9 } }
-                ];
-
-                worksheet['!cols'] = [
-                    { wch: 6 },
-                    { wch: 14 },
-                    { wch: 18 },
-                    { wch: 18 },
-                    { wch: 40 },
-                    { wch: 13 },
-                    { wch: 17 },
-                    { wch: 17 },
-                    { wch: 20 },
-                    { wch: 20 }
-                ];
-
-                worksheet['!rows'] = [
-                    { hpt: 30 },
-                    { hpt: 22 },
-                    { hpt: 20 },
-                    { hpt: 8 },
-                    { hpt: 26 }
-                ];
-
-                worksheet['!views'] = [{ rightToLeft: true }];
-
-                const workbook = XLSX.utils.book_new();
-                workbook.Workbook = { Views: [{ RTL: true }] };
-                XLSX.utils.book_append_sheet(workbook, worksheet, 'كشف_حساب_الورشة');
-
-                const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = cleanFileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 2000);
-                showToast('تم تصدير ملف Excel (.xlsx) المنسق باحترافية بنجاح', '📊');
+            if (typeof XLSX === 'undefined') {
+                showToast('مكتبة Excel قيد التحميل، يرجى المحاولة بعد ثوانٍ', '⚠️');
                 return;
             }
 
-            let csvRows = [
-                ['التاريخ', 'النوع', 'البند', 'البيان', 'إيراد دولار ($)', 'مصروف دولار ($)', 'إيراد سوري (ل.س)', 'مصروف سوري (ل.س)']
+            const aoaData = [
+                [eff.companyName || 'نظام إدارة محاسبة الورشات'],
+                [`كشف حساب الورشة: ${ws.name}`, '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`],
+                ws.description ? [`الوصف: ${ws.description}`] : [''],
+                [],
+                ['ملخص الصندوق المالي', 'الإيرادات', 'المصروفات', 'الصافي الحالي'],
+                ['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2))],
+                ['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet)],
+                [],
+                ['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']
             ];
-            rows.forEach((tx) => {
-                let typeText = tx.type === 'income' ? 'إيراد' : (tx.type === 'expense' ? 'مصروف' : 'صرافة');
-                let catText = tx.type === 'exchange' ? 'صرافة' : (tx.category || 'عام');
-                let usdIn = 0, usdOut = 0, sypIn = 0, sypOut = 0;
+
+            rows.forEach(tx => {
                 if (tx.type === 'income') {
-                    if (tx.currency === 'USD') usdIn = Number(tx.amount) || 0;
-                    else sypIn = Number(tx.amount) || 0;
+                    aoaData.push([
+                        tx.date,
+                        'إيراد',
+                        tx.category || 'عام',
+                        tx.description || '',
+                        0,
+                        Number(tx.amount) || 0,
+                        tx.currency === 'USD' ? 'USD ($)' : 'SYP (ل.س)',
+                        ''
+                    ]);
                 } else if (tx.type === 'expense') {
-                    if (tx.currency === 'USD') usdOut = Number(tx.amount) || 0;
-                    else sypOut = Number(tx.amount) || 0;
+                    aoaData.push([
+                        tx.date,
+                        'مصروف',
+                        tx.category || 'عام',
+                        tx.description || '',
+                        Number(tx.amount) || 0,
+                        0,
+                        tx.currency === 'USD' ? 'USD ($)' : 'SYP (ل.س)',
+                        ''
+                    ]);
                 } else if (tx.type === 'exchange') {
-                    if (tx.fromCurrency === 'USD') usdOut = Number(tx.fromAmount) || 0;
-                    else sypOut = Number(tx.fromAmount) || 0;
-                    if (tx.toCurrency === 'USD') usdIn = Number(tx.toAmount) || 0;
-                    else sypIn = Number(tx.toAmount) || 0;
+                    aoaData.push([
+                        tx.date,
+                        'صرافة / تحويل',
+                        'صرافة',
+                        tx.description || '',
+                        Number(tx.fromAmount) || 0,
+                        Number(tx.toAmount) || 0,
+                        `${tx.fromCurrency} ➔ ${tx.toCurrency}`,
+                        Number(tx.rate) || ''
+                    ]);
                 }
-                csvRows.push([tx.date, typeText, catText, `"${String(tx.description || '').replace(/"/g, '""')}"`, usdIn, usdOut, sypIn, sypOut]);
             });
-            const csvContent = '\ufeff' + csvRows.map(r => r.join(',')).join('\r\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `كشف_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('تم تصدير ملف الجدول بنجاح', '📊');
+
+            const worksheet = XLSX.utils.aoa_to_sheet(aoaData);
+            worksheet['!cols'] = [
+                { wch: 14 },
+                { wch: 16 },
+                { wch: 18 },
+                { wch: 36 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 14 }
+            ];
+
+            if (!worksheet['!views']) worksheet['!views'] = [];
+            worksheet['!views'].push({ rightToLeft: true });
+
+            const workbook = XLSX.utils.book_new();
+            if (!workbook.Workbook) workbook.Workbook = {};
+            workbook.Workbook.Views = [{ RTL: true }];
+
+            const safeSheetName = (ws.name || 'كشف_الورشة').replace(/[\\/?*[\]:]/g, '_').substring(0, 30);
+            XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName || 'كشف_الورشة');
+
+            const safeFileName = `كشف_${(ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}.xlsx`;
+            XLSX.writeFile(workbook, safeFileName);
+            showToast(`تم تصدير ملف Excel الحقيقي بنجاح (${safeFileName})`, '📊');
         }
 
-        // ==================== 15. SINGLE WORKSHOP EXPORT / FUTURE-PROOF IMPORT ====================
-        function exportSingleWorkshopJson() {
-            const ws = getActiveWorkshop();
-            if (!ws) return;
-
-            const exportPackage = {
-                schemaVersion: 'workshops_erp_v10_universal',
-                exportedAt: new Date().toISOString(),
-                workshop: ws
-            };
-
-            const blob = new Blob([JSON.stringify(exportPackage, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ورشة_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('تم تصدير ملف الورشة بصيغة متوافقة دائمة', '📤');
-        }
-
-        function triggerWorkshopImport() {
-            document.getElementById('importWorkshopFileInput').click();
-        }
-
-        function handleImportWorkshopFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                try {
-                    const parsed = JSON.parse(ev.target.result);
-                    const rawWs = parsed.workshop ? parsed.workshop : parsed;
-                    if (!rawWs || !rawWs.name) throw new Error('Invalid workshop file');
-
-                    const normalizedWs = normalizeWorkshopData(rawWs, appState.workshops.length);
-                    normalizedWs.id = generateId('ws');
-                    normalizedWs.order = appState.workshops.length;
-                    delete normalizedWs.deletedAt;
-                    delete normalizedWs.deletedBy;
-
-                    appState.workshops.push(normalizedWs);
-                    if (currentUser.role === 'sub') {
-                        currentUser.allowedWorkshops.push(normalizedWs.id);
-                        const subIdx = appState.subUsers.findIndex(u => u.username === currentUser.username);
-                        if (subIdx !== -1) appState.subUsers[subIdx].allowedWorkshops.push(normalizedWs.id);
-                    }
-
-                    activeWorkshopId = normalizedWs.id;
-                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
-                    refreshAllViewsAfterSync();
-                    await saveToCloud(normalizedWs.id);
-                    showToast(`تم استيراد ورشة "${normalizedWs.name}" وحفظها في السحابة!`, '📥');
-                } catch (err) {
-                    showToast('ملف الورشة غير صالح أو تالف!', '❌');
-                } finally {
-                    e.target.value = '';
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // ==================== 16. USERS, MANAGERS & GRANULAR SEPARATED PERMISSIONS MANAGER ====================
+        // ==================== 15. ACCOUNTS, MANAGERS & GRANULAR PERMISSIONS MANAGER ====================
         function handleAccountRoleTypeChange() {
             const roleVal = document.getElementById('subUserRoleSelect').value;
             const isMgr = roleVal === 'manager';
@@ -4860,18 +4637,22 @@
         }
 
         function openUsersModal() {
-            if (currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
-            const isRootAdmin = currentUser.role === 'admin';
+            const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+            if (!isAnyManager) return;
 
+            const isRootAdmin = currentUser.role === 'admin';
             document.getElementById('primaryAdminSettingsBox').classList.toggle('hidden', !isRootAdmin);
             document.getElementById('accountRoleSelectorWrapper').classList.toggle('hidden', !isRootAdmin);
+            document.getElementById('subUsersListHeaderTitle').textContent = isRootAdmin
+                ? '📋 قائمة المدراء والحسابات الفرعية المسجلة'
+                : '📋 قائمة المستخدمين الفرعيين المسجلين';
 
             if (isRootAdmin) {
-                document.getElementById('adminUsernameInput').value = isValidCredentialStr(appState.admin.username) ? appState.admin.username : 'anas';
-                document.getElementById('adminPasswordInput').value = isValidCredentialStr(appState.admin.password) ? appState.admin.password : '';
-                document.getElementById('adminFullNameInput').value = isValidCredentialStr(appState.admin.fullName) ? appState.admin.fullName : '';
-                document.getElementById('adminPhoneInput').value = isValidCredentialStr(appState.admin.phone) ? appState.admin.phone : '';
-                document.getElementById('adminCompanyNameInput').value = isValidCredentialStr(appState.admin.companyName) ? appState.admin.companyName : '';
+                document.getElementById('adminUsernameInput').value = appState.admin.username;
+                document.getElementById('adminPasswordInput').value = appState.admin.password;
+                document.getElementById('adminFullNameInput').value = appState.admin.fullName || '';
+                document.getElementById('adminPhoneInput').value = appState.admin.phone || '';
+                document.getElementById('adminCompanyNameInput').value = appState.admin.companyName || '';
             }
 
             resetSubUserForm();
@@ -4881,62 +4662,70 @@
 
         async function updateAdminCredentials(e) {
             e.preventDefault();
-            if (currentUser.role !== 'admin') return;
+            if (currentUser?.role !== 'admin') return;
             const u = document.getElementById('adminUsernameInput').value.trim();
             const p = document.getElementById('adminPasswordInput').value.trim();
-            const fn = document.getElementById('adminFullNameInput').value.trim();
+            const f = document.getElementById('adminFullNameInput').value.trim();
             const ph = document.getElementById('adminPhoneInput').value.trim();
-            const cn = document.getElementById('adminCompanyNameInput').value.trim();
-            if (!isValidCredentialStr(u) || !isValidCredentialStr(p) || !fn) {
-                showToast('يرجى إدخال اسم مستخدم وكلمة مرور صالحة!', '⚠️');
+            const comp = document.getElementById('adminCompanyNameInput').value.trim();
+            if (!u || !p || !f) return;
+
+            if (appState.subUsers.some(sub => sub.username === u)) {
+                showToast('اسم الدخول هذا مستخدم لحساب آخر، يرجى اختيار اسم مختلف!', '⚠️');
                 return;
             }
 
             appState.admin.username = u;
             appState.admin.password = p;
-            appState.admin.fullName = fn;
+            appState.admin.fullName = f;
             appState.admin.phone = ph;
-            appState.admin.companyName = cn;
+            appState.admin.companyName = comp;
 
             currentUser.username = u;
             currentUser.password = p;
-            currentUser.fullName = fn;
+            currentUser.fullName = f;
             currentUser.phone = ph;
-            currentUser.companyName = cn;
+            currentUser.companyName = comp;
+
             persistAuthSession(u, p);
             updateCurrentUserHeaderBadge();
-
             await saveToCloud();
-            showToast('تم تحديث وحفظ بيانات المدير الأساسي والشركة في السحابة بنجاح', '👑');
+            showToast('تم حفظ بيانات المدير الأساسي واسم الشركة في السحابة بنجاح', '👑');
         }
 
-        function renderSubUserWorkshopCheckboxes(selectedIds = []) {
-            const container = document.getElementById('subUserWorkshopsCheckboxes');
+        function renderSubUserWorkshopsCheckboxes(selectedIds = []) {
+            const box = document.getElementById('subUserWorkshopsCheckboxes');
             if (appState.workshops.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-slate-400">لا توجد ورشات مضافة بعد</div>`;
+                box.innerHTML = `<div class="col-span-full text-slate-400">لا توجد ورشات مضافة بعد</div>`;
                 return;
             }
-            container.innerHTML = appState.workshops.map(ws => `
-                <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer">
-                    <input type="checkbox" class="sub-ws-checkbox w-4 h-4 accent-indigo-600" value="${ws.id}" ${selectedIds.includes(ws.id) ? 'checked' : ''}>
-                    <span class="truncate">${escapeHtml(ws.name)}</span>
+            box.innerHTML = appState.workshops.map(w => `
+                <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer border border-slate-100">
+                    <input type="checkbox" class="sub-ws-checkbox w-4 h-4 accent-indigo-600" value="${w.id}" ${selectedIds.includes(w.id) ? 'checked' : ''}>
+                    <span class="truncate">${escapeHtml(w.name)}</span>
                 </label>
             `).join('');
         }
 
-        function toggleAllSubUserWorkshops(state) {
-            document.querySelectorAll('.sub-ws-checkbox').forEach(cb => { cb.checked = state; });
+        function toggleAllSubUserWorkshops(checked) {
+            document.querySelectorAll('.sub-ws-checkbox').forEach(cb => cb.checked = checked);
         }
 
         function resetSubUserForm() {
+            const isRootAdmin = currentUser?.role === 'admin';
             document.getElementById('subUserEditIndex').value = '-1';
-            document.getElementById('subUserFormTitle').textContent = '➕ إضافة مستخدم أو مدير جديد وتحديد صلاحياته';
+            document.getElementById('subUserFormTitle').textContent = isRootAdmin
+                ? '➕ إضافة مستخدم أو مدير جديد وتحديد صلاحياته'
+                : '➕ إضافة مستخدم فرعي جديد وتحديد صلاحياته';
             document.getElementById('btnCancelSubUserEdit').classList.add('hidden');
             document.getElementById('subUserRoleSelect').value = 'sub';
+            handleAccountRoleTypeChange();
+
             document.getElementById('subUsername').value = '';
             document.getElementById('subPassword').value = '';
             document.getElementById('subFullName').value = '';
             document.getElementById('subPhone').value = '';
+
             document.getElementById('permAddEditTx').checked = true;
             document.getElementById('permDeleteTx').checked = false;
             document.getElementById('permAddWs').checked = false;
@@ -4947,8 +4736,7 @@
             document.getElementById('permUseOwnPrintInfo').checked = false;
             document.getElementById('permEditOwnProfile').checked = false;
             document.getElementById('permManageCats').checked = true;
-            handleAccountRoleTypeChange();
-            renderSubUserWorkshopCheckboxes([]);
+            renderSubUserWorkshopsCheckboxes(appState.workshops.map(w => w.id));
         }
 
         function editSubUser(idx) {
@@ -4958,68 +4746,67 @@
                 showToast('تعديل حساب مدير متاح حصراً للمدير الأساسي!', '🔒');
                 return;
             }
-            document.getElementById('subUserEditIndex').value = String(idx);
-            const roleWord = sub.role === 'manager' ? 'المدير' : 'المستخدم';
-            document.getElementById('subUserFormTitle').textContent = `✏️ تعديل بيانات ${roleWord}: ${sub.username}`;
+
+            document.getElementById('subUserEditIndex').value = idx;
+            document.getElementById('subUserFormTitle').textContent = `✏️ تعديل حساب: ${sub.username}`;
             document.getElementById('btnCancelSubUserEdit').classList.remove('hidden');
 
-            document.getElementById('subUserRoleSelect').value = sub.role === 'manager' ? 'manager' : 'sub';
+            const roleVal = (currentUser.role === 'admin' && sub.role === 'manager') ? 'manager' : 'sub';
+            document.getElementById('subUserRoleSelect').value = roleVal;
+            handleAccountRoleTypeChange();
+
             document.getElementById('subUsername').value = sub.username;
             document.getElementById('subPassword').value = sub.password;
             document.getElementById('subFullName').value = sub.fullName || '';
             document.getElementById('subPhone').value = sub.phone || '';
 
-            document.getElementById('permAddEditTx').checked = sub.permissions?.addEditTx !== false;
-            document.getElementById('permDeleteTx').checked = !!sub.permissions?.deleteTx;
-            document.getElementById('permAddWs').checked = !!sub.permissions?.addWs;
-            document.getElementById('permEditWs').checked = !!sub.permissions?.editWs;
-            document.getElementById('permToggleWs').checked = !!sub.permissions?.toggleWs;
-            document.getElementById('permDeleteWs').checked = !!sub.permissions?.deleteWs;
-            document.getElementById('permPrintExport').checked = sub.permissions?.printExport !== false;
-            document.getElementById('permUseOwnPrintInfo').checked = !!sub.permissions?.useOwnPrintInfo;
-            document.getElementById('permEditOwnProfile').checked = !!sub.permissions?.editOwnProfile;
-            document.getElementById('permManageCats').checked = sub.permissions?.manageCats !== false;
-
-            handleAccountRoleTypeChange();
-            renderSubUserWorkshopCheckboxes(sub.allowedWorkshops || []);
+            document.getElementById('permAddEditTx').checked = !!sub.permissions.addEditTx;
+            document.getElementById('permDeleteTx').checked = !!sub.permissions.deleteTx;
+            document.getElementById('permAddWs').checked = !!sub.permissions.addWs;
+            document.getElementById('permEditWs').checked = !!sub.permissions.editWs;
+            document.getElementById('permToggleWs').checked = !!sub.permissions.toggleWs;
+            document.getElementById('permDeleteWs').checked = !!sub.permissions.deleteWs;
+            document.getElementById('permPrintExport').checked = !!sub.permissions.printExport;
+            document.getElementById('permUseOwnPrintInfo').checked = !!sub.permissions.useOwnPrintInfo;
+            document.getElementById('permEditOwnProfile').checked = !!sub.permissions.editOwnProfile;
+            document.getElementById('permManageCats').checked = !!sub.permissions.manageCats;
+            renderSubUserWorkshopsCheckboxes(sub.allowedWorkshops || []);
         }
 
         async function saveSubUser(e) {
             e.preventDefault();
+            const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+            if (!isAnyManager) return;
+
             const editIdx = parseInt(document.getElementById('subUserEditIndex').value, 10);
-            const selectedRole = currentUser.role === 'admin'
-                ? document.getElementById('subUserRoleSelect').value
-                : 'sub';
-            const isMgr = selectedRole === 'manager';
-
-            if (editIdx >= 0 && appState.subUsers[editIdx]?.role === 'manager' && currentUser.role !== 'admin') {
-                showToast('غير مسموح بتعديل حساب مدير إلا من المدير الأساسي!', '🔒');
-                return;
-            }
-
             const username = document.getElementById('subUsername').value.trim();
             const password = document.getElementById('subPassword').value.trim();
             const fullName = document.getElementById('subFullName').value.trim();
             const phone = document.getElementById('subPhone').value.trim();
 
-            if (!isValidCredentialStr(username) || !isValidCredentialStr(password)) return;
-            if (username === appState.admin.username || appState.subUsers.some((u, i) => i !== editIdx && u.username === username)) {
-                showToast('اسم المستخدم هذا مستخدم مسبقاً، اختر اسماً آخر!', '⚠️');
+            if (!username || !password) return;
+
+            const requestedRole = (currentUser.role === 'admin' && document.getElementById('subUserRoleSelect').value === 'manager')
+                ? 'manager'
+                : 'sub';
+
+            if (editIdx !== -1 && appState.subUsers[editIdx]?.role === 'manager' && currentUser.role !== 'admin') {
+                showToast('تعديل حساب مدير متاح حصراً للمدير الأساسي!', '🔒');
                 return;
             }
 
-            const allowedWorkshops = isMgr
-                ? appState.workshops.map(w => w.id)
+            if (username === appState.admin.username || appState.subUsers.some((u, i) => i !== editIdx && u.username === username)) {
+                showToast('اسم المستخدم هذا موجود مسبقاً!', '⚠️');
+                return;
+            }
+
+            const allowedWorkshops = requestedRole === 'manager'
+                ? []
                 : Array.from(document.querySelectorAll('.sub-ws-checkbox:checked')).map(cb => cb.value);
 
-            const userObj = {
-                username,
-                password,
-                fullName,
-                phone,
-                role: isMgr ? 'manager' : 'sub',
-                allowedWorkshops,
-                permissions: isMgr ? getFullManagerPermissionsObj() : {
+            const permissions = requestedRole === 'manager'
+                ? getFullManagerPermissionsObj()
+                : {
                     addEditTx: document.getElementById('permAddEditTx').checked,
                     deleteTx: document.getElementById('permDeleteTx').checked,
                     addWs: document.getElementById('permAddWs').checked,
@@ -5030,19 +4817,28 @@
                     useOwnPrintInfo: document.getElementById('permUseOwnPrintInfo').checked,
                     editOwnProfile: document.getElementById('permEditOwnProfile').checked,
                     manageCats: document.getElementById('permManageCats').checked
-                }
+                };
+
+            const subObj = {
+                username,
+                password,
+                fullName,
+                phone,
+                role: requestedRole,
+                allowedWorkshops,
+                permissions
             };
 
-            if (editIdx >= 0 && appState.subUsers[editIdx]) {
-                appState.subUsers[editIdx] = userObj;
+            if (editIdx === -1) {
+                appState.subUsers.push(subObj);
             } else {
-                appState.subUsers.push(userObj);
+                appState.subUsers[editIdx] = subObj;
             }
 
             resetSubUserForm();
             renderSubUsersList();
             await saveToCloud();
-            showToast(isMgr ? 'تم حفظ حساب المدير بصلاحيات كاملة في السحابة' : 'تم حفظ بيانات وصلاحيات المستخدم في السحابة', '👥');
+            showToast(requestedRole === 'manager' ? 'تم حفظ حساب المدير في السحابة بنجاح' : 'تم حفظ بيانات المستخدم الفرعي في السحابة', '👥');
         }
 
         function deleteSubUser(idx) {
@@ -5051,70 +4847,158 @@
 
         function renderSubUsersList() {
             const container = document.getElementById('subUsersListContainer');
-            if (appState.subUsers.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-xs font-bold text-slate-500">لا يوجد مدراء أو مستخدمون فرعيون حالياً</div>`;
+            const isRootAdmin = currentUser?.role === 'admin';
+            const visibleEntries = appState.subUsers
+                .map((u, idx) => ({ u, idx }))
+                .filter(({ u }) => isRootAdmin || u.role !== 'manager');
+
+            if (visibleEntries.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-400">${isRootAdmin ? 'لا يوجد مدراء أو مستخدمون فرعيون مسجلون حالياً' : 'لا يوجد مستخدمون فرعيون مسجلون حالياً'}</div>`;
                 return;
             }
 
-            const isRootAdmin = currentUser.role === 'admin';
+            container.innerHTML = visibleEntries.map(({ u, idx }) => {
+                const isCoMgr = u.role === 'manager';
+                const p = u.permissions || {};
+                const badges = isCoMgr
+                    ? ['🛡️ صلاحيات كاملة على النظام والورشات والمستخدمين الفرعيين']
+                    : [
+                        p.addEditTx ? 'إضافة/تعديل حركات' : null,
+                        p.deleteTx ? 'حذف حركات' : null,
+                        p.addWs ? 'إضافة ورشات' : null,
+                        p.editWs ? 'تعديل ورشات' : null,
+                        p.toggleWs ? 'تشغيل/إيقاف ورشات' : null,
+                        p.deleteWs ? 'حذف ورشات' : null,
+                        p.printExport ? 'طباعة وتصدير' : null,
+                        p.useOwnPrintInfo ? 'الطباعة باسمه وجواله' : 'الطباعة باسم المدير',
+                        p.editOwnProfile ? 'تعديل بياناته الشخصية' : null,
+                        p.manageCats ? 'تصنيفات' : null
+                    ].filter(Boolean);
 
-            container.innerHTML = appState.subUsers.map((sub, idx) => {
-                const isMgr = sub.role === 'manager';
-                const p = sub.permissions || {};
-                const badges = [];
-                if (isMgr) {
-                    badges.push('صلاحيات كاملة على النظام وكافة الورشات');
-                    badges.push('إدارة الحسابات الفرعية');
-                } else {
-                    if (p.addEditTx) badges.push('إضافة/تعديل حركات');
-                    if (p.deleteTx) badges.push('حذف حركات');
-                    if (p.addWs) badges.push('إضافة ورشات');
-                    if (p.editWs) badges.push('تعديل الورشات');
-                    if (p.toggleWs) badges.push('تفعيل/إيقاف الورشات');
-                    if (p.deleteWs) badges.push('حذف الورشات');
-                    if (p.printExport) badges.push('طباعة وتصدير');
-                    if (p.useOwnPrintInfo) badges.push('الطباعة باسم وجوال الفرعي');
-                    else badges.push('الطباعة باسم وجوال المدير');
-                    if (p.editOwnProfile) badges.push('تعديل بياناته الشخصية');
-                    if (p.manageCats) badges.push('إدارة التصنيفات');
-                }
-
-                const canManageThisAccount = isRootAdmin || !isMgr;
+                const canManageThisRow = !isCoMgr || isRootAdmin;
 
                 return `
-                    <div class="p-3.5 rounded-2xl border-2 ${isMgr ? 'border-amber-300 bg-amber-50/40' : 'border-slate-300 bg-white'} flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2 text-sm font-black text-slate-900">
-                                <span>${isMgr ? '🛡️' : '👤'} ${escapeHtml(sub.username)}</span>
-                                ${isMgr
-                                    ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black shadow-sm">رتبة: مدير</span>`
-                                    : `<span class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-extrabold">مستخدم فرعي</span>`
+                    <div class="p-3.5 rounded-2xl border ${isCoMgr ? 'border-amber-300 bg-amber-50/40' : 'border-slate-300 bg-white'} flex flex-wrap items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                ${isCoMgr
+                                    ? `<span class="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">🛡️ مدير</span>`
+                                    : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black">👤 مستخدم فرعي</span>`
                                 }
-                                ${sub.fullName ? `<span class="text-xs font-bold text-indigo-700">(${escapeHtml(sub.fullName)})</span>` : ''}
-                                ${sub.phone ? `<span class="text-xs font-bold text-emerald-700" dir="ltr">[📱 ${escapeHtml(sub.phone)}]</span>` : ''}
-                                ${canManageThisAccount ? `<span class="text-xs font-bold text-slate-400">كلمة المرور: ${escapeHtml(sub.password)}</span>` : ''}
+                                <span class="text-sm font-black text-indigo-950">${escapeHtml(u.username)}</span>
+                                ${u.fullName ? `<span class="text-xs font-bold text-slate-600">(${escapeHtml(u.fullName)})</span>` : ''}
+                                ${u.phone ? `<span class="text-xs font-bold text-teal-700" dir="ltr">📱 ${escapeHtml(u.phone)}</span>` : ''}
+                                <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-mono">كلمة المرور: ${escapeHtml(u.password)}</span>
                             </div>
-                            <div class="flex flex-wrap gap-1.5 mt-1.5">
-                                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">الورشات: ${isMgr ? 'الكل' : (sub.allowedWorkshops || []).length}</span>
-                                ${badges.map(b => `<span class="px-2 py-0.5 rounded ${isMgr ? 'bg-amber-100 text-amber-950' : 'bg-slate-100 text-slate-700'} text-[10px] font-bold">${b}</span>`).join('')}
+                            <div class="flex flex-wrap gap-1.5">
+                                ${badges.map(b => `<span class="px-2 py-0.5 rounded-full ${isCoMgr ? 'bg-amber-100 text-amber-900' : 'bg-indigo-50 text-indigo-800'} text-[10px] font-extrabold">${b}</span>`).join('')}
+                                ${!isCoMgr ? `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-extrabold">الورشات: ${(u.allowedWorkshops || []).length}</span>` : ''}
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            ${canManageThisAccount ? `
-                                <button type="button" onclick="editSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white text-xs font-extrabold transition">تعديل</button>
-                                <button type="button" onclick="deleteSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">حذف</button>
-                            ` : `
-                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold">🔒 محمي للمدير الأساسي</span>
-                            `}
-                        </div>
+                        ${canManageThisRow ? `
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="editSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-indigo-100 hover:bg-indigo-600 text-indigo-800 hover:text-white text-xs font-extrabold transition">تعديل</button>
+                                <button type="button" onclick="deleteSubUser(${idx})" class="px-3 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">حذف</button>
+                            </div>
+                        ` : `
+                            <span class="text-[11px] font-extrabold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">حساب مدير</span>
+                        `}
                     </div>
                 `;
             }).join('');
         }
 
-        // ==================== 17. FULL BACKUP & DOUBLE-COUNTDOWN FACTORY RESET ====================
-        let resetTimerHandle = null;
-        let resetStage = 0;
+        // ==================== 16. BACKUP, IMPORT/EXPORT & DOUBLE-COUNTDOWN RESET ====================
+        function exportSingleWorkshopJson() {
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+            const blob = new Blob([JSON.stringify(ws, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ورشة_${ws.name.replace(/\s+/g, '_')}_${todayISO()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('تم تصدير ملف الورشة بنجاح', '📤');
+        }
+
+        function triggerWorkshopImport() {
+            document.getElementById('importWorkshopFileInput').click();
+        }
+
+        function handleImportWorkshopFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    const rawWs = parsed.workshop || parsed;
+                    if (!rawWs || !rawWs.name) throw new Error('Invalid workshop file');
+
+                    const importedWs = normalizeWorkshopData({
+                        ...rawWs,
+                        id: generateId('ws'),
+                        order: appState.workshops.length
+                    }, appState.workshops.length);
+
+                    appState.workshops.push(importedWs);
+                    if (currentUser.role === 'sub') {
+                        currentUser.allowedWorkshops.push(importedWs.id);
+                    }
+                    activeWorkshopId = importedWs.id;
+                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
+                    refreshAllViewsAfterSync();
+                    await saveToCloud(importedWs.id);
+                    showToast(`تم استيراد ورشة "${importedWs.name}" إلى السحابة`, '📥');
+                } catch (err) {
+                    showToast('ملف الورشة غير صالح!', '❌');
+                } finally {
+                    e.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportFullSystemBackup() {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `نسخة_احتياطية_شاملة_${todayISO()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('تم تنزيل النسخة الاحتياطية الشاملة', '🗄️');
+        }
+
+        function handleRestoreFullBackup(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    const normalized = normalizeFullState(parsed);
+                    appState = normalized;
+                    hasFetchedInitialCloud = true;
+                    const accessible = getAccessibleWorkshops();
+                    activeWorkshopId = accessible.length > 0 ? accessible[0].id : null;
+                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
+                    refreshAllViewsAfterSync();
+                    await saveToCloud(null, null, true);
+                    closeModal('backupModal');
+                    showToast('تمت استعادة النسخة الاحتياطية وحفظها في السحابة بنجاح!', '✅');
+                } catch (err) {
+                    showToast('فشلت استعادة الملف، تأكد من صحة النسخة الاحتياطية!', '❌');
+                } finally {
+                    e.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        let factoryResetStage = 0;
+        let factoryResetTimer = null;
 
         function openBackupModal() {
             cancelFactoryReset();
@@ -5126,123 +5010,69 @@
             closeModal('backupModal');
         }
 
-        function exportFullSystemBackup() {
-            const pkg = {
-                schemaVersion: 'full_cloud_backup_v10',
-                exportedAt: new Date().toISOString(),
-                data: appState
-            };
-            const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `نسخة_احتياطية_شاملة_${todayISO()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('تم تنزيل النسخة الاحتياطية الشاملة', '📦');
-        }
-
-        function handleRestoreFullBackup(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                try {
-                    const parsed = JSON.parse(ev.target.result);
-                    const rawData = parsed.data ? parsed.data : parsed;
-                    appState = normalizeFullState(rawData);
-                    const acc = getAccessibleWorkshops();
-                    activeWorkshopId = acc.length > 0 ? acc[0].id : null;
-                    if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
-                    closeModal('backupModal');
-                    refreshAllViewsAfterSync();
-                    await saveToCloud();
-                    showToast('تمت استعادة النسخة الاحتياطية ومزامنتها مع السحابة!', '✅');
-                } catch (err) {
-                    showToast('ملف النسخة الاحتياطية غير صالح!', '❌');
-                } finally {
-                    e.target.value = '';
-                }
-            };
-            reader.readAsText(file);
-        }
-
         function startFactoryResetSequence() {
-            clearInterval(resetTimerHandle);
-            resetStage = 1;
-            let secondsLeft = 10;
-
+            factoryResetStage = 1;
             document.getElementById('btnStartFactoryReset').classList.add('hidden');
             document.getElementById('resetCountdownBox').classList.remove('hidden');
-            document.getElementById('btnResetStepConfirm').classList.add('hidden');
-            document.getElementById('resetCountdownStatusText').textContent = 'المرحلة الأولى: يرجى الانتظار 10 ثوانٍ قبل التأكيد الأول...';
-            document.getElementById('resetCountdownTimer').textContent = secondsLeft;
+            runResetCountdownStage(1, 'المرحلة الأولى (1/2): يرجى الانتظار 10 ثوانٍ لتفعيل زر التأكيد الأول...');
+        }
 
-            resetTimerHandle = setInterval(() => {
-                secondsLeft--;
-                document.getElementById('resetCountdownTimer').textContent = secondsLeft;
-                if (secondsLeft <= 0) {
-                    clearInterval(resetTimerHandle);
-                    resetStage = 2;
-                    document.getElementById('resetCountdownStatusText').textContent = '⚠️ هل أنت متأكد من حذف جميع الورشات والبيانات من السحابة؟';
-                    const btn = document.getElementById('btnResetStepConfirm');
-                    btn.textContent = 'نعم، تأكيد أول للحذف';
-                    btn.classList.remove('hidden');
+        function runResetCountdownStage(stageNum, labelText) {
+            let seconds = 10;
+            const statusEl = document.getElementById('resetCountdownStatusText');
+            const timerEl = document.getElementById('resetCountdownTimer');
+            const confirmBtn = document.getElementById('btnResetStepConfirm');
+
+            statusEl.textContent = labelText;
+            timerEl.textContent = seconds;
+            confirmBtn.classList.add('hidden');
+
+            clearInterval(factoryResetTimer);
+            factoryResetTimer = setInterval(() => {
+                seconds--;
+                timerEl.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(factoryResetTimer);
+                    confirmBtn.classList.remove('hidden');
+                    confirmBtn.textContent = stageNum === 1 ? 'متابعة للمرحلة الثانية (2/2)' : '🔥 تأكيد الحذف النهائي الآن';
                 }
             }, 1000);
         }
 
         async function advanceFactoryResetStep() {
-            if (resetStage === 2) {
-                resetStage = 3;
-                let secondsLeft = 5;
-                document.getElementById('btnResetStepConfirm').classList.add('hidden');
-                document.getElementById('resetCountdownStatusText').textContent = 'المرحلة الثانية: يرجى الانتظار 5 ثوانٍ للتأكيد النهائي...';
-                document.getElementById('resetCountdownTimer').textContent = secondsLeft;
-
-                resetTimerHandle = setInterval(() => {
-                    secondsLeft--;
-                    document.getElementById('resetCountdownTimer').textContent = secondsLeft;
-                    if (secondsLeft <= 0) {
-                        clearInterval(resetTimerHandle);
-                        resetStage = 4;
-                        document.getElementById('resetCountdownStatusText').textContent = '🚨 تحذير أخير: سيتم تصفير السحابة نهائياً الآن!';
-                        const btn = document.getElementById('btnResetStepConfirm');
-                        btn.textContent = '🔥 تنفيذ الحذف النهائي الآن';
-                        btn.classList.remove('hidden');
-                    }
-                }, 1000);
-            } else if (resetStage === 4) {
-                const oldWorkshopIds = appState.workshops.map(w => w.id);
-                const oldTrashIds = appState.deletedWorkshops.map(w => w.id);
+            if (factoryResetStage === 1) {
+                factoryResetStage = 2;
+                runResetCountdownStage(2, 'المرحلة الثانية والأخيرة (2/2): عدّاد الأمان النهائي قبل المسح الشامل...');
+            } else if (factoryResetStage === 2) {
+                cancelFactoryReset();
+                const oldWsIds = [
+                    ...appState.workshops.map(w => w.id),
+                    ...appState.deletedWorkshops.map(w => w.id)
+                ];
                 appState.workshops = [];
                 appState.deletedWorkshops = [];
                 activeWorkshopId = null;
                 if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
-                cancelFactoryReset();
-                closeModal('backupModal');
                 refreshAllViewsAfterSync();
 
-                for (const oldId of oldWorkshopIds) {
-                    await fetch(`${FIRESTORE_BASE_URL}/ws_doc_${oldId}`, { method: 'DELETE' }).catch(() => {});
+                for (const id of oldWsIds) {
+                    await fetch(`${FIRESTORE_BASE_URL}/ws_doc_${id}`, { method: 'DELETE' }).catch(() => {});
+                    await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${id}`, { method: 'DELETE' }).catch(() => {});
                 }
-                for (const tId of oldTrashIds) {
-                    await fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${tId}`, { method: 'DELETE' }).catch(() => {});
-                }
-                await fetch(`${FIRESTORE_BASE_URL}/${BACKUP_LATEST_DOC_ID}`, { method: 'DELETE' }).catch(() => {});
                 await saveToCloud(null, null, true);
-                showToast('تم تصفير النظام وحذف جميع الورشات من السحابة', '🗑️');
+                closeModal('backupModal');
+                showToast('تم تصفير وحذف جميع البيانات من السحابة بالكامل', '🗑️');
             }
         }
 
         function cancelFactoryReset() {
-            clearInterval(resetTimerHandle);
-            resetStage = 0;
+            factoryResetStage = 0;
+            clearInterval(factoryResetTimer);
             document.getElementById('resetCountdownBox').classList.add('hidden');
             document.getElementById('btnStartFactoryReset').classList.remove('hidden');
         }
 
-        // ==================== 18. MASTER UI REFRESH & INITIALIZATION ====================
+        // ==================== 17. MASTER REFRESH & INITIALIZATION ====================
         function refreshAllViewsAfterSync() {
             updateTrashBadgeCounter();
             renderGlobalSummary();
@@ -5250,32 +5080,35 @@
             renderActiveWorkshopWorkspace();
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            let savedSession = null;
+        async function restoreSessionIfAvailable() {
             try {
-                const raw = sessionStorage.getItem(AUTH_SESSION_KEY);
-                if (raw) savedSession = JSON.parse(raw);
-            } catch (e) {}
+                const rawSession = sessionStorage.getItem(AUTH_SESSION_KEY);
+                if (!rawSession) return;
+                const parsed = JSON.parse(rawSession);
+                if (!parsed || !isValidCredentialStr(parsed.username) || !isValidCredentialStr(parsed.password)) return;
 
-            if (savedSession && isValidCredentialStr(savedSession.username) && isValidCredentialStr(savedSession.password)) {
-                const loginText = document.getElementById('loginCloudText');
-                if (loginText) loginText.textContent = 'جاري استعادة جلستك وجلب البيانات من السحابة...';
-            }
-
-            const ok = await fetchFromCloud(false);
-
-            if (ok && savedSession && isValidCredentialStr(savedSession.username) && isValidCredentialStr(savedSession.password)) {
-                if (authenticateAgainstCloudState(String(savedSession.username).trim(), String(savedSession.password).trim())) {
-                    if (savedSession.activeWorkshopId) {
-                        activeWorkshopId = savedSession.activeWorkshopId;
+                if (authenticateAgainstCloudState(String(parsed.username).trim(), String(parsed.password).trim())) {
+                    if (parsed.activeWorkshopId) {
+                        activeWorkshopId = parsed.activeWorkshopId;
                     }
                     enterApplication();
-                    return;
                 } else {
                     clearAuthSession();
                 }
-            }
+            } catch (e) {}
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchFromCloud(false);
+            await restoreSessionIfAvailable();
         });
     </script>
 </body>
 </html>
+```
+
+### ملخص التعديلات المنفذة:
+1. **إيقاف تعديل اسم الورشة ووصفها عند إيقافها:** تم قفل وإخفاء زر `✏️ تعديل الاسم/الوصف` عند إيقاف الورشة (`active === false`) مع التحقق البرمجي داخل `openEditWorkshopModal` و`saveEditedWorkshopInfo` لمنع أي تعديل حتى يتم تفعيل الورشة.
+2. **قفل تعديل وحذف البنود والتصنيفات في الورشة المتوقفة:** عند إيقاف الورشة يتم قفل كافة أزرار الإضافة والتعديل والحذف للبنود والتصنيفات وإظهار رسالة تنبيه واضحة بأن الورشة متوقفة ولا يمكن تعديل اسمها أو بنودها أو تصنيفاتها إلا بعد تفعيلها.
+3. **إخفاء حسابات المدراء عن بعضهم البعض:** تم تحديث قائمة الحسابات (`renderSubUsersList`) بحيث يرى **المدير الأساسي فقط** جميع المدراء والحسابات الفرعية، بينما لا يرى أي مدير فرعي حسابات المدراء الآخرين ولا يرى سوى المستخدمين الفرعيين.
+4. **تنزيل مباشر ومختصر لملف PDF (A4):** تم تعديل زر `تصدير PDF (A4)` ليقوم بالتنزيل المباشر الفوري دون فتح نافذة منبثقة مسبقة، مع إزالة الترويسة السوداء الكبيرة وتوقيعات المحاسب ومدير الورشة والاعتماد الإداري من ملف الـ PDF والاكتفاء بعنوان مدمج أنيق في أعلى الصفحة الأولى مع الحفاظ على الترويسة الرسمية الكاملة والتوقيعات عند الضغط على زر `طباعة مباشرة`.
