@@ -150,8 +150,16 @@
             font-size: 11px !important;
             margin-top: 10px !important;
         }
+        .corp-table {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+        }
         .corp-table thead {
             display: table-header-group !important;
+        }
+        .corp-table tbody {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
         }
         .corp-table tr {
             page-break-inside: avoid !important;
@@ -1397,6 +1405,7 @@
         let isModalOpen = false;
         let lastCloudHash = '';
         let syncIntervalHandle = null;
+        let trashCountdownInterval = null;
 
         // ==================== 3. NUMBER FORMATTING & UTILITY HELPERS ====================
         function formatNum(val, decimals = 2) {
@@ -1480,6 +1489,10 @@
 
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
+            if (id === 'trashModal') {
+                clearInterval(trashCountdownInterval);
+                trashCountdownInterval = null;
+            }
             const anyOpen = Array.from(document.querySelectorAll('.modal-backdrop')).some(el => !el.classList.contains('hidden'));
             isModalOpen = anyOpen;
         }
@@ -3020,6 +3033,39 @@
             openModal('trashModal');
         }
 
+        function formatTrashRemainingTime(deletedAt, now = Date.now()) {
+            const remainingMs = Math.max(0, TRASH_RETENTION_MS - Math.max(0, now - (Number(deletedAt) || now)));
+            if (remainingMs <= 0) return 'انتهت المهلة — بانتظار الحذف السحابي';
+            const totalMinutes = Math.ceil(remainingMs / 60000);
+            const days = Math.floor(totalMinutes / (24 * 60));
+            const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+            const minutes = totalMinutes % 60;
+            const parts = [];
+            if (days) parts.push(`${days} يوم`);
+            if (hours || days) parts.push(`${hours} ساعة`);
+            parts.push(`${minutes} دقيقة`);
+            return `⏳ متبقي ${parts.join(' و ') } للحذف التلقائي`;
+        }
+
+        function updateTrashCountdownLabels() {
+            const now = Date.now();
+            getAccessibleDeletedWorkshops().forEach(ws => {
+                const label = document.getElementById(`trashCountdown-${ws.id}`);
+                if (label) label.textContent = formatTrashRemainingTime(ws.deletedAt, now);
+            });
+            if (getAccessibleDeletedWorkshops().some(ws =>
+                now - (Number(ws.deletedAt) || now) >= TRASH_RETENTION_MS
+            ) && !isSavingToCloud) {
+                fetchFromCloud(true);
+            }
+        }
+
+        function startTrashCountdown() {
+            clearInterval(trashCountdownInterval);
+            updateTrashCountdownLabels();
+            trashCountdownInterval = setInterval(updateTrashCountdownLabels, 60000);
+        }
+
         function renderTrashModalContent() {
             const items = getAccessibleDeletedWorkshops();
             document.getElementById('trashModalCountText').textContent = items.length;
@@ -3028,6 +3074,8 @@
 
             const container = document.getElementById('trashWorkshopsListContainer');
             if (items.length === 0) {
+                clearInterval(trashCountdownInterval);
+                trashCountdownInterval = null;
                 container.innerHTML = `
                     <div class="p-6 sm:p-8 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 space-y-1.5">
                         <div class="text-3xl">🗑️</div>
@@ -3040,8 +3088,6 @@
             const now = Date.now();
             container.innerHTML = items.map(ws => {
                 const deletedAt = Number(ws.deletedAt) || now;
-                const elapsedMs = Math.max(0, now - deletedAt);
-                const remainingDays = Math.max(1, Math.ceil((TRASH_RETENTION_MS - elapsedMs) / (24 * 60 * 60 * 1000)));
                 const totals = calculateWorkshopTotals(ws);
 
                 const usdColor = totals.usdNet < 0 ? 'text-rose-700' : 'text-emerald-700';
@@ -3054,8 +3100,8 @@
                                 <h4 class="text-sm sm:text-base font-black text-slate-900 break-words">${escapeHtml(ws.name)}</h4>
                                 ${ws.description ? `<p class="text-[11px] font-bold text-slate-500 mt-0.5 break-words">${escapeHtml(ws.description)}</p>` : ''}
                             </div>
-                            <span class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[10.5px] sm:text-[11px] font-black shrink-0">
-                                ⏳ متبقي ${remainingDays} يوم للحذف التلقائي
+                            <span id="trashCountdown-${ws.id}" class="self-start sm:self-auto px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[10.5px] sm:text-[11px] font-black shrink-0">
+                                ${formatTrashRemainingTime(deletedAt, now)}
                             </span>
                         </div>
 
@@ -3093,6 +3139,7 @@
                     </div>
                 `;
             }).join('');
+            startTrashCountdown();
         }
 
         async function restoreWorkshopFromTrash(wsId) {
@@ -4335,7 +4382,8 @@
                         orientation: 'portrait'
                     },
                     pagebreak: {
-                        mode: ['avoid-all', 'css', 'legacy']
+                        mode: ['css', 'legacy'],
+                        avoid: ['tr', '.corp-signatures']
                     }
                 };
 
