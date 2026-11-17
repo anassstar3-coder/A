@@ -801,7 +801,7 @@
                             <button type="button" id="btnClearProfileLogo" onclick="clearCompanyLogoDraft('profile')" class="hidden text-[11px] font-black text-rose-600 hover:underline">حذف الرمز</button>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div id="profileLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                            <div id="profileLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-500 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-300">
                                 بلا رمز
                             </div>
                             <input type="file" id="profileCompanyLogoInput" accept="image/*" onchange="handleCompanyLogoFileChange(event, 'profile')"
@@ -1061,7 +1061,7 @@
                         <button type="button" id="btnClearPrintLogo" onclick="clearCompanyLogoDraft('print')" class="hidden text-[11px] font-black text-rose-600 hover:underline">حذف الرمز</button>
                     </div>
                     <div class="flex items-center gap-3">
-                        <div id="printLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                        <div id="printLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-500 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-300">
                             بلا رمز
                         </div>
                         <input type="file" id="printCompanyLogoInput" accept="image/*" onchange="handleCompanyLogoFileChange(event, 'print')"
@@ -1225,12 +1225,12 @@
                         <!-- COMPANY LOGO UPLOADER IN ADMIN SETTINGS -->
                         <div class="p-3 rounded-xl bg-white border border-indigo-200 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-3">
-                                <div id="adminLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-indigo-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                                <div id="adminLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-500 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-300">
                                     بلا رمز
                                 </div>
                                 <div>
                                     <div class="text-xs font-black text-indigo-950">رمز / شعار الشركة (يُحفظ بالسحابة ويظهر يمين اسم الشركة بالطباعة و PDF و Excel)</div>
-                                    <div class="text-[11px] font-semibold text-slate-500">اختر صورة شعار واضحة (PNG / JPG) وسيتم ضغطها وحفظها تلقائياً</div>
+                                    <div class="text-[11px] font-semibold text-slate-500">يدعم الشعارات البيضاء والمفرغة والملونة تلقائياً</div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -1630,6 +1630,46 @@
             });
         }
 
+        // تحويل الشعار المفرغ/الأبيض إلى نسخة بخلفية داكنة أنيقة عند الحاجة (مثل ملف Excel ذي الترويسة الفاتحة)
+        function renderLogoOnDarkBadgeDataUrl(logoDataUrl) {
+            return new Promise((resolve) => {
+                if (!logoDataUrl) {
+                    resolve('');
+                    return;
+                }
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const size = 128;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+                        // خلفية كحلية داكنة مع إطار ذهبي لإبراز الشعارات البيضاء والمفرغة بوضوح
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillRect(0, 0, size, size);
+                        ctx.strokeStyle = '#fbbf24';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(3, 3, size - 6, size - 6);
+
+                        const pad = 14;
+                        const maxDraw = size - pad * 2;
+                        const ratio = Math.min(maxDraw / img.naturalWidth, maxDraw / img.naturalHeight);
+                        const drawW = img.naturalWidth * ratio;
+                        const drawH = img.naturalHeight * ratio;
+                        const dx = (size - drawW) / 2;
+                        const dy = (size - drawH) / 2;
+                        ctx.drawImage(img, dx, dy, drawW, drawH);
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        resolve(logoDataUrl);
+                    }
+                };
+                img.onerror = () => resolve(logoDataUrl);
+                img.src = logoDataUrl;
+            });
+        }
+
         function updateCompanyLogoPreviewUI(context, logoDataUrl) {
             draftCompanyLogo = logoDataUrl || '';
             const map = {
@@ -1643,7 +1683,7 @@
             const clearBtnEl = document.getElementById(cfg.clearBtn);
             if (boxEl) {
                 if (draftCompanyLogo) {
-                    boxEl.innerHTML = `<img src="${draftCompanyLogo}" alt="شعار الشركة" class="w-full h-full object-contain p-1">`;
+                    boxEl.innerHTML = `<img src="${draftCompanyLogo}" alt="شعار الشركة" class="w-full h-full object-contain p-1" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.65));">`;
                 } else {
                     boxEl.innerHTML = `بلا رمز`;
                 }
@@ -4491,8 +4531,8 @@
             ].filter(Boolean).join('&nbsp;&nbsp;•&nbsp;&nbsp;');
 
             const logoHtml = companyLogo
-                ? `<td style="width:62px; padding:12px 16px 12px 0; text-align:right; vertical-align:middle;">
-                        <div style="width:52px; height:52px; border-radius:12px; background:#ffffff; padding:4px; border:2px solid #fbbf24; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                ? `<td style="width:66px; padding:12px 16px 12px 0; text-align:right; vertical-align:middle;">
+                        <div style="width:54px; height:54px; border-radius:12px; background:#0f172a; padding:4px; border:2px solid #fbbf24; box-shadow:0 2px 8px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             <img src="${companyLogo}" alt="شعار الشركة" style="max-width:44px; max-height:44px; object-fit:contain; display:block;">
                         </div>
                    </td>`
@@ -4886,7 +4926,7 @@
                     // الصف 1: اسم الشركة + شعار الشركة على اليمين (العمود A)
                     const hasLogo = !!(eff.companyLogo && eff.companyLogo.startsWith('data:image/'));
                     sheet.addRow([hasLogo ? '' : (eff.companyName || 'نظام إدارة محاسبة الورشات'), hasLogo ? (eff.companyName || 'نظام إدارة محاسبة الورشات') : '', '', '', '', '', '', '']);
-                    sheet.getRow(1).height = 38;
+                    sheet.getRow(1).height = 42;
                     if (hasLogo) {
                         sheet.mergeCells('B1:H1');
                     } else {
@@ -4899,15 +4939,14 @@
                         cell.alignment = { horizontal: 'right', vertical: 'center' };
                     }
                     if (hasLogo) {
-                        const extMatch = eff.companyLogo.match(/^data:image\/(png|jpeg|jpg);base64,/i);
-                        const imgExt = extMatch && extMatch[1].toLowerCase() === 'png' ? 'png' : 'jpeg';
+                        const styledBadgeLogo = await renderLogoOnDarkBadgeDataUrl(eff.companyLogo);
                         const imageId = workbook.addImage({
-                            base64: eff.companyLogo,
-                            extension: imgExt
+                            base64: styledBadgeLogo || eff.companyLogo,
+                            extension: 'png'
                         });
                         sheet.addImage(imageId, {
                             tl: { col: 0.15, row: 0.08 },
-                            ext: { width: 46, height: 46 }
+                            ext: { width: 48, height: 48 }
                         });
                     }
 
