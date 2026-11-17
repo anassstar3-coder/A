@@ -14,6 +14,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- xlsx-js-style for Styled Real Native .xlsx Excel Files Compatible with Mobile & Desktop -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <!-- ExcelJS for Embedding Company Logo Image in Native .xlsx Header -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -767,8 +769,8 @@
     </div>
 
     <!-- MODAL 0: MANDATORY USER PERSONAL PROFILE ON FIRST LOGIN -->
-    <div id="profileNameModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-indigo-200 overflow-hidden text-slate-800">
+    <div id="profileNameModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-indigo-200 overflow-hidden text-slate-800 my-auto">
             <div class="bg-gradient-to-l from-indigo-900 to-slate-900 px-5 py-4 text-white flex items-center justify-between">
                 <h3 id="profileNameModalTitle" class="text-base font-black">👤 تسجيل بياناتك الشخصية للطباعة</h3>
                 <button id="btnCloseProfileNameModal" onclick="closeModal('profileNameModal')" class="hidden w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
@@ -787,10 +789,25 @@
                     <input type="text" id="inputUserPhone" placeholder="مثال: 09xxxxxxxx" dir="ltr"
                         class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-black bg-slate-50 text-right">
                 </div>
-                <div id="profileAdminCompanyWrapper" class="hidden">
-                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">اسم الشركة / المؤسسة (ثابت في الطباعة)</label>
-                    <input type="text" id="inputAdminCompanyFromProfile" placeholder="مثال: شركة البناء الحديث للمقاولات..."
-                        class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-black bg-slate-50">
+                <div id="profileAdminCompanyWrapper" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1.5">اسم الشركة / المؤسسة (ثابت في الطباعة)</label>
+                        <input type="text" id="inputAdminCompanyFromProfile" placeholder="مثال: شركة البناء الحديث للمقاولات..."
+                            class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-black bg-slate-50">
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-50 border border-slate-300 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-extrabold text-slate-700">رمز / شعار الشركة (يظهر يمين اسم الشركة بالترويسة)</span>
+                            <button type="button" id="btnClearProfileLogo" onclick="clearCompanyLogoDraft('profile')" class="hidden text-[11px] font-black text-rose-600 hover:underline">حذف الرمز</button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="profileLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                                بلا رمز
+                            </div>
+                            <input type="file" id="profileCompanyLogoInput" accept="image/*" onchange="handleCompanyLogoFileChange(event, 'profile')"
+                                class="block w-full text-xs text-slate-600 file:ml-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-indigo-100 file:text-indigo-800 file:font-extrabold">
+                        </div>
+                    </div>
                 </div>
                 <button type="submit" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm shadow-lg transition">
                     💾 حفظ البيانات في السحابة
@@ -1024,19 +1041,32 @@
     </div>
 
     <!-- MODAL 3: PRINT / PDF HEADER PREVIEW & ADMIN EDIT -->
-    <div id="printDetailsModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-slate-200 overflow-hidden text-slate-800">
+    <div id="printDetailsModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-slate-200 overflow-hidden text-slate-800 my-auto">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
                 <h3 id="printDetailsTitle" class="text-base font-black">🖨 بيانات ترويسة التقرير الرسمي</h3>
                 <button type="button" onclick="closeModal('printDetailsModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
             </div>
             <form onsubmit="executePrintOrPdf(event)" class="p-5 space-y-3.5">
                 <input type="hidden" id="printActionMode" value="print">
-                <p id="printDetailsHelperNote" class="text-xs font-bold text-slate-500">تُعتمد بيانات الشركة والمسؤول المحفوظة في السحابة تلقائياً في أعلى الكشف:</p>
+                <p id="printDetailsHelperNote" class="text-xs font-bold text-slate-500">تُعتمد بيانات الشركة وشعارها والمسؤول المحفوظة في السحابة تلقائياً في أعلى الكشف:</p>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم الشركة / المؤسسة (ثابت من المدير)</label>
                     <input type="text" id="printInputCompany" placeholder="اسم الشركة..."
                         class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-bold bg-slate-50">
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-300 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-extrabold text-slate-700">رمز / شعار الشركة (على اليمين بجانب الاسم)</span>
+                        <button type="button" id="btnClearPrintLogo" onclick="clearCompanyLogoDraft('print')" class="hidden text-[11px] font-black text-rose-600 hover:underline">حذف الرمز</button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="printLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                            بلا رمز
+                        </div>
+                        <input type="file" id="printCompanyLogoInput" accept="image/*" onchange="handleCompanyLogoFileChange(event, 'print')"
+                            class="block w-full text-xs text-slate-600 file:ml-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-indigo-100 file:text-indigo-800 file:font-extrabold">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم المسؤول / المُعِدّ</label>
@@ -1153,41 +1183,66 @@
 
             <div class="p-4 sm:p-6 space-y-6 max-h-[82vh] overflow-y-auto">
                 <!-- PRIMARY ROOT ADMIN SECTION (VISIBLE ONLY TO PRIMARY ADMIN) -->
-                <div id="primaryAdminSettingsBox" class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
-                    <h4 class="text-sm font-black text-indigo-950 mb-3 flex items-center gap-2">
+                <div id="primaryAdminSettingsBox" class="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200 space-y-3">
+                    <h4 class="text-sm font-black text-indigo-950 flex items-center gap-2">
                         <span>👑</span>
-                        <span>بيانات المدير الأساسي (الرتبة العليا) واسم الشركة الثابت للطباعة</span>
+                        <span>بيانات المدير الأساسي (الرتبة العليا) واسم وشعار الشركة الثابت للطباعة</span>
                     </h4>
-                    <form onsubmit="updateAdminCredentials(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الدخول *</label>
-                            <input type="text" id="adminUsernameInput" required
-                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                    <form onsubmit="updateAdminCredentials(event)" class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الدخول *</label>
+                                <input type="text" id="adminUsernameInput" required
+                                    class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">كلمة المرور *</label>
+                                <input type="text" id="adminPasswordInput" required
+                                    class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المدير الأساسي *</label>
+                                <input type="text" id="adminFullNameInput" required
+                                    class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">رقم هاتف المدير</label>
+                                <input type="text" id="adminPhoneInput" placeholder="09xxxxxxxx" dir="ltr"
+                                    class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white text-right">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الشركة (ثابت)</label>
+                                <input type="text" id="adminCompanyNameInput" placeholder="اسم الشركة..."
+                                    class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full py-2.5 px-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-black text-xs shadow transition">
+                                    حفظ بيانات المدير
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">كلمة المرور *</label>
-                            <input type="text" id="adminPasswordInput" required
-                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم المدير الأساسي *</label>
-                            <input type="text" id="adminFullNameInput" required
-                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">رقم هاتف المدير</label>
-                            <input type="text" id="adminPhoneInput" placeholder="09xxxxxxxx" dir="ltr"
-                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white text-right">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-700 mb-1">اسم الشركة (ثابت)</label>
-                            <input type="text" id="adminCompanyNameInput" placeholder="اسم الشركة..."
-                                class="w-full px-3 py-2 rounded-xl border border-indigo-300 text-xs sm:text-sm font-bold bg-white">
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="w-full py-2.5 px-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-black text-xs shadow transition">
-                                حفظ بيانات المدير
-                            </button>
+
+                        <!-- COMPANY LOGO UPLOADER IN ADMIN SETTINGS -->
+                        <div class="p-3 rounded-xl bg-white border border-indigo-200 flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div id="adminLogoPreviewBox" class="w-12 h-12 rounded-xl border-2 border-dashed border-indigo-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 text-[10px] font-bold text-slate-400">
+                                    بلا رمز
+                                </div>
+                                <div>
+                                    <div class="text-xs font-black text-indigo-950">رمز / شعار الشركة (يُحفظ بالسحابة ويظهر يمين اسم الشركة بالطباعة و PDF و Excel)</div>
+                                    <div class="text-[11px] font-semibold text-slate-500">اختر صورة شعار واضحة (PNG / JPG) وسيتم ضغطها وحفظها تلقائياً</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="px-3 py-1.5 rounded-xl bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs font-extrabold cursor-pointer transition">
+                                    <span>🖼️ اختيار رمز الشركة</span>
+                                    <input type="file" id="adminCompanyLogoInput" accept="image/*" class="hidden" onchange="handleCompanyLogoFileChange(event, 'admin')">
+                                </label>
+                                <button type="button" id="btnClearAdminLogo" onclick="clearCompanyLogoDraft('admin')"
+                                    class="hidden px-3 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-600 text-rose-700 hover:text-white text-xs font-extrabold transition">
+                                    🗑️ إزالة الرمز
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -1413,12 +1468,15 @@
                 password: '123',
                 fullName: '',
                 phone: '',
-                companyName: ''
+                companyName: '',
+                companyLogo: ''
             },
             subUsers: [],
             workshops: [],
             deletedWorkshops: []
         };
+
+        let draftCompanyLogo = '';
 
         let currentUser = null;
         let activeWorkshopId = null;
@@ -1535,6 +1593,86 @@
                 onConfirm();
             };
             openModal('customConfirmModal');
+        }
+
+        // ==================== COMPANY LOGO COMPRESSION & PREVIEW HELPERS ====================
+        function compressCompanyLogoImage(file) {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) {
+                    reject(new Error('الملف المحدد ليس صورة صالحة'));
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const maxSide = 260;
+                        const ratio = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(img.naturalWidth * ratio));
+                        canvas.height = Math.max(1, Math.round(img.naturalHeight * ratio));
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/png');
+                        URL.revokeObjectURL(objectUrl);
+                        resolve(dataUrl);
+                    } catch (err) {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(err);
+                    }
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error('تعذر قراءة صورة الشعار'));
+                };
+                img.src = objectUrl;
+            });
+        }
+
+        function updateCompanyLogoPreviewUI(context, logoDataUrl) {
+            draftCompanyLogo = logoDataUrl || '';
+            const map = {
+                admin: { box: 'adminLogoPreviewBox', clearBtn: 'btnClearAdminLogo', input: 'adminCompanyLogoInput' },
+                print: { box: 'printLogoPreviewBox', clearBtn: 'btnClearPrintLogo', input: 'printCompanyLogoInput' },
+                profile: { box: 'profileLogoPreviewBox', clearBtn: 'btnClearProfileLogo', input: 'profileCompanyLogoInput' }
+            };
+            const cfg = map[context];
+            if (!cfg) return;
+            const boxEl = document.getElementById(cfg.box);
+            const clearBtnEl = document.getElementById(cfg.clearBtn);
+            if (boxEl) {
+                if (draftCompanyLogo) {
+                    boxEl.innerHTML = `<img src="${draftCompanyLogo}" alt="شعار الشركة" class="w-full h-full object-contain p-1">`;
+                } else {
+                    boxEl.innerHTML = `بلا رمز`;
+                }
+            }
+            if (clearBtnEl) {
+                clearBtnEl.classList.toggle('hidden', !draftCompanyLogo);
+            }
+        }
+
+        async function handleCompanyLogoFileChange(event, context) {
+            const file = event.target.files && event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('حجم صورة الشعار كبير جداً، يرجى اختيار صورة أصغر من 10 ميغابايت', '⚠️');
+                return;
+            }
+            try {
+                const compressedLogo = await compressCompanyLogoImage(file);
+                updateCompanyLogoPreviewUI(context, compressedLogo);
+                showToast('تم تجهيز رمز الشركة، اضغط حفظ لتثبيته في السحابة', '🖼️');
+            } catch (err) {
+                showToast('تعذر معالجة صورة رمز الشركة', '⚠️');
+            }
+        }
+
+        function clearCompanyLogoDraft(context) {
+            updateCompanyLogoPreviewUI(context, '');
+            showToast('تمت إزالة رمز الشركة، اضغط حفظ لتأكيد التعديل في السحابة', '🗑️');
         }
 
         // ==================== 4. DATA NORMALIZATION, 30-DAY TRASH EXPIRY & FIRESTORE PARSER ====================
@@ -1663,6 +1801,7 @@
             let adminFullName = isValidCredentialStr(appState.admin?.fullName) ? appState.admin.fullName : '';
             let adminPhone = isValidCredentialStr(appState.admin?.phone) ? appState.admin.phone : '';
             let adminCompanyName = isValidCredentialStr(appState.admin?.companyName) ? appState.admin.companyName : '';
+            let adminCompanyLogo = isValidCredentialStr(appState.admin?.companyLogo) ? appState.admin.companyLogo : '';
 
             if (raw && raw.admin) {
                 const candU = raw.admin.username ?? raw.admin.user;
@@ -1670,11 +1809,13 @@
                 const candF = raw.admin.fullName ?? raw.admin.name;
                 const candPh = raw.admin.phone ?? raw.admin.mobile;
                 const candC = raw.admin.companyName ?? raw.admin.company;
+                const candLogo = raw.admin.companyLogo ?? raw.admin.logo;
                 if (isValidCredentialStr(candU)) adminUsername = String(candU).trim();
                 if (isValidCredentialStr(candP)) adminPassword = String(candP).trim();
                 if (isValidCredentialStr(candF)) adminFullName = String(candF).trim();
                 if (isValidCredentialStr(candPh)) adminPhone = String(candPh).trim();
                 if (isValidCredentialStr(candC)) adminCompanyName = String(candC).trim();
+                if (typeof candLogo === 'string') adminCompanyLogo = candLogo.trim();
             } else if (raw && (raw.adminUser || raw.adminUsername || raw.adminPass || raw.adminPassword)) {
                 const candU = raw.adminUser ?? raw.adminUsername;
                 const candP = raw.adminPass ?? raw.adminPassword;
@@ -1737,7 +1878,8 @@
                     password: adminPassword,
                     fullName: adminFullName,
                     phone: adminPhone,
-                    companyName: adminCompanyName
+                    companyName: adminCompanyName,
+                    companyLogo: adminCompanyLogo
                 },
                 subUsers: subUsersArr,
                 workshops: workshopsArr,
@@ -1971,6 +2113,7 @@
                                 currentUser.fullName = appState.admin.fullName || '';
                                 currentUser.phone = appState.admin.phone || '';
                                 currentUser.companyName = appState.admin.companyName || '';
+                                currentUser.companyLogo = appState.admin.companyLogo || '';
                                 updateCurrentUserHeaderBadge();
                             }
                             const accessible = getAccessibleWorkshops();
@@ -2030,7 +2173,8 @@
                         password: String(appState.admin.password || '123').trim(),
                         fullName: String(appState.admin.fullName || '').trim(),
                         phone: String(appState.admin.phone || '').trim(),
-                        companyName: String(appState.admin.companyName || '').trim()
+                        companyName: String(appState.admin.companyName || '').trim(),
+                        companyLogo: String(appState.admin.companyLogo || '').trim()
                     },
                     subUsers: appState.subUsers,
                     workshops: appState.workshops.map((w, idx) => ({
@@ -2261,6 +2405,7 @@
                     fullName: appState.admin.fullName || '',
                     phone: appState.admin.phone || '',
                     companyName: appState.admin.companyName || '',
+                    companyLogo: appState.admin.companyLogo || '',
                     permissions: getFullManagerPermissionsObj(),
                     allowedWorkshops: 'ALL'
                 };
@@ -2324,10 +2469,12 @@
             const adminName = (appState.admin.fullName || '').trim();
             const adminPhone = (appState.admin.phone || '').trim();
             const fixedCompany = (appState.admin.companyName || '').trim();
+            const fixedLogo = (appState.admin.companyLogo || '').trim();
 
             if (!currentUser || currentUser.role === 'admin') {
                 return {
                     companyName: fixedCompany,
+                    companyLogo: fixedLogo,
                     personName: adminName,
                     phone: adminPhone,
                     sourceLabel: 'بيانات المدير الأساسي'
@@ -2340,6 +2487,7 @@
             if (useOwn) {
                 return {
                     companyName: fixedCompany,
+                    companyLogo: fixedLogo,
                     personName: (subObj.fullName || '').trim() || adminName,
                     phone: (subObj.phone || '').trim() || adminPhone,
                     sourceLabel: currentUser.role === 'manager' ? 'بيانات المدير' : 'بيانات صاحب الحساب الفرعي'
@@ -2348,6 +2496,7 @@
 
             return {
                 companyName: fixedCompany,
+                companyLogo: fixedLogo,
                 personName: adminName,
                 phone: adminPhone,
                 sourceLabel: 'بيانات المدير الأساسي'
@@ -2395,6 +2544,7 @@
             document.getElementById('profileAdminCompanyWrapper').classList.toggle('hidden', !isRootAdmin);
             if (isRootAdmin) {
                 document.getElementById('inputAdminCompanyFromProfile').value = appState.admin.companyName || '';
+                updateCompanyLogoPreviewUI('profile', appState.admin.companyLogo || '');
             }
             openModal('profileNameModal');
         }
@@ -2413,7 +2563,9 @@
                 appState.admin.fullName = nameVal;
                 appState.admin.phone = phoneVal;
                 appState.admin.companyName = compVal;
+                appState.admin.companyLogo = draftCompanyLogo || '';
                 currentUser.companyName = compVal;
+                currentUser.companyLogo = draftCompanyLogo || '';
             } else {
                 const idx = appState.subUsers.findIndex(u => u.username === currentUser.username);
                 if (idx !== -1) {
@@ -4264,6 +4416,7 @@
                 document.getElementById('printInputCompany').value = eff.companyName || '';
                 document.getElementById('printInputPerson').value = eff.personName || '';
                 document.getElementById('printInputPhone').value = eff.phone || '';
+                draftCompanyLogo = eff.companyLogo || '';
                 triggerActualPrintOrPdf(mode);
                 return;
             }
@@ -4288,6 +4441,7 @@
             document.getElementById('printInputCompany').value = eff.companyName || '';
             document.getElementById('printInputPerson').value = eff.personName || '';
             document.getElementById('printInputPhone').value = eff.phone || '';
+            updateCompanyLogoPreviewUI('print', eff.companyLogo || '');
 
             openModal('printDetailsModal');
         }
@@ -4302,6 +4456,9 @@
             const company = isAnyManager
                 ? (document.getElementById('printInputCompany').value.trim() || eff.companyName)
                 : eff.companyName;
+            const companyLogo = isAnyManager
+                ? (draftCompanyLogo || '')
+                : (eff.companyLogo || '');
             const person = isAnyManager
                 ? (document.getElementById('printInputPerson').value.trim() || eff.personName)
                 : eff.personName;
@@ -4332,6 +4489,14 @@
                 person ? `المسؤول: ${escapeHtml(person)}` : '',
                 phone ? `هاتف: <span dir="ltr">${escapeHtml(phone)}</span>` : ''
             ].filter(Boolean).join('&nbsp;&nbsp;•&nbsp;&nbsp;');
+
+            const logoHtml = companyLogo
+                ? `<td style="width:62px; padding:12px 16px 12px 0; text-align:right; vertical-align:middle;">
+                        <div style="width:52px; height:52px; border-radius:12px; background:#ffffff; padding:4px; border:2px solid #fbbf24; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <img src="${companyLogo}" alt="شعار الشركة" style="max-width:44px; max-height:44px; object-fit:contain; display:block;">
+                        </div>
+                   </td>`
+                : '';
 
             const usdBoxBg = totals.usdNet < 0 ? '#fff1f2' : '#ecfdf5';
             const usdBoxBorder = totals.usdNet < 0 ? '#f43f5e' : '#10b981';
@@ -4401,7 +4566,8 @@
                 <div style="border:2px solid #0f172a; border-radius:14px; overflow:hidden; margin-bottom:14px;">
                     <table style="width:100%; border-collapse:collapse; background:#0f172a; color:#ffffff; border-bottom:4px solid #f59e0b;">
                         <tr>
-                            <td style="padding:14px 18px; text-align:right; vertical-align:middle;">
+                            ${logoHtml}
+                            <td style="padding:14px ${companyLogo ? '12px' : '18px'}; text-align:right; vertical-align:middle;">
                                 <div style="font-size:18px; font-weight:900; color:#fbbf24;">${escapeHtml(company || 'كشف حساب مالي رسمي')}</div>
                                 ${contactLine ? `<div style="font-size:11px; color:#e2e8f0; margin-top:4px; font-weight:700;">${contactLine}</div>` : ''}
                             </td>
@@ -4526,15 +4692,17 @@
                 const person = document.getElementById('printInputPerson').value.trim();
                 const phone = document.getElementById('printInputPhone').value.trim();
 
+                appState.admin.companyName = company;
+                appState.admin.companyLogo = draftCompanyLogo || '';
+
                 if (currentUser.role === 'admin') {
-                    appState.admin.companyName = company;
                     if (person) appState.admin.fullName = person;
                     appState.admin.phone = phone;
                     currentUser.companyName = company;
+                    currentUser.companyLogo = draftCompanyLogo || '';
                     currentUser.fullName = appState.admin.fullName;
                     currentUser.phone = phone;
                 } else {
-                    appState.admin.companyName = company;
                     const idx = appState.subUsers.findIndex(u => u.username === currentUser.username);
                     if (idx !== -1) {
                         if (person) appState.subUsers[idx].fullName = person;
@@ -4673,13 +4841,233 @@
             }
         }
 
-        function exportWorkshopExcel() {
+        async function exportWorkshopExcel() {
             const ws = getActiveWorkshop();
             if (!ws) return;
             const rows = getFilteredTransactions(ws);
             const fType = document.getElementById('txFilterType').value;
             const totals = calculateFilteredListTotals(rows, fType);
             const eff = getEffectiveUserPrintProfile();
+            const safeFileName = `كشف_${(ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}.xlsx`;
+            const safeSheetName = (ws.name || 'كشف_الورشة').replace(/[\\/?*[\]:]/g, '_').substring(0, 30) || 'كشف_الورشة';
+
+            // تصدير Excel منسق مع تضمين شعار الشركة على اليمين عبر ExcelJS إن توفر
+            if (typeof ExcelJS !== 'undefined') {
+                try {
+                    const workbook = new ExcelJS.Workbook();
+                    const sheet = workbook.addWorksheet(safeSheetName, {
+                        views: [{ rightToLeft: true }]
+                    });
+
+                    sheet.columns = [
+                        { width: 16 },
+                        { width: 18 },
+                        { width: 21 },
+                        { width: 40 },
+                        { width: 19 },
+                        { width: 19 },
+                        { width: 17 },
+                        { width: 15 }
+                    ];
+
+                    const thinBorder = {
+                        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                        bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                        right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+                    };
+                    const medDarkBorder = {
+                        top: { style: 'medium', color: { argb: 'FF0F172A' } },
+                        bottom: { style: 'medium', color: { argb: 'FF0F172A' } },
+                        left: { style: 'thin', color: { argb: 'FF334155' } },
+                        right: { style: 'thin', color: { argb: 'FF334155' } }
+                    };
+
+                    // الصف 1: اسم الشركة + شعار الشركة على اليمين (العمود A)
+                    const hasLogo = !!(eff.companyLogo && eff.companyLogo.startsWith('data:image/'));
+                    sheet.addRow([hasLogo ? '' : (eff.companyName || 'نظام إدارة محاسبة الورشات'), hasLogo ? (eff.companyName || 'نظام إدارة محاسبة الورشات') : '', '', '', '', '', '', '']);
+                    sheet.getRow(1).height = 38;
+                    if (hasLogo) {
+                        sheet.mergeCells('B1:H1');
+                    } else {
+                        sheet.mergeCells('A1:H1');
+                    }
+                    for (let c = 1; c <= 8; c++) {
+                        const cell = sheet.getRow(1).getCell(c);
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+                        cell.font = { name: 'Cairo', size: 15, bold: true, color: { argb: 'FFFBBF24' } };
+                        cell.alignment = { horizontal: 'right', vertical: 'center' };
+                    }
+                    if (hasLogo) {
+                        const extMatch = eff.companyLogo.match(/^data:image\/(png|jpeg|jpg);base64,/i);
+                        const imgExt = extMatch && extMatch[1].toLowerCase() === 'png' ? 'png' : 'jpeg';
+                        const imageId = workbook.addImage({
+                            base64: eff.companyLogo,
+                            extension: imgExt
+                        });
+                        sheet.addImage(imageId, {
+                            tl: { col: 0.15, row: 0.08 },
+                            ext: { width: 46, height: 46 }
+                        });
+                    }
+
+                    // الصف 2: بيانات الورشة والتاريخ والمعدّ
+                    sheet.addRow([`كشف حساب الورشة: ${ws.name}`, '', '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`, '', '']);
+                    sheet.getRow(2).height = 24;
+                    sheet.mergeCells('A2:C2');
+                    sheet.mergeCells('D2:E2');
+                    sheet.mergeCells('F2:H2');
+                    for (let c = 1; c <= 8; c++) {
+                        const cell = sheet.getRow(2).getCell(c);
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        cell.font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF1E293B' } };
+                        cell.alignment = { horizontal: 'right', vertical: 'center' };
+                        cell.border = thinBorder;
+                    }
+
+                    // الصف 3: الوصف
+                    sheet.addRow([ws.description ? `الوصف: ${ws.description}` : 'كشف الحركات المالية التفصيلي', '', '', '', '', '', '', '']);
+                    sheet.getRow(3).height = 22;
+                    sheet.mergeCells('A3:H3');
+                    for (let c = 1; c <= 8; c++) {
+                        const cell = sheet.getRow(3).getCell(c);
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+                        cell.font = { name: 'Cairo', size: 10.5, bold: true, color: { argb: 'FF475569' } };
+                        cell.alignment = { horizontal: 'right', vertical: 'center' };
+                        cell.border = thinBorder;
+                    }
+
+                    // الصف 4: فاصل
+                    sheet.addRow(['', '', '', '', '', '', '', '']);
+                    sheet.getRow(4).height = 10;
+
+                    // الصف 5-7: ملخص الصناديق
+                    sheet.addRow(['ملخص الصندوق المالي', 'الإيرادات (+)', 'المصروفات (-)', 'الصافي الحالي', '', '', '', '']);
+                    sheet.getRow(5).height = 24;
+                    for (let c = 1; c <= 4; c++) {
+                        const cell = sheet.getRow(5).getCell(c);
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                        cell.font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+                        cell.alignment = { horizontal: 'center', vertical: 'center' };
+                        cell.border = medDarkBorder;
+                    }
+
+                    const usdRow = sheet.addRow(['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', '']);
+                    usdRow.height = 22;
+                    usdRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                    usdRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+                    usdRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
+                    usdRow.getCell(1).border = thinBorder;
+
+                    usdRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+                    usdRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
+                    usdRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
+                    usdRow.getCell(2).numFmt = '#,##0.00';
+                    usdRow.getCell(2).border = thinBorder;
+
+                    usdRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
+                    usdRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
+                    usdRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
+                    usdRow.getCell(3).numFmt = '#,##0.00';
+                    usdRow.getCell(3).border = thinBorder;
+
+                    usdRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.usdNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
+                    usdRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.usdNet < 0 ? 'FFBE123C' : 'FF065F46' } };
+                    usdRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
+                    usdRow.getCell(4).numFmt = '#,##0.00';
+                    usdRow.getCell(4).border = thinBorder;
+
+                    const sypRow = sheet.addRow(['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', '']);
+                    sypRow.height = 22;
+                    sypRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                    sypRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+                    sypRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
+                    sypRow.getCell(1).border = thinBorder;
+
+                    sypRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+                    sypRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
+                    sypRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
+                    sypRow.getCell(2).numFmt = '#,##0';
+                    sypRow.getCell(2).border = thinBorder;
+
+                    sypRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
+                    sypRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
+                    sypRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
+                    sypRow.getCell(3).numFmt = '#,##0';
+                    sypRow.getCell(3).border = thinBorder;
+
+                    sypRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.sypNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
+                    sypRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.sypNet < 0 ? 'FFBE123C' : 'FF065F46' } };
+                    sypRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
+                    sypRow.getCell(4).numFmt = '#,##0';
+                    sypRow.getCell(4).border = thinBorder;
+
+                    // الصف 8: فاصل
+                    sheet.addRow(['', '', '', '', '', '', '', '']);
+                    sheet.getRow(8).height = 10;
+
+                    // الصف 9: ترويسة الجدول
+                    const hdrRow = sheet.addRow(['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']);
+                    hdrRow.height = 26;
+                    for (let c = 1; c <= 8; c++) {
+                        const cell = hdrRow.getCell(c);
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+                        cell.font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+                        cell.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+                        cell.border = medDarkBorder;
+                    }
+
+                    // صفوف الحركات
+                    rows.forEach(tx => {
+                        let rVals = [];
+                        let rowBg = 'FFFFFFFF';
+                        let typeColor = 'FF0F172A';
+                        if (tx.type === 'income') {
+                            rowBg = 'FFECFDF5';
+                            typeColor = 'FF065F46';
+                            rVals = [tx.date, 'إيراد', tx.category || 'عام', tx.description || '', 0, Number(tx.amount) || 0, tx.currency === 'USD' ? 'USD ($)' : 'SYP (ل.س)', ''];
+                        } else if (tx.type === 'expense') {
+                            rowBg = 'FFFFF1F2';
+                            typeColor = 'FF9F1239';
+                            rVals = [tx.date, 'مصروف', tx.category || 'عام', tx.description || '', Number(tx.amount) || 0, 0, tx.currency === 'USD' ? 'USD ($)' : 'SYP (ل.س)', ''];
+                        } else {
+                            rowBg = 'FFFEFCE8';
+                            typeColor = 'FF92400E';
+                            rVals = [tx.date, 'صرافة / تحويل', 'صرافة', tx.description || '', Number(tx.fromAmount) || 0, Number(tx.toAmount) || 0, `${tx.fromCurrency} ➔ ${tx.toCurrency}`, Number(tx.rate) || ''];
+                        }
+
+                        const dRow = sheet.addRow(rVals);
+                        dRow.height = 22;
+                        for (let c = 1; c <= 8; c++) {
+                            const cell = dRow.getCell(c);
+                            const isNumCol = (c === 5 || c === 6 || (c === 8 && typeof cell.value === 'number'));
+                            let fColor = 'FF0F172A';
+                            if (c === 2) fColor = typeColor;
+                            if (c === 5 && Number(cell.value) > 0) fColor = 'FF9F1239';
+                            if (c === 6 && Number(cell.value) > 0) fColor = 'FF065F46';
+
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBg } };
+                            cell.font = { name: 'Cairo', size: 10.5, bold: (c === 2 || c === 5 || c === 6), color: { argb: fColor } };
+                            cell.alignment = { horizontal: c === 4 ? 'right' : 'center', vertical: 'center', wrapText: true };
+                            if (isNumCol) cell.numFmt = '#,##0.00';
+                            cell.border = thinBorder;
+                        }
+                    });
+
+                    const buffer = await workbook.xlsx.writeBuffer();
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = safeFileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast(`تم تصدير ملف Excel المنسق مع الشعار بنجاح (${safeFileName})`, '📊');
+                    return;
+                } catch (err) {
+                    console.warn('ExcelJS fallback to XLSX:', err);
+                }
+            }
 
             if (typeof XLSX === 'undefined') {
                 showToast('مكتبة Excel قيد التحميل، يرجى المحاولة بعد ثوانٍ', '⚠️');
@@ -4804,7 +5192,6 @@
 
             const worksheet = XLSX.utils.aoa_to_sheet(aoaData);
 
-            // تطبيق الأنماط والألوان والحدود على كافة الخلايا
             for (let c = 0; c < 8; c++) {
                 const cell0 = XLSX.utils.encode_cell({ r: 0, c });
                 if (worksheet[cell0]) worksheet[cell0].s = titleStyle;
@@ -4819,7 +5206,6 @@
                 if (worksheet[cell8]) worksheet[cell8].s = tableHeaderStyle;
             }
 
-            // تنسيق جدول الملخص المالي (الصفوف 4 و 5 و 6)
             for (let c = 0; c < 4; c++) {
                 const c4 = XLSX.utils.encode_cell({ r: 4, c });
                 if (worksheet[c4]) worksheet[c4].s = summaryHeaderStyle;
@@ -4834,7 +5220,6 @@
             worksheet[XLSX.utils.encode_cell({ r: 6, c: 2 })].s = { ...summaryOutStyle, numFmt: '#,##0' };
             worksheet[XLSX.utils.encode_cell({ r: 6, c: 3 })].s = getSummaryNetStyle(totals.sypNet, true);
 
-            // تنسيق صفوف الحركات بألوان مطابقة لنوع الحركة (أخضر للإيراد، وردي للمصروف، أصفر للصرافة)
             rowTypes.forEach((tType, idx) => {
                 const r = 9 + idx;
                 let rowBg = 'FFFFFF';
@@ -4878,7 +5263,6 @@
                 }
             });
 
-            // دمج خلايا العنوان والترويسة بشكل أنيق
             worksheet['!merges'] = [
                 { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
                 { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
@@ -4917,10 +5301,7 @@
             if (!workbook.Workbook) workbook.Workbook = {};
             workbook.Workbook.Views = [{ RTL: true }];
 
-            const safeSheetName = (ws.name || 'كشف_الورشة').replace(/[\\/?*[\]:]/g, '_').substring(0, 30);
-            XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName || 'كشف_الورشة');
-
-            const safeFileName = `كشف_${(ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}.xlsx`;
+            XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName);
             XLSX.writeFile(workbook, safeFileName);
             showToast(`تم تصدير ملف Excel المنسق بنجاح (${safeFileName})`, '📊');
         }
@@ -4950,6 +5331,7 @@
                 document.getElementById('adminFullNameInput').value = appState.admin.fullName || '';
                 document.getElementById('adminPhoneInput').value = appState.admin.phone || '';
                 document.getElementById('adminCompanyNameInput').value = appState.admin.companyName || '';
+                updateCompanyLogoPreviewUI('admin', appState.admin.companyLogo || '');
             }
 
             resetSubUserForm();
@@ -4977,17 +5359,19 @@
             appState.admin.fullName = f;
             appState.admin.phone = ph;
             appState.admin.companyName = comp;
+            appState.admin.companyLogo = draftCompanyLogo || '';
 
             currentUser.username = u;
             currentUser.password = p;
             currentUser.fullName = f;
             currentUser.phone = ph;
             currentUser.companyName = comp;
+            currentUser.companyLogo = draftCompanyLogo || '';
 
             persistAuthSession(u, p);
             updateCurrentUserHeaderBadge();
             await saveToCloud();
-            showToast('تم حفظ بيانات المدير الأساسي واسم الشركة في السحابة بنجاح', '👑');
+            showToast('تم حفظ بيانات المدير الأساسي واسم وشعار الشركة في السحابة بنجاح', '👑');
         }
 
         function renderSubUserWorkshopsCheckboxes(selectedIds = []) {
