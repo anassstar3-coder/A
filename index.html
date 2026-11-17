@@ -243,8 +243,15 @@
 
     <!-- ==================== 1. LOGIN SCREEN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-4 overflow-y-auto">
-        <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 text-slate-800 my-auto">
-            <div class="flex flex-col items-center text-center mb-6">
+        <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 text-slate-800 my-auto relative">
+            <!-- زر إعداد مفتاح السحابة المضيف من شاشة الدخول (محمي بكلمة السر) -->
+            <button type="button" onclick="requestCloudHostKeyModal()" title="تغيير مفتاح الموقع السحابي المضيف"
+                class="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-800 border border-slate-200 text-[11px] font-black transition flex items-center gap-1">
+                <span>☁️</span>
+                <span>مفتاح السحابة</span>
+            </button>
+
+            <div class="flex flex-col items-center text-center mb-6 pt-3">
                 <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-emerald-500 p-0.5 shadow-xl shadow-indigo-500/30 mb-4">
                     <div class="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center">
                         <svg class="w-11 h-11 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -258,6 +265,9 @@
                 <div id="loginCloudBadge" class="mt-4 inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-extrabold text-slate-600 transition-all">
                     <span id="loginCloudDot" class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
                     <span id="loginCloudText">جاري الاتصال بالسحابة وجلب البيانات...</span>
+                </div>
+                <div id="loginActiveHostPill" class="mt-1.5 text-[10px] font-bold text-slate-400" dir="ltr">
+                    Host: anas-alasfar
                 </div>
             </div>
 
@@ -332,6 +342,12 @@
                             <span>تحديث</span>
                         </button>
 
+                        <button id="btnCloudHostKeyHeader" onclick="requestCloudHostKeyModal()" title="تغيير مفتاح الموقع السحابي المضيف"
+                            class="px-3 py-2 rounded-xl bg-sky-600/25 hover:bg-sky-600/45 text-sky-200 text-xs font-extrabold border border-sky-400/35 transition flex items-center gap-1.5">
+                            <span>☁️</span>
+                            <span>مفتاح السحابة</span>
+                        </button>
+
                         <button id="btnTrashManager" onclick="openTrashModal()"
                             class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-extrabold border border-rose-400/30 transition flex items-center gap-1.5">
                             <span>🗑️</span>
@@ -367,6 +383,7 @@
                     <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400 shrink-0"></span>
                     <span class="text-[11px] sm:text-xs font-bold text-slate-400 shrink-0">الورشة:</span>
                     <span id="stickyWorkshopName" class="text-xs sm:text-base font-black text-amber-300 truncate block">لم يتم تحديد ورشة</span>
+                    <span id="stickyWorkshopCurrencyBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 inline-flex items-center gap-1"></span>
                     <span id="stickyWorkshopStatus" class="hidden px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shrink-0"></span>
                     <span id="stickyWorkshopDesc" class="hidden lg:inline text-xs font-semibold text-slate-300 truncate border-r border-slate-700 pr-2.5"></span>
                 </div>
@@ -454,9 +471,17 @@
                             <input type="text" id="newWorkshopName" required placeholder="اسم الورشة الجديدة (مثال: بناء برج السلام)..."
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-600 focus:border-indigo-400 focus:outline-none text-sm font-bold bg-slate-900 text-white placeholder-slate-400">
                         </div>
-                        <div class="md:col-span-6">
+                        <div class="md:col-span-4">
                             <input type="text" id="newWorkshopDesc" placeholder="وصف الورشة أو الموقع أو اسم المتعهد (اختياري)..."
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-600 focus:border-indigo-400 focus:outline-none text-sm font-bold bg-slate-900 text-white placeholder-slate-400">
+                        </div>
+                        <div class="md:col-span-2">
+                            <select id="newWorkshopCurrencyMode" title="نظام عملة صندوق الورشة"
+                                class="w-full h-full px-3 py-2.5 rounded-xl border border-slate-600 focus:border-indigo-400 focus:outline-none text-xs sm:text-sm font-black bg-slate-900 text-amber-300 cursor-pointer">
+                                <option value="DUAL">💱 مزدوج (دولار + سوري)</option>
+                                <option value="USD">💵 دولار فقط ($)</option>
+                                <option value="SYP">🟢 سوري فقط (ل.س)</option>
+                            </select>
                         </div>
                         <div class="md:col-span-2">
                             <button type="submit"
@@ -502,6 +527,12 @@
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h2 id="activeWsTitle" class="text-lg sm:text-xl font-black text-white truncate">اسم الورشة</h2>
+                                <span id="activeWsCurrencyModeBadge" class="px-2.5 py-0.5 rounded-lg text-[11px] font-black inline-flex items-center gap-1"></span>
+                                <button id="btnUpgradeWsToDual" onclick="requestUpgradeWorkshopToDual()" title="ترقية هذه الورشة من عملة واحدة إلى مزدوجة (دولار + سوري) — يتطلب كلمة سر الحساب"
+                                    class="hidden px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-black shadow transition flex items-center gap-1">
+                                    <span>🔐</span>
+                                    <span>ترقية لمزدوجة (دولار + سوري)</span>
+                                </button>
                                 <button id="btnEditWsInfo" onclick="openEditWorkshopModal()" title="تعديل اسم ووصف الورشة"
                                     class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-amber-300 text-xs font-extrabold transition">
                                     ✏️ تعديل الاسم/الوصف
@@ -535,7 +566,7 @@
                         <span>⏸ هذه الورشة متوقفة حالياً — لا يمكن تعديل اسمها أو إضافة أو تعديل أو حذف أي بند أو تصنيف حتى يتم تفعيلها.</span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div id="wsCashboxesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div id="wsUsdBox" class="rounded-2xl border-2 p-5 transition-all shadow-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span id="wsUsdBoxLabel" class="text-xs font-black text-slate-700">صندوق الورشة</span>
@@ -578,7 +609,7 @@
                             <span class="text-lg font-black">-</span>
                             <span>إضافة مصروف</span>
                         </button>
-                        <button onclick="openExchangeModal()"
+                        <button id="btnAddExchangeTx" onclick="openExchangeModal()"
                             class="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm shadow-md shadow-amber-500/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
                             <span class="text-base">⇄</span>
                             <span>إضافة تحويل / صرافة</span>
@@ -632,7 +663,7 @@
                                     <option value="all">كل البنود</option>
                                 </select>
                             </div>
-                            <div>
+                            <div id="txFilterCurrencyWrapper">
                                 <select id="txFilterCurrency" onchange="renderTransactionsTable()"
                                     class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-indigo-600 focus:outline-none text-xs font-extrabold bg-white transition-colors">
                                     <option value="all">كل العملات</option>
@@ -711,7 +742,55 @@
 
     <!-- ==================== FLOATING MODALS ==================== -->
 
-    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS, TRASH MOVE OR SUB-USER/MANAGER DELETION (HIGH Z-INDEX z-[70]) -->
+    <!-- MODAL: CLOUD HOST KEY CONFIGURATION (PASSWORD PROTECTED) -->
+    <div id="cloudHostConfigModal" class="hidden fixed inset-0 z-[75] modal-backdrop flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-sky-300 overflow-hidden text-slate-800 my-auto">
+            <div class="bg-gradient-to-l from-sky-950 via-slate-900 to-indigo-950 px-5 py-4 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-black text-sky-300 flex items-center gap-1.5">
+                        <span>☁️</span>
+                        <span>إعداد مفتاح الموقع السحابي المضيف</span>
+                    </h3>
+                    <p class="text-[11px] font-bold text-slate-300 mt-0.5">تغيير معرف السحابة (Firebase Project ID) بأمان</p>
+                </div>
+                <button type="button" onclick="closeModal('cloudHostConfigModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center font-black">✕</button>
+            </div>
+            <form onsubmit="saveCloudHostKeyConfig(event)" class="p-5 space-y-4">
+                <div class="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-xs font-bold text-sky-950 leading-relaxed">
+                    يمكنك لصق <strong>معرف المشروع السحابي (Project ID)</strong> الجديد أو لصق <strong>رابط Firestore الكامل</strong> وسيتم استخراج المفتاح وربط التطبيق بالسحابة الجديدة فوراً.
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">مفتاح / معرف السحابة المضيف (Project ID أو الرابط) *</label>
+                    <input type="text" id="cloudHostKeyInput" required dir="ltr" placeholder="مثال: anas-alasfar أو رابط Firestore..."
+                        class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-sky-600 focus:outline-none text-sm font-black bg-slate-50 text-left">
+                    <div class="text-[11px] font-bold text-slate-500 mt-1" dir="ltr">
+                        المفتاح الافتراضي الأساسي: <span class="text-indigo-700 font-black">anas-alasfar</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 mb-1.5">كلمة مرور المدير الأساسي للتأكيد *</label>
+                    <input type="password" id="cloudHostAuthPasswordInput" required placeholder="أدخل كلمة مرور المدير لتأكيد التغيير..."
+                        class="w-full px-4 py-3 rounded-2xl border-2 border-amber-300 focus:border-amber-500 focus:outline-none text-sm font-black bg-amber-50/40 text-center">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-black text-xs shadow transition">
+                        💾 حفظ وتطبيق المفتاح السحابي
+                    </button>
+                    <button type="button" onclick="resetCloudHostKeyToDefault()" class="px-3.5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xs transition">
+                        إعادة الافتراضي
+                    </button>
+                    <button type="button" onclick="closeModal('cloudHostConfigModal')" class="px-3.5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs transition">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PASSWORD VERIFICATION FOR WORKSHOP STATUS, TRASH MOVE, DUAL UPGRADE OR SUB-USER DELETION (HIGH Z-INDEX z-[70]) -->
     <div id="ownerAuthStatusModal" class="hidden fixed inset-0 z-[70] modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border-2 border-amber-300 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
@@ -721,7 +800,9 @@
             <form onsubmit="confirmOwnerPasswordAction(event)" class="p-5 space-y-4">
                 <input type="hidden" id="pendingActionWsId">
                 <input type="hidden" id="pendingActionType" value="toggleStatus">
-                <p id="ownerAuthStatusMessage" class="text-xs font-extrabold text-slate-700 leading-relaxed"></p>
+                <input type="hidden" id="pendingEditWsName">
+                <input type="hidden" id="pendingEditWsDesc">
+                <p id="ownerAuthStatusMessage" class="text-xs font-extrabold text-slate-700 leading-relaxed whitespace-pre-line"></p>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 mb-1.5">أدخل كلمة مرور حسابك الحالي للمتابعة *</label>
                     <input type="password" id="ownerAuthPasswordInput" required placeholder="••••••••"
@@ -885,19 +966,23 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="sm:col-span-2">
+                <div id="txAmountCurrencyGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div id="txAmountCol" class="sm:col-span-2">
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">المبلغ *</label>
                         <input type="text" inputmode="decimal" id="txAmount" required placeholder="0" oninput="formatLiveNumberInput(this)"
                             class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-black bg-slate-50 text-left" dir="ltr">
                     </div>
-                    <div>
+                    <div id="txCurrencySelectWrapper">
                         <label class="block text-xs font-extrabold text-slate-700 mb-1">العملة *</label>
                         <select id="txCurrency"
                             class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-black bg-slate-50">
                             <option value="USD">دولار ($)</option>
                             <option value="SYP">ليرة سورية (ل.س)</option>
                         </select>
+                    </div>
+                    <div id="txFixedCurrencyBadgeBox" class="hidden">
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">عملة الورشة</label>
+                        <div id="txFixedCurrencyBadge" class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 bg-slate-100 text-slate-900 text-sm font-black text-center"></div>
                     </div>
                 </div>
 
@@ -1140,7 +1225,7 @@
         </div>
     </div>
 
-    <!-- MODAL 5: EDIT WORKSHOP NAME & DESCRIPTION -->
+    <!-- MODAL 5: EDIT WORKSHOP NAME, DESCRIPTION & UPGRADE CURRENCY MODE -->
     <div id="editWorkshopModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border-2 border-slate-200 overflow-hidden text-slate-800">
             <div class="bg-slate-900 px-5 py-4 text-white flex items-center justify-between">
@@ -1157,6 +1242,24 @@
                     <label class="block text-xs font-extrabold text-slate-700 mb-1">وصف الورشة</label>
                     <input type="text" id="editWsDescInput" placeholder="وصف الورشة أو موقعها..."
                         class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-sm font-bold bg-slate-50">
+                </div>
+                <div id="editWsCurrencyUpgradeBox" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-slate-50 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-slate-700">نظام العملة في الورشة:</span>
+                        <span id="editWsCurrentModeLabel" class="px-2.5 py-0.5 rounded-full text-xs font-black inline-flex items-center gap-1"></span>
+                    </div>
+                    <div id="editWsUpgradeOptionWrapper" class="hidden pt-1">
+                        <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-amber-50 border border-amber-300 cursor-pointer">
+                            <input type="checkbox" id="chkUpgradeWsToDualInEdit" class="w-4 h-4 mt-0.5 accent-amber-600">
+                            <span class="text-xs font-extrabold text-amber-950 leading-relaxed">
+                                🔐 ترقية هذه الورشة إلى <strong>مزدوجة العملة (دولار + ليرة سورية مع الصرافة)</strong>
+                                <span class="block text-[10.5px] font-bold text-rose-700 mt-0.5">يتطلب إدخال كلمة سر الحساب الحالي، وبعد التحويل لا يمكن إعادتها إلى عملة واحدة.</span>
+                            </span>
+                        </label>
+                    </div>
+                    <p id="editWsDualLockedNote" class="hidden text-[11px] font-bold text-slate-500">
+                        🔒 هذه الورشة مزدوجة العملة (USD & SYP) ولا يمكن تحويلها إلى عملة واحدة.
+                    </p>
                 </div>
                 <div class="flex items-center gap-2.5 pt-1">
                     <button type="submit" class="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm shadow transition">
@@ -1449,17 +1552,61 @@
 
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
-        // ==================== 1. PERMANENT CLOUD CONSTANTS (NEVER ALTER) ====================
-        const FIREBASE_PROJECT_ID = 'anas-alasfar';
-        const FIRESTORE_ROOT_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+        // ==================== 1. PERMANENT CLOUD CONSTANTS & DYNAMIC HOST KEY ====================
+        const DEFAULT_FIREBASE_PROJECT_ID = 'anas-alasfar';
+        const CLOUD_HOST_CONFIG_KEY = 'workshops_cloud_host_project_id_v1';
         const FIRESTORE_COLLECTION = 'workshops_accounting_sync';
         const MASTER_DOC_ID = 'cloud_master_v8';
         const BACKUP_LATEST_DOC_ID = 'cloud_backup_latest';
-        const FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_URL}/${FIRESTORE_COLLECTION}`;
         const CLOUD_MAX_BYTES = 1024 * 1024 * 1024; // 1 GB
         const TRASH_RETENTION_DAYS = 30;
         const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
         const AUTH_SESSION_KEY = 'workshops_cloud_auth_session_v1';
+
+        // علم سوريا الأخضر الجديد (علم الثورة السورية الأخضر بثلاث نجمات حمراء)
+        const SYRIA_GREEN_FLAG_SVG = `<svg viewBox="0 0 36 24" class="inline-block w-4 h-3 rounded-[2px] border border-white/30 shrink-0 align-middle" xmlns="http://www.w3.org/2000/svg" aria-label="علم سوريا الأخضر"><rect width="36" height="8" y="0" fill="#007A3D"/><rect width="36" height="8" y="8" fill="#FFFFFF"/><rect width="36" height="8" y="16" fill="#000000"/><polygon points="9,9.3 9.7,11.3 11.8,11.3 10.1,12.5 10.7,14.5 9,13.3 7.3,14.5 7.9,12.5 6.2,11.3 8.3,11.3" fill="#CE1126"/><polygon points="18,9.3 18.7,11.3 20.8,11.3 19.1,12.5 19.7,14.5 18,13.3 16.3,14.5 16.9,12.5 15.2,11.3 17.3,11.3" fill="#CE1126"/><polygon points="27,9.3 27.7,11.3 29.8,11.3 28.1,12.5 28.7,14.5 27,13.3 25.3,14.5 25.9,12.5 24.2,11.3 26.3,11.3" fill="#CE1126"/></svg>`;
+
+        function extractFirebaseProjectId(rawInput) {
+            const val = String(rawInput || '').trim();
+            if (!val) return DEFAULT_FIREBASE_PROJECT_ID;
+            const firestoreMatch = val.match(/projects\/([a-zA-Z0-9_-]+)/);
+            if (firestoreMatch && firestoreMatch[1]) {
+                return firestoreMatch[1];
+            }
+            const firebaseAppMatch = val.match(/([a-zA-Z0-9-]+)\.(?:firebaseapp\.com|web\.app|firebaseio\.com)/);
+            if (firebaseAppMatch && firebaseAppMatch[1]) {
+                return firebaseAppMatch[1];
+            }
+            return val.replace(/[^a-zA-Z0-9_-]/g, '') || DEFAULT_FIREBASE_PROJECT_ID;
+        }
+
+        function getSavedCloudProjectId() {
+            try {
+                const stored = localStorage.getItem(CLOUD_HOST_CONFIG_KEY);
+                if (stored && stored.trim()) {
+                    return extractFirebaseProjectId(stored);
+                }
+            } catch (e) {}
+            return DEFAULT_FIREBASE_PROJECT_ID;
+        }
+
+        let FIREBASE_PROJECT_ID = getSavedCloudProjectId();
+        let FIRESTORE_ROOT_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+        let FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_URL}/${FIRESTORE_COLLECTION}`;
+
+        function applyCloudProjectEndpoint(projectId, persistToStorage = true) {
+            const cleanId = extractFirebaseProjectId(projectId);
+            FIREBASE_PROJECT_ID = cleanId;
+            FIRESTORE_ROOT_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+            FIRESTORE_BASE_URL = `${FIRESTORE_ROOT_URL}/${FIRESTORE_COLLECTION}`;
+            if (persistToStorage) {
+                try {
+                    localStorage.setItem(CLOUD_HOST_CONFIG_KEY, cleanId);
+                } catch (e) {}
+            }
+            const pill = document.getElementById('loginActiveHostPill');
+            if (pill) pill.textContent = `Host: ${FIREBASE_PROJECT_ID}`;
+        }
 
         // ==================== 2. IN-MEMORY APPLICATION STATE (NO LOCAL DATA STORAGE) ====================
         let appState = {
@@ -1493,6 +1640,140 @@
         let lastCloudHash = '';
         let syncIntervalHandle = null;
         let trashCountdownInterval = null;
+
+        // ==================== WORKSHOP CURRENCY MODE HELPERS ====================
+        function normalizeCurrencyMode(rawMode) {
+            const m = String(rawMode || '').trim().toUpperCase();
+            if (m === 'USD' || m === 'SYP') return m;
+            return 'DUAL';
+        }
+
+        function getWorkshopCurrencyMode(ws) {
+            if (!ws) return 'DUAL';
+            return normalizeCurrencyMode(ws.currencyMode);
+        }
+
+        function getCurrencyModeBadgeInfo(mode) {
+            if (mode === 'USD') {
+                return {
+                    shortHtml: `<span>$ دولار فقط</span>`,
+                    fullHtml: `<span>💵 دولار أمريكي فقط ($)</span>`,
+                    shortText: '$ دولار فقط',
+                    fullText: '💵 دولار أمريكي فقط ($)',
+                    badgeClass: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/35'
+                };
+            }
+            if (mode === 'SYP') {
+                return {
+                    shortHtml: `${SYRIA_GREEN_FLAG_SVG}<span>سوري فقط</span>`,
+                    fullHtml: `${SYRIA_GREEN_FLAG_SVG}<span>ليرة سورية فقط (ل.س)</span>`,
+                    shortText: 'سوري فقط (ل.س)',
+                    fullText: 'ليرة سورية فقط (ل.س)',
+                    badgeClass: 'bg-emerald-600/25 text-emerald-200 border border-emerald-400/40'
+                };
+            }
+            return {
+                shortHtml: `<span>💱 مزدوج ($ + ل.س)</span>`,
+                fullHtml: `<span>💱 مزدوج (دولار + ليرة سورية)</span>`,
+                shortText: '💱 مزدوج ($ + ل.س)',
+                fullText: '💱 مزدوج (دولار + ليرة سورية)',
+                badgeClass: 'bg-indigo-500/25 text-indigo-200 border border-indigo-400/35'
+            };
+        }
+
+        function requestUpgradeWorkshopToDual(customNewName = null, customNewDesc = null) {
+            const ws = getActiveWorkshop();
+            if (!ws) return;
+            if (!ensureActiveWorkshopIsEnabled()) return;
+            if (!currentUser.permissions.editWs) {
+                showToast('ليس لديك صلاحية تعديل إعدادات هذه الورشة', '🔒');
+                return;
+            }
+            const mode = getWorkshopCurrencyMode(ws);
+            if (mode === 'DUAL') return;
+
+            const currentTypeTxt = mode === 'USD' ? 'دولار فقط ($)' : 'ليرة سورية فقط (ل.س)';
+
+            document.getElementById('pendingActionWsId').value = ws.id;
+            document.getElementById('pendingActionType').value = 'upgradeToDual';
+            document.getElementById('pendingEditWsName').value = customNewName !== null ? customNewName : ws.name;
+            document.getElementById('pendingEditWsDesc').value = customNewDesc !== null ? customNewDesc : (ws.description || '');
+
+            document.getElementById('ownerAuthModalTitle').textContent = '🔐 تأكيد ترقية الورشة إلى مزدوجة';
+            document.getElementById('ownerAuthPasswordInput').value = '';
+            document.getElementById('ownerAuthStatusMessage').textContent =
+                `لتحويل ورشة "${ws.name}" من (${currentTypeTxt}) إلى مزدوجة العملة (دولار أمريكي + ليرة سورية مع الصرافة)، يرجى إدخال كلمة مرور حسابك الحالي (${currentUser.username}):\n\n⚠️ تنبيه: بعد التحويل إلى مزدوجة لا يمكن إعادتها إلى عملة واحدة.`;
+
+            const confirmBtn = document.getElementById('btnConfirmOwnerStatus');
+            confirmBtn.textContent = '💱 تأكيد الترقية لمزدوجة';
+            confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow';
+
+            openModal('ownerAuthStatusModal');
+            setTimeout(() => document.getElementById('ownerAuthPasswordInput').focus(), 100);
+        }
+
+        // ==================== CLOUD HOST KEY CONFIG MODAL (PASSWORD PROTECTED) ====================
+        function requestCloudHostKeyModal() {
+            if (currentUser && currentUser.role !== 'admin') {
+                showToast('تعديل مفتاح السحابة المضيف متاح للمدير الأساسي فقط!', '🔒');
+                return;
+            }
+            document.getElementById('cloudHostKeyInput').value = FIREBASE_PROJECT_ID;
+            document.getElementById('cloudHostAuthPasswordInput').value = '';
+            openModal('cloudHostConfigModal');
+            setTimeout(() => document.getElementById('cloudHostKeyInput').focus(), 100);
+        }
+
+        async function saveCloudHostKeyConfig(e) {
+            e.preventDefault();
+            const rawKey = document.getElementById('cloudHostKeyInput').value.trim();
+            const enteredPass = document.getElementById('cloudHostAuthPasswordInput').value.trim();
+            const expectedPass = isValidCredentialStr(appState.admin?.password)
+                ? String(appState.admin.password).trim()
+                : '123';
+
+            if (!enteredPass || enteredPass !== expectedPass) {
+                showToast('❌ كلمة مرور المدير غير صحيحة! لا يمكن تعديل مفتاح السحابة.', '🔒');
+                document.getElementById('cloudHostAuthPasswordInput').value = '';
+                document.getElementById('cloudHostAuthPasswordInput').focus();
+                return;
+            }
+
+            const newProjectId = extractFirebaseProjectId(rawKey);
+            if (!newProjectId) {
+                showToast('يرجى إدخال معرف مشروع سحابي صحيح!', '⚠️');
+                return;
+            }
+
+            closeModal('cloudHostConfigModal');
+            applyCloudProjectEndpoint(newProjectId, true);
+
+            lastCloudHash = '';
+            hasFetchedInitialCloud = false;
+            updateCloudStatusUI(true, `جاري الاتصال بالسحابة (${newProjectId})...`);
+
+            const ok = await fetchFromCloud(false);
+            if (ok) {
+                if (currentUser) {
+                    const accessible = getAccessibleWorkshops();
+                    if (accessible.length > 0 && (!activeWorkshopId || !accessible.some(w => w.id === activeWorkshopId))) {
+                        activeWorkshopId = accessible[0].id;
+                    } else if (accessible.length === 0) {
+                        activeWorkshopId = null;
+                    }
+                    refreshAllViewsAfterSync();
+                }
+                showToast(`✅ تم ربط النظام بالمضيف السحابي (${newProjectId}) بنجاح`, '☁️');
+            } else {
+                showToast(`⚠️ تم حفظ المفتاح (${newProjectId})، تأكد من وجود إنترنت وصلاحيات Firestore`, '⚠️');
+            }
+        }
+
+        function resetCloudHostKeyToDefault() {
+            document.getElementById('cloudHostKeyInput').value = DEFAULT_FIREBASE_PROJECT_ID;
+            showToast(`تم وضع المفتاح الافتراضي (${DEFAULT_FIREBASE_PROJECT_ID}) — أدخل كلمة السر واضغط حفظ للتأكيد`, 'ℹ️');
+            document.getElementById('cloudHostAuthPasswordInput').focus();
+        }
 
         // ==================== 3. NUMBER FORMATTING & UTILITY HELPERS ====================
         function formatNum(val, decimals = 2) {
@@ -1630,7 +1911,6 @@
             });
         }
 
-        // تحويل الشعار المفرغ/الأبيض إلى نسخة بخلفية داكنة أنيقة عند الحاجة (مثل ملف Excel ذي الترويسة الفاتحة)
         function renderLogoOnDarkBadgeDataUrl(logoDataUrl) {
             return new Promise((resolve) => {
                 if (!logoDataUrl) {
@@ -1645,7 +1925,6 @@
                         canvas.width = size;
                         canvas.height = size;
                         const ctx = canvas.getContext('2d');
-                        // خلفية كحلية داكنة مع إطار ذهبي لإبراز الشعارات البيضاء والمفرغة بوضوح
                         ctx.fillStyle = '#0f172a';
                         ctx.fillRect(0, 0, size, size);
                         ctx.strokeStyle = '#fbbf24';
@@ -1752,6 +2031,7 @@
         }
 
         function normalizeWorkshopData(ws, index = 0) {
+            const currencyMode = normalizeCurrencyMode(ws.currencyMode);
             const safeCategories = Array.isArray(ws.categories) ? [...ws.categories] : [];
             if (!safeCategories.includes('عام')) {
                 safeCategories.unshift('عام');
@@ -1791,6 +2071,7 @@
                 id: ws.id || generateId('ws'),
                 name: ws.name || 'ورشة بدون اسم',
                 description: ws.description || ws.desc || '',
+                currencyMode,
                 active: ws.active !== false,
                 order: typeof ws.order === 'number' ? ws.order : index,
                 categories: safeCategories,
@@ -2070,6 +2351,11 @@
         async function fetchFromCloud(isBackgroundPoll = false) {
             if (isSavingToCloud) return false;
             try {
+                const probeRes = await fetch(`${FIRESTORE_BASE_URL}?pageSize=1`, { cache: 'no-store' });
+                if (!probeRes.ok) {
+                    throw new Error(`Cloud HTTP ${probeRes.status}`);
+                }
+
                 const allDocs = await fetchAllDocsInCollection(FIRESTORE_COLLECTION);
 
                 const masterDoc = allDocs.find(d => d.name.endsWith(`/${MASTER_DOC_ID}`));
@@ -2085,7 +2371,6 @@
                     }
                 }
 
-                // 1. دمج سلة المهملات من السحابة وتنظيف المنتهي (30 يوماً) تلقائياً
                 const trashMap = new Map();
                 if (parsedMaster && Array.isArray(parsedMaster.deletedWorkshops)) {
                     for (const tw of parsedMaster.deletedWorkshops) {
@@ -2101,7 +2386,6 @@
                 const { validItems: validTrashItems, expiredIds: expiredTrashIds } = purgeExpiredTrashItems(Array.from(trashMap.values()));
                 const validTrashIdsSet = new Set(validTrashItems.map(t => t.id));
 
-                // 2. دمج الورشات النشطة واستبعاد المحذوفة إلى السلة
                 const workshopsMap = new Map();
                 if (parsedMaster && Array.isArray(parsedMaster.workshops)) {
                     for (const w of parsedMaster.workshops) {
@@ -2165,18 +2449,19 @@
                             refreshAllViewsAfterSync();
                         }
                     }
+                } else if (!isBackgroundPoll) {
+                    const recovered = await recoverLegacyCloudCollections();
+                    if (!recovered) {
+                        appState.workshops = [];
+                        appState.deletedWorkshops = [];
+                    }
                 }
 
-                // حذف العناصر المنتهية (أكثر من 30 يوماً) من السحابة نهائياً
                 if (expiredTrashIds.length > 0 && hasFetchedInitialCloud) {
                     for (const expId of expiredTrashIds) {
                         fetch(`${FIRESTORE_BASE_URL}/trash_ws_doc_${expId}`, { method: 'DELETE' }).catch(() => {});
                     }
                     await saveToCloud(null, null, true);
-                }
-
-                if (appState.workshops.length === 0 && appState.deletedWorkshops.length === 0 && !isBackgroundPoll) {
-                    await recoverLegacyCloudCollections();
                 }
 
                 hasFetchedInitialCloud = true;
@@ -2221,6 +2506,7 @@
                         id: w.id,
                         name: w.name,
                         description: w.description || '',
+                        currencyMode: getWorkshopCurrencyMode(w),
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
@@ -2230,6 +2516,7 @@
                         id: w.id,
                         name: w.name,
                         description: w.description || '',
+                        currencyMode: getWorkshopCurrencyMode(w),
                         active: w.active !== false,
                         order: idx,
                         categories: w.categories || ['عام'],
@@ -2333,7 +2620,6 @@
                     }
                 }
 
-                // مزامنة صور البنود في مستندات سحابية مستقلة، مع حذف الصور اليتيمة فقط.
                 const allCloudDocsForPhotos = await fetchAllDocsInCollection(FIRESTORE_COLLECTION);
                 const existingPhotoDocs = allCloudDocsForPhotos.filter(d => d.name.includes('/tx_photo_doc_'));
                 const desiredPhotoDocIds = new Set();
@@ -2490,7 +2776,7 @@
             btn.innerHTML = '<span>تسجيل الدخول إلى النظام</span>';
 
             if (!ok && !hasFetchedInitialCloud) {
-                errBox.textContent = '⚠️ تعذر الاتصال بالسحابة حالياً، يرجى المحاولة مجدداً.';
+                errBox.textContent = '⚠️ تعذر الاتصال بالسحابة حالياً، يرجى التحقق من الإنترنت أو مفتاح السحابة.';
                 errBox.classList.remove('hidden');
                 return;
             }
@@ -2698,6 +2984,7 @@
 
             document.getElementById('btnUsersManager').classList.toggle('hidden', !isAnyManager);
             document.getElementById('btnBackupReset').classList.toggle('hidden', !isRootAdmin);
+            document.getElementById('btnCloudHostKeyHeader').classList.toggle('hidden', !isRootAdmin);
             document.getElementById('btnTrashManager').classList.toggle('hidden', !perms.deleteWs && !isAnyManager);
             document.getElementById('addWorkshopForm').classList.toggle('hidden', !perms.addWs);
             document.getElementById('btnImportWorkshop').classList.toggle('hidden', !perms.addWs);
@@ -2963,6 +3250,8 @@
                 const isInactive = ws.active === false;
                 const canToggleWs = !!currentUser.permissions.toggleWs;
                 const canDeleteWs = !!currentUser.permissions.deleteWs;
+                const mode = getWorkshopCurrencyMode(ws);
+                const modeInfo = getCurrencyModeBadgeInfo(mode);
 
                 let cardClasses = 'relative rounded-2xl p-4 transition-all border-2 flex flex-col justify-between ';
                 if (isReorderMode) {
@@ -2980,34 +3269,29 @@
                 const usdColor = totals.usdNet < 0 ? 'text-rose-400' : 'text-emerald-400';
                 const sypColor = totals.sypNet < 0 ? 'text-rose-400' : 'text-sky-400';
 
-                return `
-                    <div class="${cardClasses}"
-                        ${isReorderMode ? `draggable="true" ondragstart="handleWsDragStart(event, '${ws.id}')" ondragover="handleWsDragOver(event, this)" ondragleave="handleWsDragLeave(this)" ondrop="handleWsDrop(event, '${ws.id}', this)"` : `onclick="selectWorkshop('${ws.id}')"`}>
-                        
-                        <div>
-                            <div class="flex items-center justify-between gap-2 mb-2.5">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    ${isSelected ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black shadow">✓ الورشة المختارة</span>` : ''}
-                                    ${isInactive
-                                        ? `<span class="px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[10px] font-extrabold">⏸ متوقفة</span>`
-                                        : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold">● نشطة</span>`
-                                    }
+                let cashboxesCardHtml = '';
+                if (mode === 'USD') {
+                    cashboxesCardHtml = `
+                        <div class="my-3 pt-3 border-t border-slate-700/80">
+                            <div class="bg-slate-900/80 rounded-xl p-2.5 border border-slate-700/60">
+                                <div class="text-[10px] font-bold text-slate-400">صافي صندوق الدولار ($)</div>
+                                <div class="text-sm sm:text-base font-black ${usdColor} truncate mt-0.5" dir="ltr">
+                                    ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
                                 </div>
-                                ${isReorderMode ? `
-                                    <div class="flex items-center gap-1">
-                                        <button type="button" onclick="event.stopPropagation(); moveWorkshopOrder('${ws.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-indigo-600 text-white text-xs font-black">▲</button>
-                                        <button type="button" onclick="event.stopPropagation(); moveWorkshopOrder('${ws.id}', 1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-indigo-600 text-white text-xs font-black">▼</button>
-                                        <span class="text-amber-300 text-sm px-1">☰</span>
-                                    </div>
-                                ` : `
-                                    <span class="text-[11px] font-bold text-slate-400">${ws.transactions.length} حركة</span>
-                                `}
                             </div>
-
-                            <h3 class="text-base font-black ${isSelected && !isInactive ? 'text-amber-300' : 'text-white'} truncate">${escapeHtml(ws.name)}</h3>
-                            <p class="text-xs font-semibold text-slate-400 mt-0.5 truncate min-h-[18px]">${escapeHtml(ws.description || 'بدون وصف إضافي')}</p>
-                        </div>
-
+                        </div>`;
+                } else if (mode === 'SYP') {
+                    cashboxesCardHtml = `
+                        <div class="my-3 pt-3 border-t border-slate-700/80">
+                            <div class="bg-slate-900/80 rounded-xl p-2.5 border border-slate-700/60">
+                                <div class="text-[10px] font-bold text-slate-400">صافي صندوق السوري (ل.س)</div>
+                                <div class="text-sm sm:text-base font-black ${sypColor} truncate mt-0.5" dir="ltr">
+                                    ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    cashboxesCardHtml = `
                         <div class="grid grid-cols-2 gap-2 my-3 pt-3 border-t border-slate-700/80">
                             <div class="bg-slate-900/80 rounded-xl p-2 border border-slate-700/60">
                                 <div class="text-[10px] font-bold text-slate-400">الصافي ($)</div>
@@ -3021,7 +3305,39 @@
                                     ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
                                 </div>
                             </div>
+                        </div>`;
+                }
+
+                return `
+                    <div class="${cardClasses}"
+                        ${isReorderMode ? `draggable="true" ondragstart="handleWsDragStart(event, '${ws.id}')" ondragover="handleWsDragOver(event, this)" ondragleave="handleWsDragLeave(this)" ondrop="handleWsDrop(event, '${ws.id}', this)"` : `onclick="selectWorkshop('${ws.id}')"`}>
+                        
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2.5">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    ${isSelected ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black shadow">✓ المختارة</span>` : ''}
+                                    ${isInactive
+                                        ? `<span class="px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[10px] font-extrabold">⏸ متوقفة</span>`
+                                        : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold">● نشطة</span>`
+                                    }
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black inline-flex items-center gap-1 ${modeInfo.badgeClass}">${modeInfo.shortHtml}</span>
+                                </div>
+                                ${isReorderMode ? `
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" onclick="event.stopPropagation(); moveWorkshopOrder('${ws.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-indigo-600 text-white text-xs font-black">▲</button>
+                                        <button type="button" onclick="event.stopPropagation(); moveWorkshopOrder('${ws.id}', 1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-indigo-600 text-white text-xs font-black">▼</button>
+                                        <span class="text-amber-300 text-sm px-1">☰</span>
+                                    </div>
+                                ` : `
+                                    <span class="text-[11px] font-bold text-slate-400 shrink-0">${ws.transactions.length} حركة</span>
+                                `}
+                            </div>
+
+                            <h3 class="text-base font-black ${isSelected && !isInactive ? 'text-amber-300' : 'text-white'} truncate">${escapeHtml(ws.name)}</h3>
+                            <p class="text-xs font-semibold text-slate-400 mt-0.5 truncate min-h-[18px]">${escapeHtml(ws.description || 'بدون وصف إضافي')}</p>
                         </div>
+
+                        ${cashboxesCardHtml}
 
                         ${(!isReorderMode && (canToggleWs || canDeleteWs)) ? `
                             <div class="flex items-center justify-end gap-1.5 pt-1" onclick="event.stopPropagation()">
@@ -3049,14 +3365,17 @@
             if (!currentUser.permissions.addWs) return;
             const nameInput = document.getElementById('newWorkshopName');
             const descInput = document.getElementById('newWorkshopDesc');
+            const modeSelect = document.getElementById('newWorkshopCurrencyMode');
             const name = nameInput.value.trim();
             const description = descInput.value.trim();
+            const currencyMode = normalizeCurrencyMode(modeSelect ? modeSelect.value : 'DUAL');
             if (!name) return;
 
             const newWs = normalizeWorkshopData({
                 id: generateId('ws'),
                 name,
                 description,
+                currencyMode,
                 active: true,
                 order: appState.workshops.length,
                 categories: ['عام'],
@@ -3072,12 +3391,14 @@
 
             nameInput.value = '';
             descInput.value = '';
+            if (modeSelect) modeSelect.value = 'DUAL';
             activeWorkshopId = newWs.id;
             if (currentUser) persistAuthSession(currentUser.username, currentUser.password);
 
             refreshAllViewsAfterSync();
             await saveToCloud(newWs.id);
-            showToast(`تمت إضافة ورشة "${name}" وحفظها في السحابة`, '🏗️');
+            const modeLabel = getCurrencyModeBadgeInfo(currencyMode).shortText;
+            showToast(`تمت إضافة ورشة "${name}" (${modeLabel}) وحفظها في السحابة`, '🏗️');
         }
 
         function selectWorkshop(wsId) {
@@ -3207,6 +3528,20 @@
             const wsId = targetIdOrIdx;
             const ws = appState.workshops.find(w => w.id === wsId);
             if (!ws) return;
+
+            if (actionType === 'upgradeToDual') {
+                if (!currentUser.permissions.editWs || ws.active === false) return;
+                const pendingName = document.getElementById('pendingEditWsName').value.trim();
+                const pendingDesc = document.getElementById('pendingEditWsDesc').value.trim();
+                if (pendingName) ws.name = pendingName;
+                ws.description = pendingDesc;
+                ws.currencyMode = 'DUAL';
+                closeModal('editWorkshopModal');
+                refreshAllViewsAfterSync();
+                await saveToCloud(ws.id);
+                showToast(`تمت ترقية ورشة "${ws.name}" إلى مزدوجة العملة (USD & SYP) في السحابة بنجاح`, '💱');
+                return;
+            }
 
             if (actionType === 'deleteToTrash') {
                 if (!currentUser.permissions.deleteWs) return;
@@ -3429,8 +3764,31 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
             if (!ensureActiveWorkshopIsEnabled()) return;
+
+            const mode = getWorkshopCurrencyMode(ws);
+            const modeInfo = getCurrencyModeBadgeInfo(mode);
+
             document.getElementById('editWsNameInput').value = ws.name;
             document.getElementById('editWsDescInput').value = ws.description || '';
+
+            const modeLbl = document.getElementById('editWsCurrentModeLabel');
+            modeLbl.innerHTML = modeInfo.fullHtml;
+            modeLbl.className = 'px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-900 text-amber-300 inline-flex items-center gap-1';
+
+            const chkUpgrade = document.getElementById('chkUpgradeWsToDualInEdit');
+            chkUpgrade.checked = false;
+
+            const upgradeWrap = document.getElementById('editWsUpgradeOptionWrapper');
+            const dualLockedNote = document.getElementById('editWsDualLockedNote');
+
+            if (mode === 'DUAL') {
+                upgradeWrap.classList.add('hidden');
+                dualLockedNote.classList.remove('hidden');
+            } else {
+                upgradeWrap.classList.remove('hidden');
+                dualLockedNote.classList.add('hidden');
+            }
+
             openModal('editWorkshopModal');
         }
 
@@ -3442,10 +3800,17 @@
             if (!ensureActiveWorkshopIsEnabled()) return;
             const newName = document.getElementById('editWsNameInput').value.trim();
             const newDesc = document.getElementById('editWsDescInput').value.trim();
+            const shouldUpgrade = document.getElementById('chkUpgradeWsToDualInEdit').checked;
             if (!newName) return;
+
+            if (shouldUpgrade && getWorkshopCurrencyMode(ws) !== 'DUAL') {
+                requestUpgradeWorkshopToDual(newName, newDesc);
+                return;
+            }
 
             ws.name = newName;
             ws.description = newDesc;
+
             closeModal('editWorkshopModal');
             refreshAllViewsAfterSync();
             await saveToCloud(ws.id);
@@ -3472,6 +3837,7 @@
             const ws = getActiveWorkshop();
             const section = document.getElementById('activeWorkshopSection');
             const stickyName = document.getElementById('stickyWorkshopName');
+            const stickyCurrBadge = document.getElementById('stickyWorkshopCurrencyBadge');
             const stickyStatus = document.getElementById('stickyWorkshopStatus');
             const stickyDesc = document.getElementById('stickyWorkshopDesc');
             const btnJump = document.getElementById('btnJumpToWs');
@@ -3479,18 +3845,27 @@
             if (!ws) {
                 section.classList.add('hidden');
                 stickyName.textContent = 'لم يتم تحديد ورشة';
+                stickyCurrBadge.classList.add('hidden');
                 stickyStatus.classList.add('hidden');
                 stickyDesc.classList.add('hidden');
                 btnJump.classList.add('hidden');
                 return;
             }
 
+            const mode = getWorkshopCurrencyMode(ws);
+            const modeInfo = getCurrencyModeBadgeInfo(mode);
+            const isWsActive = ws.active !== false;
+
             section.classList.remove('hidden');
             btnJump.classList.remove('hidden');
 
             stickyName.textContent = ws.name;
+            stickyCurrBadge.innerHTML = modeInfo.shortHtml;
+            stickyCurrBadge.className = `px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 inline-flex items-center gap-1 ${modeInfo.badgeClass}`;
+            stickyCurrBadge.classList.remove('hidden');
+
             stickyStatus.classList.remove('hidden');
-            if (ws.active === false) {
+            if (!isWsActive) {
                 stickyStatus.textContent = '⏸ متوقفة';
                 stickyStatus.className = 'px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black bg-slate-700 text-slate-300 shrink-0';
             } else {
@@ -3505,16 +3880,86 @@
                 stickyDesc.classList.add('hidden');
             }
 
+            const activeModeBadge = document.getElementById('activeWsCurrencyModeBadge');
+            activeModeBadge.innerHTML = modeInfo.fullHtml;
+            activeModeBadge.className = `px-2.5 py-0.5 rounded-lg text-[11px] font-black inline-flex items-center gap-1 ${modeInfo.badgeClass}`;
+
+            const btnUpgrade = document.getElementById('btnUpgradeWsToDual');
+            const canUpgrade = isWsActive && (mode === 'USD' || mode === 'SYP') && !!currentUser.permissions.editWs;
+            btnUpgrade.classList.toggle('hidden', !canUpgrade);
+
             const wsHeaderBar = document.getElementById('activeWsHeaderBar');
             const wsBody = document.getElementById('activeWorkshopBody');
             const toggleBtn = document.getElementById('btnToggleWsStatus');
             const inactiveBanner = document.getElementById('inactiveWorkshopNoticeBanner');
             const txActionBar = document.getElementById('txActionButtonsBar');
+            const btnAddExchange = document.getElementById('btnAddExchangeTx');
             const btnManageCats = document.getElementById('btnManageCategories');
             const btnEditWsInfo = document.getElementById('btnEditWsInfo');
             toggleBtn.classList.toggle('hidden', !currentUser.permissions.toggleWs);
 
-            if (ws.active === false) {
+            // ضبط الصناديق المعروضة داخل الورشة حسب عملة الورشة بشكل صارم
+            const cashboxesGrid = document.getElementById('wsCashboxesGrid');
+            const usdBoxEl = document.getElementById('wsUsdBox');
+            const sypBoxEl = document.getElementById('wsSypBox');
+
+            if (mode === 'USD') {
+                cashboxesGrid.className = 'grid grid-cols-1 gap-4 sm:gap-6';
+                usdBoxEl.style.display = 'block';
+                usdBoxEl.classList.remove('hidden');
+                sypBoxEl.style.display = 'none';
+                sypBoxEl.classList.add('hidden');
+            } else if (mode === 'SYP') {
+                cashboxesGrid.className = 'grid grid-cols-1 gap-4 sm:gap-6';
+                usdBoxEl.style.display = 'none';
+                usdBoxEl.classList.add('hidden');
+                sypBoxEl.style.display = 'block';
+                sypBoxEl.classList.remove('hidden');
+            } else {
+                cashboxesGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6';
+                usdBoxEl.style.display = 'block';
+                usdBoxEl.classList.remove('hidden');
+                sypBoxEl.style.display = 'block';
+                sypBoxEl.classList.remove('hidden');
+            }
+
+            // ضبط أزرار الإدخال (إخفاء الصرافة للورشات أحادية العملة)
+            if (mode === 'DUAL') {
+                txActionBar.className = 'no-print grid grid-cols-1 sm:grid-cols-3 gap-3';
+                btnAddExchange.classList.remove('hidden');
+            } else {
+                txActionBar.className = 'no-print grid grid-cols-1 sm:grid-cols-2 gap-3';
+                btnAddExchange.classList.add('hidden');
+            }
+
+            // ضبط خيارات فلتر نوع الحركة والعملة للورشة أحادية العملة
+            const filterTypeSel = document.getElementById('txFilterType');
+            const currFilterWrap = document.getElementById('txFilterCurrencyWrapper');
+            const currFilterSel = document.getElementById('txFilterCurrency');
+
+            if (mode === 'DUAL') {
+                filterTypeSel.innerHTML = `
+                    <option value="all">كل الحركات</option>
+                    <option value="income">الإيرادات فقط</option>
+                    <option value="income_with_in_exchange">📥 الإيرادات + التحويل الوارد</option>
+                    <option value="expense">المصروفات فقط</option>
+                    <option value="expense_with_out_exchange">📤 المصروفات + التحويل الصادر</option>
+                    <option value="exchange">الصرافة / التحويل فقط</option>
+                `;
+                currFilterWrap.classList.remove('hidden');
+            } else {
+                const prevType = filterTypeSel.value;
+                filterTypeSel.innerHTML = `
+                    <option value="all">كل الحركات</option>
+                    <option value="income">الإيرادات فقط</option>
+                    <option value="expense">المصروفات فقط</option>
+                `;
+                filterTypeSel.value = ['all', 'income', 'expense'].includes(prevType) ? prevType : 'all';
+                currFilterSel.value = 'all';
+                currFilterWrap.classList.add('hidden');
+            }
+
+            if (!isWsActive) {
                 wsHeaderBar.classList.add('workshop-inactive-header');
                 wsBody.classList.add('workshop-inactive-body');
                 inactiveBanner.classList.remove('hidden');
@@ -3738,6 +4183,8 @@
 
         // ==================== 11. TRANSACTIONS TABLE: EXCHANGE FILTER LOCK & SORTING ====================
         function updateExchangeFilterLocks() {
+            const ws = getActiveWorkshop();
+            const mode = getWorkshopCurrencyMode(ws);
             const fType = document.getElementById('txFilterType').value;
             const catSelect = document.getElementById('txFilterCategory');
             const currSelect = document.getElementById('txFilterCurrency');
@@ -3758,8 +4205,8 @@
                 catSelect.disabled = false;
                 catSelect.className = activeCls;
 
-                currSelect.disabled = false;
-                currSelect.className = activeCls;
+                currSelect.disabled = (mode !== 'DUAL');
+                currSelect.className = (mode !== 'DUAL') ? disabledCls : activeCls;
             }
         }
 
@@ -3769,10 +4216,11 @@
         }
 
         function getFilteredTransactions(ws) {
+            const mode = getWorkshopCurrencyMode(ws);
             const searchQ = (document.getElementById('txSearchInput').value || '').trim().toLowerCase();
             const fType = document.getElementById('txFilterType').value;
             const fCat = fType === 'exchange' ? 'all' : document.getElementById('txFilterCategory').value;
-            const fCurr = fType === 'exchange' ? 'all' : document.getElementById('txFilterCurrency').value;
+            const fCurr = (fType === 'exchange' || mode !== 'DUAL') ? 'all' : document.getElementById('txFilterCurrency').value;
             const dFrom = document.getElementById('txFilterDateFrom').value;
             const dTo = document.getElementById('txFilterDateTo').value;
 
@@ -4140,6 +4588,30 @@
             }
         }
 
+        function applyCurrencyModeToTxModal(ws, presetCurrency = null) {
+            const mode = getWorkshopCurrencyMode(ws);
+            const currSelectWrapper = document.getElementById('txCurrencySelectWrapper');
+            const currSelect = document.getElementById('txCurrency');
+            const fixedBadgeBox = document.getElementById('txFixedCurrencyBadgeBox');
+            const fixedBadge = document.getElementById('txFixedCurrencyBadge');
+
+            if (mode === 'USD') {
+                currSelect.value = 'USD';
+                currSelectWrapper.classList.add('hidden');
+                fixedBadgeBox.classList.remove('hidden');
+                fixedBadge.innerHTML = '$ دولار أمريكي';
+            } else if (mode === 'SYP') {
+                currSelect.value = 'SYP';
+                currSelectWrapper.classList.add('hidden');
+                fixedBadgeBox.classList.remove('hidden');
+                fixedBadge.innerHTML = `${SYRIA_GREEN_FLAG_SVG} ل.س ليرة سورية`;
+            } else {
+                currSelectWrapper.classList.remove('hidden');
+                fixedBadgeBox.classList.add('hidden');
+                currSelect.value = presetCurrency === 'SYP' ? 'SYP' : 'USD';
+            }
+        }
+
         function openTxModal(type, editTxId = null) {
             const ws = getActiveWorkshop();
             if (!ws) return;
@@ -4160,7 +4632,7 @@
                 updateTxModalTheme(tx.type);
 
                 document.getElementById('txAmount').value = formatNum(tx.amount);
-                document.getElementById('txCurrency').value = tx.currency;
+                applyCurrencyModeToTxModal(ws, tx.currency);
                 populateTxCategorySelect(tx.category || 'عام');
                 document.getElementById('txDate').value = tx.date;
                 document.getElementById('txDescription').value = tx.description || '';
@@ -4173,7 +4645,7 @@
                 updateTxModalTheme(type);
 
                 document.getElementById('txAmount').value = '';
-                document.getElementById('txCurrency').value = 'USD';
+                applyCurrencyModeToTxModal(ws, 'USD');
                 populateTxCategorySelect('عام');
                 document.getElementById('txDate').value = todayISO();
                 document.getElementById('txDescription').value = '';
@@ -4189,13 +4661,14 @@
             if (!ws) return;
             if (!ensureActiveWorkshopIsEnabled()) return;
 
+            const mode = getWorkshopCurrencyMode(ws);
             const editId = document.getElementById('txEditId').value;
             const finalType = editId
                 ? document.getElementById('txEditTypeSelect').value
                 : document.getElementById('txFixedType').value;
 
             const amount = parseFormattedNum(document.getElementById('txAmount').value);
-            const currency = document.getElementById('txCurrency').value;
+            const currency = mode === 'USD' ? 'USD' : (mode === 'SYP' ? 'SYP' : document.getElementById('txCurrency').value);
             const category = document.getElementById('txCategorySelect').value || 'عام';
             const date = document.getElementById('txDate').value || todayISO();
             const description = document.getElementById('txDescription').value.trim();
@@ -4351,6 +4824,11 @@
             if (!ws) return;
             if (!ensureActiveWorkshopIsEnabled()) return;
 
+            if (getWorkshopCurrencyMode(ws) !== 'DUAL') {
+                showToast('الصرافة والتحويل متاحة للورشات مزدوجة العملة فقط! يمكنك ترقية الورشة لمزدوجة من الأعلى.', '💱');
+                return;
+            }
+
             document.getElementById('exModalWsSubtitle').textContent = `الورشة: ${ws.name}`;
             if (editTxId) {
                 const tx = ws.transactions.find(t => t.id === editTxId && t.type === 'exchange');
@@ -4389,6 +4867,7 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
             if (!ensureActiveWorkshopIsEnabled()) return;
+            if (getWorkshopCurrencyMode(ws) !== 'DUAL') return;
 
             const editId = document.getElementById('exEditId').value;
             const usdVal = parseFormattedNum(document.getElementById('exUsdAmount').value);
@@ -4490,6 +4969,7 @@
             const ws = getActiveWorkshop();
             if (!ws) return;
 
+            const wsMode = getWorkshopCurrencyMode(ws);
             const eff = getEffectiveUserPrintProfile();
             const isAnyManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
@@ -4519,9 +4999,13 @@
 
             const filterNotes = [
                 typeSelect.options[typeSelect.selectedIndex]?.text || 'كل الحركات',
-                `البند: ${catSelect.value === 'all' ? 'الكل' : catSelect.value}`,
-                `العملة: ${currSelect.value === 'all' ? 'الكل' : currSelect.value}`
+                `البند: ${catSelect.value === 'all' ? 'الكل' : catSelect.value}`
             ];
+            if (wsMode === 'DUAL') {
+                filterNotes.push(`العملة: ${currSelect.value === 'all' ? 'الكل' : currSelect.value}`);
+            } else {
+                filterNotes.push(`نظام الورشة: ${wsMode === 'USD' ? 'دولار فقط ($)' : 'ليرة سورية فقط (ل.س)'}`);
+            }
             if (dFrom) filterNotes.push(`من: ${dFrom}`);
             if (dTo) filterNotes.push(`إلى: ${dTo}`);
 
@@ -4545,6 +5029,50 @@
             const sypBoxBg = totals.sypNet < 0 ? '#fff1f2' : '#eff6ff';
             const sypBoxBorder = totals.sypNet < 0 ? '#f43f5e' : '#2563eb';
             const sypTextColor = totals.sypNet < 0 ? '#be123c' : '#1e3a8a';
+
+            const usdSummaryCardHtml = `
+                <td style="width:${wsMode === 'DUAL' ? '50%' : '100%'}; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+                        <tr>
+                            <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الدولار الأمريكي</td>
+                            <td style="text-align:left;"><span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span></td>
+                        </tr>
+                    </table>
+                    <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:3px 0; text-align:right;">
+                        ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
+                        <tr>
+                            <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</td>
+                            <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</td>
+                        </tr>
+                    </table>
+                </td>
+            `;
+
+            const sypSummaryCardHtml = `
+                <td style="width:${wsMode === 'DUAL' ? '50%' : '100%'}; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+                        <tr>
+                            <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الليرة السورية</td>
+                            <td style="text-align:left;"><span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span></td>
+                        </tr>
+                    </table>
+                    <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:3px 0; text-align:right;">
+                        ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
+                        <tr>
+                            <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</td>
+                            <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</td>
+                        </tr>
+                    </table>
+                </td>
+            `;
+
+            const summaryTableRowHtml = wsMode === 'USD'
+                ? usdSummaryCardHtml
+                : (wsMode === 'SYP' ? sypSummaryCardHtml : `${usdSummaryCardHtml}${sypSummaryCardHtml}`);
 
             const rowsHtml = rows.length === 0
                 ? `<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b; font-weight:700;">لا توجد حركات مالية مطابقة للتصفية</td></tr>`
@@ -4635,41 +5163,7 @@
 
                 <table style="width:100%; border-collapse:separate; border-spacing:10px 0; margin:0 -10px 14px -10px;">
                     <tr>
-                        <td style="width:50%; background:${usdBoxBg}; border:2px solid ${usdBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
-                            <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
-                                <tr>
-                                    <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الدولار الأمريكي</td>
-                                    <td style="text-align:left;"><span style="background:#0f172a; color:#fbbf24; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">USD $</span></td>
-                                </tr>
-                            </table>
-                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${usdTextColor}; margin:3px 0; text-align:right;">
-                                ${totals.usdNet < 0 ? '-' : ''}$ ${formatNum(Math.abs(totals.usdNet))}
-                            </div>
-                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
-                                <tr>
-                                    <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.usdIn)} $</td>
-                                    <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.usdOut)} $</td>
-                                </tr>
-                            </table>
-                        </td>
-
-                        <td style="width:50%; background:${sypBoxBg}; border:2px solid ${sypBoxBorder}; border-radius:12px; padding:12px 14px; vertical-align:top;">
-                            <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
-                                <tr>
-                                    <td style="font-size:11px; font-weight:800; color:#334155; text-align:right;">ملخص صندوق الليرة السورية</td>
-                                    <td style="text-align:left;"><span style="background:#1e3a8a; color:#ffffff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:6px;">SYP ل.س</span></td>
-                                </tr>
-                            </table>
-                            <div dir="ltr" style="font-size:20px; font-weight:900; color:${sypTextColor}; margin:3px 0; text-align:right;">
-                                ${totals.sypNet < 0 ? '-' : ''}${formatNum(Math.abs(totals.sypNet), 0)} ل.س
-                            </div>
-                            <table style="width:100%; border-collapse:collapse; font-size:10.5px; font-weight:800; border-top:1px solid rgba(0,0,0,0.12); padding-top:4px; margin-top:4px;">
-                                <tr>
-                                    <td style="color:#065f46; text-align:right; padding-top:4px;">إجمالي الإيرادات: ${formatNum(totals.sypIn, 0)} ل.س</td>
-                                    <td style="color:#9f1239; text-align:left; padding-top:4px;">إجمالي المصروفات: ${formatNum(totals.sypOut, 0)} ل.س</td>
-                                </tr>
-                            </table>
-                        </td>
+                        ${summaryTableRowHtml}
                     </tr>
                 </table>
 
@@ -4781,7 +5275,6 @@
 
                 await new Promise(resolve => setTimeout(resolve, 250));
 
-                // تقسيم الجدول إلى صفحات A4 مع تكرار رأسية الجدول تلقائياً في أعلى كل صفحة
                 const A4_PAGE_CONTENT_PX = 1015;
                 const tableEl = sheet.querySelector('.corp-table');
                 const theadEl = tableEl ? tableEl.querySelector('thead') : null;
@@ -4884,6 +5377,7 @@
         async function exportWorkshopExcel() {
             const ws = getActiveWorkshop();
             if (!ws) return;
+            const wsMode = getWorkshopCurrencyMode(ws);
             const rows = getFilteredTransactions(ws);
             const fType = document.getElementById('txFilterType').value;
             const totals = calculateFilteredListTotals(rows, fType);
@@ -4891,7 +5385,6 @@
             const safeFileName = `كشف_${(ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}.xlsx`;
             const safeSheetName = (ws.name || 'كشف_الورشة').replace(/[\\/?*[\]:]/g, '_').substring(0, 30) || 'كشف_الورشة';
 
-            // تصدير Excel منسق مع تضمين شعار الشركة على اليمين عبر ExcelJS إن توفر
             if (typeof ExcelJS !== 'undefined') {
                 try {
                     const workbook = new ExcelJS.Workbook();
@@ -4923,7 +5416,6 @@
                         right: { style: 'thin', color: { argb: 'FF334155' } }
                     };
 
-                    // الصف 1: اسم الشركة + شعار الشركة على اليمين (العمود A)
                     const hasLogo = !!(eff.companyLogo && eff.companyLogo.startsWith('data:image/'));
                     sheet.addRow([hasLogo ? '' : (eff.companyName || 'نظام إدارة محاسبة الورشات'), hasLogo ? (eff.companyName || 'نظام إدارة محاسبة الورشات') : '', '', '', '', '', '', '']);
                     sheet.getRow(1).height = 42;
@@ -4950,7 +5442,6 @@
                         });
                     }
 
-                    // الصف 2: بيانات الورشة والتاريخ والمعدّ
                     sheet.addRow([`كشف حساب الورشة: ${ws.name}`, '', '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`, '', '']);
                     sheet.getRow(2).height = 24;
                     sheet.mergeCells('A2:C2');
@@ -4964,7 +5455,6 @@
                         cell.border = thinBorder;
                     }
 
-                    // الصف 3: الوصف
                     sheet.addRow([ws.description ? `الوصف: ${ws.description}` : 'كشف الحركات المالية التفصيلي', '', '', '', '', '', '', '']);
                     sheet.getRow(3).height = 22;
                     sheet.mergeCells('A3:H3');
@@ -4976,11 +5466,9 @@
                         cell.border = thinBorder;
                     }
 
-                    // الصف 4: فاصل
                     sheet.addRow(['', '', '', '', '', '', '', '']);
                     sheet.getRow(4).height = 10;
 
-                    // الصف 5-7: ملخص الصناديق
                     sheet.addRow(['ملخص الصندوق المالي', 'الإيرادات (+)', 'المصروفات (-)', 'الصافي الحالي', '', '', '', '']);
                     sheet.getRow(5).height = 24;
                     for (let c = 1; c <= 4; c++) {
@@ -4991,61 +5479,63 @@
                         cell.border = medDarkBorder;
                     }
 
-                    const usdRow = sheet.addRow(['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', '']);
-                    usdRow.height = 22;
-                    usdRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
-                    usdRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
-                    usdRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
-                    usdRow.getCell(1).border = thinBorder;
+                    if (wsMode !== 'SYP') {
+                        const usdRow = sheet.addRow(['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', '']);
+                        usdRow.height = 22;
+                        usdRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                        usdRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+                        usdRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
+                        usdRow.getCell(1).border = thinBorder;
 
-                    usdRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
-                    usdRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
-                    usdRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
-                    usdRow.getCell(2).numFmt = '#,##0.00';
-                    usdRow.getCell(2).border = thinBorder;
+                        usdRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+                        usdRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
+                        usdRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
+                        usdRow.getCell(2).numFmt = '#,##0.00';
+                        usdRow.getCell(2).border = thinBorder;
 
-                    usdRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
-                    usdRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
-                    usdRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
-                    usdRow.getCell(3).numFmt = '#,##0.00';
-                    usdRow.getCell(3).border = thinBorder;
+                        usdRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
+                        usdRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
+                        usdRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
+                        usdRow.getCell(3).numFmt = '#,##0.00';
+                        usdRow.getCell(3).border = thinBorder;
 
-                    usdRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.usdNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
-                    usdRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.usdNet < 0 ? 'FFBE123C' : 'FF065F46' } };
-                    usdRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
-                    usdRow.getCell(4).numFmt = '#,##0.00';
-                    usdRow.getCell(4).border = thinBorder;
+                        usdRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.usdNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
+                        usdRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.usdNet < 0 ? 'FFBE123C' : 'FF065F46' } };
+                        usdRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
+                        usdRow.getCell(4).numFmt = '#,##0.00';
+                        usdRow.getCell(4).border = thinBorder;
+                    }
 
-                    const sypRow = sheet.addRow(['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', '']);
-                    sypRow.height = 22;
-                    sypRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
-                    sypRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
-                    sypRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
-                    sypRow.getCell(1).border = thinBorder;
+                    if (wsMode !== 'USD') {
+                        const sypRow = sheet.addRow(['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', '']);
+                        sypRow.height = 22;
+                        sypRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                        sypRow.getCell(1).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+                        sypRow.getCell(1).alignment = { horizontal: 'right', vertical: 'center' };
+                        sypRow.getCell(1).border = thinBorder;
 
-                    sypRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
-                    sypRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
-                    sypRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
-                    sypRow.getCell(2).numFmt = '#,##0';
-                    sypRow.getCell(2).border = thinBorder;
+                        sypRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+                        sypRow.getCell(2).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF065F46' } };
+                        sypRow.getCell(2).alignment = { horizontal: 'center', vertical: 'center' };
+                        sypRow.getCell(2).numFmt = '#,##0';
+                        sypRow.getCell(2).border = thinBorder;
 
-                    sypRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
-                    sypRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
-                    sypRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
-                    sypRow.getCell(3).numFmt = '#,##0';
-                    sypRow.getCell(3).border = thinBorder;
+                        sypRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF1F2' } };
+                        sypRow.getCell(3).font = { name: 'Cairo', size: 11, bold: true, color: { argb: 'FF9F1239' } };
+                        sypRow.getCell(3).alignment = { horizontal: 'center', vertical: 'center' };
+                        sypRow.getCell(3).numFmt = '#,##0';
+                        sypRow.getCell(3).border = thinBorder;
 
-                    sypRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.sypNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
-                    sypRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.sypNet < 0 ? 'FFBE123C' : 'FF065F46' } };
-                    sypRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
-                    sypRow.getCell(4).numFmt = '#,##0';
-                    sypRow.getCell(4).border = thinBorder;
+                        sypRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: totals.sypNet < 0 ? 'FFFFE4E6' : 'FFD1FAE5' } };
+                        sypRow.getCell(4).font = { name: 'Cairo', size: 12, bold: true, color: { argb: totals.sypNet < 0 ? 'FFBE123C' : 'FF065F46' } };
+                        sypRow.getCell(4).alignment = { horizontal: 'center', vertical: 'center' };
+                        sypRow.getCell(4).numFmt = '#,##0';
+                        sypRow.getCell(4).border = thinBorder;
+                    }
 
-                    // الصف 8: فاصل
-                    sheet.addRow(['', '', '', '', '', '', '', '']);
-                    sheet.getRow(8).height = 10;
+                    const spacerRow = sheet.addRow(['', '', '', '', '', '', '', '']);
+                    spacerRow.height = 10;
 
-                    // الصف 9: ترويسة الجدول
                     const hdrRow = sheet.addRow(['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']);
                     hdrRow.height = 26;
                     for (let c = 1; c <= 8; c++) {
@@ -5056,7 +5546,6 @@
                         cell.border = medDarkBorder;
                     }
 
-                    // صفوف الحركات
                     rows.forEach(tx => {
                         let rVals = [];
                         let rowBg = 'FFFFFFFF';
@@ -5183,12 +5672,19 @@
                 [`كشف حساب الورشة: ${ws.name}`, '', '', `تاريخ التصدير: ${todayISO()}`, '', `المُعِدّ: ${eff.personName || currentUser.username}`, '', ''],
                 [ws.description ? `الوصف: ${ws.description}` : 'كشف الحركات المالية التفصيلي', '', '', '', '', '', '', ''],
                 ['', '', '', '', '', '', '', ''],
-                ['ملخص الصندوق المالي', 'الإيرادات (+)', 'المصروفات (-)', 'الصافي الحالي', '', '', '', ''],
-                ['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', ''],
-                ['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']
+                ['ملخص الصندوق المالي', 'الإيرادات (+)', 'المصروفات (-)', 'الصافي الحالي', '', '', '', '']
             ];
+
+            if (wsMode !== 'SYP') {
+                aoaData.push(['صندوق الدولار الأمريكي ($)', Number(totals.usdIn.toFixed(2)), Number(totals.usdOut.toFixed(2)), Number(totals.usdNet.toFixed(2)), '', '', '', '']);
+            }
+            if (wsMode !== 'USD') {
+                aoaData.push(['صندوق الليرة السورية (ل.س)', Math.round(totals.sypIn), Math.round(totals.sypOut), Math.round(totals.sypNet), '', '', '', '']);
+            }
+
+            aoaData.push(['', '', '', '', '', '', '', '']);
+            const headerRowIndex = aoaData.length;
+            aoaData.push(['التاريخ', 'نوع الحركة', 'البند / التصنيف', 'البيان / الوصف التفصيلي', 'المبلغ الصادر (-)', 'المبلغ الوارد (+)', 'العملة', 'سعر الصرف']);
 
             const rowTypes = [];
             rows.forEach(tx => {
@@ -5241,26 +5737,31 @@
                 const cell2 = XLSX.utils.encode_cell({ r: 2, c });
                 if (worksheet[cell2]) worksheet[cell2].s = metaStyle;
 
-                const cell8 = XLSX.utils.encode_cell({ r: 8, c });
-                if (worksheet[cell8]) worksheet[cell8].s = tableHeaderStyle;
+                const cellHdr = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+                if (worksheet[cellHdr]) worksheet[cellHdr].s = tableHeaderStyle;
             }
 
             for (let c = 0; c < 4; c++) {
                 const c4 = XLSX.utils.encode_cell({ r: 4, c });
                 if (worksheet[c4]) worksheet[c4].s = summaryHeaderStyle;
             }
-            worksheet[XLSX.utils.encode_cell({ r: 5, c: 0 })].s = summaryLabelStyle;
-            worksheet[XLSX.utils.encode_cell({ r: 5, c: 1 })].s = summaryInStyle;
-            worksheet[XLSX.utils.encode_cell({ r: 5, c: 2 })].s = summaryOutStyle;
-            worksheet[XLSX.utils.encode_cell({ r: 5, c: 3 })].s = getSummaryNetStyle(totals.usdNet, false);
-
-            worksheet[XLSX.utils.encode_cell({ r: 6, c: 0 })].s = summaryLabelStyle;
-            worksheet[XLSX.utils.encode_cell({ r: 6, c: 1 })].s = { ...summaryInStyle, numFmt: '#,##0' };
-            worksheet[XLSX.utils.encode_cell({ r: 6, c: 2 })].s = { ...summaryOutStyle, numFmt: '#,##0' };
-            worksheet[XLSX.utils.encode_cell({ r: 6, c: 3 })].s = getSummaryNetStyle(totals.sypNet, true);
+            let sumRowCursor = 5;
+            if (wsMode !== 'SYP') {
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 0 })].s = summaryLabelStyle;
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 1 })].s = summaryInStyle;
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 2 })].s = summaryOutStyle;
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 3 })].s = getSummaryNetStyle(totals.usdNet, false);
+                sumRowCursor++;
+            }
+            if (wsMode !== 'USD') {
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 0 })].s = summaryLabelStyle;
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 1 })].s = { ...summaryInStyle, numFmt: '#,##0' };
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 2 })].s = { ...summaryOutStyle, numFmt: '#,##0' };
+                worksheet[XLSX.utils.encode_cell({ r: sumRowCursor, c: 3 })].s = getSummaryNetStyle(totals.sypNet, true);
+            }
 
             rowTypes.forEach((tType, idx) => {
-                const r = 9 + idx;
+                const r = headerRowIndex + 1 + idx;
                 let rowBg = 'FFFFFF';
                 let typeColor = '0F172A';
                 if (tType === 'income') {
@@ -5308,18 +5809,6 @@
                 { s: { r: 1, c: 3 }, e: { r: 1, c: 4 } },
                 { s: { r: 1, c: 5 }, e: { r: 1, c: 7 } },
                 { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
-            ];
-
-            worksheet['!rows'] = [
-                { hpt: 30 },
-                { hpt: 24 },
-                { hpt: 22 },
-                { hpt: 12 },
-                { hpt: 24 },
-                { hpt: 22 },
-                { hpt: 22 },
-                { hpt: 12 },
-                { hpt: 26 }
             ];
 
             worksheet['!cols'] = [
@@ -5819,6 +6308,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            applyCloudProjectEndpoint(FIREBASE_PROJECT_ID, false);
             await fetchFromCloud(false);
             await restoreSessionIfAvailable();
         });
