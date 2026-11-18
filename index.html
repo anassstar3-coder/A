@@ -215,9 +215,15 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 12mm 10mm;
+                margin: 10mm 12mm;
             }
             html, body {
+                display: block !important;
+                width: auto !important;
+                min-width: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
                 background: #ffffff !important;
                 color: #0f172a !important;
                 margin: 0 !important;
@@ -229,12 +235,41 @@
             #loginScreen, #appContainer, .modal-backdrop, #toastNotification, #pdfGeneratingOverlay {
                 display: none !important;
             }
-            #officialPrintSheet {
+            #officialPrintSheet,
+            #officialPrintSheet.pdf-render-active {
                 display: block !important;
+                position: static !important;
                 width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
                 background: #ffffff !important;
                 color: #0f172a !important;
                 direction: rtl !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            #officialPrintSheet table {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-collapse: collapse !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            #officialPrintSheet thead { display: table-header-group !important; }
+            #officialPrintSheet tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            #officialPrintSheet h3,
+            #officialPrintSheet p {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
             }
         }
     </style>
@@ -754,6 +789,7 @@
             </div>
             <div class="p-4 sm:p-5 space-y-4">
                 <div id="categorySummaryMeta" class="text-xs font-bold text-slate-500"></div>
+                <div id="categorySummaryIdentity" class="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950"></div>
                 <div id="categorySummaryTotals" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"></div>
                 <div>
                     <h4 class="font-black text-sm text-slate-900 mb-2">تفصيل المدفوعات حسب التصنيف</h4>
@@ -771,8 +807,16 @@
                     <div class="font-black text-sm text-sky-950 mb-1">المقبوضات من الزبائن (إيرادات عامة)</div>
                     <div id="categorySummaryIncome" class="text-sm font-bold text-sky-900"></div>
                 </div>
-                <div id="categorySummaryExchange" class="rounded-2xl border border-violet-200 bg-violet-50 p-3 text-xs font-bold text-violet-950"></div>
-                <p class="text-[11px] text-slate-500 leading-relaxed">ملاحظة محاسبية: التحويل بين صندوق الدولار وصندوق الليرة يُعرض كحركة مستقلة؛ لا يُضاف إلى المدفوعات أو المقبوضات. لا يتم جمع الدولار والليرة في رقم واحد، بل يُعرض رصيد كل عملة ومجموعها بشكل مستقل.</p>
+                <div id="categorySummaryExchange" class="hidden rounded-2xl border border-violet-200 bg-violet-50 p-3 text-xs font-bold text-violet-950"></div>
+                <div id="categorySummaryExchangeTableWrap" class="hidden rounded-2xl border border-violet-200 overflow-hidden">
+                    <div class="bg-violet-100 px-3 py-2 text-sm font-black text-violet-950">⇄ جدول عمليات التحويل</div>
+                    <div class="overflow-x-auto"><table class="w-full min-w-[520px] text-right border-collapse text-xs">
+                        <thead class="bg-violet-900 text-white"><tr><th class="p-2">التاريخ</th><th class="p-2">المبلغ الخارج</th><th class="p-2">المبلغ الداخل</th><th class="p-2">سعر التحويل</th></tr></thead>
+                        <tbody id="categorySummaryExchangeBody" class="divide-y divide-violet-100"></tbody>
+                        <tfoot id="categorySummaryExchangeFoot" class="bg-violet-100 text-violet-950 font-black"></tfoot>
+                    </table></div>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed">ملاحظة محاسبية: التحويل بين الصناديق حركة مستقلة؛ لا يُضاف إلى المدفوعات أو المقبوضات. تُجمع مبالغ كل عملة مع العملة نفسها فقط.</p>
                 <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-slate-200">
                     <button type="button" onclick="closeModal('categorySummaryModal')" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-extrabold">إغلاق</button>
                     <button type="button" onclick="printCategorySummary()" class="px-4 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-black">📄 طباعة / حفظ PDF</button>
@@ -4442,9 +4486,7 @@
         function getCategorySummaryContext() {
             const ws = getActiveWorkshop();
             if (!ws) return null;
-
-            // Reuse the existing date, currency, category and text filters, but ignore the
-            // transaction-type selector so income, expenses and exchanges are all visible.
+            const mode = getWorkshopCurrencyMode(ws);
             const typeFilter = document.getElementById('txFilterType');
             const previousType = typeFilter ? typeFilter.value : 'all';
             if (typeFilter) typeFilter.value = 'all';
@@ -4461,7 +4503,7 @@
                 expenseCount: 0, incomeCount: 0, exchangeCount: 0,
                 usdMovedOut: 0, sypMovedOut: 0, usdMovedIn: 0, sypMovedIn: 0
             };
-
+            const exchangeRows = [];
             for (const tx of (transactions || [])) {
                 const amount = Number(tx.amount) || 0;
                 if (tx.type === 'expense') {
@@ -4487,10 +4529,15 @@
                         totals.sypMovedOut += fromAmount;
                         totals.usdMovedIn += toAmount;
                     }
+                    exchangeRows.push({
+                        date: tx.date || '', fromCurrency: tx.fromCurrency || '', toCurrency: tx.toCurrency || '',
+                        fromAmount, toAmount, rate: Number(tx.rate) || 0
+                    });
                 }
             }
             const rows = Array.from(categories.values()).sort((a, b) => a.category.localeCompare(b.category, 'ar'));
-            return { ws, transactions, rows, totals };
+            exchangeRows.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+            return { ws, mode, transactions, rows, totals, exchangeRows };
         }
 
         function openCategorySummary() {
@@ -4500,21 +4547,39 @@
             const to = document.getElementById('txFilterDateTo')?.value || '';
             const period = from || to ? `${from || 'بداية السجلات'} — ${to || 'حتى اليوم'}` : 'كامل الفترة';
             const t = data.totals;
-            document.getElementById('categorySummaryMeta').textContent = `الورشة: ${data.ws.name} • الفترة: ${period} • يشمل ${data.transactions.length} حركة مطابقة للفلاتر`;
-            document.getElementById('categorySummaryTotals').innerHTML = `
-                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-3"><div class="text-[11px] font-black text-rose-800">إجمالي المدفوعات بالدولار</div><div class="text-lg font-black text-rose-900 mt-1" dir="ltr">${formatNum(t.usdExpense)} $</div><div class="text-[10px] text-slate-600">${t.expenseCount} دفعة مصروف</div></div>
-                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-3"><div class="text-[11px] font-black text-amber-800">إجمالي المدفوعات بالليرة</div><div class="text-lg font-black text-amber-900 mt-1" dir="ltr">${formatNum(t.sypExpense, 0)} ل.س</div><div class="text-[10px] text-slate-600">${t.expenseCount} دفعة مصروف إجمالاً</div></div>
-                <div class="rounded-2xl border border-sky-200 bg-sky-50 p-3"><div class="text-[11px] font-black text-sky-800">المقبوضات بالدولار</div><div class="text-lg font-black text-sky-900 mt-1" dir="ltr">${formatNum(t.usdIncome)} $</div><div class="text-[10px] text-slate-600">إيرادات عامة من الزبائن</div></div>
-                <div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-3"><div class="text-[11px] font-black text-cyan-800">المقبوضات بالليرة</div><div class="text-lg font-black text-cyan-900 mt-1" dir="ltr">${formatNum(t.sypIncome, 0)} ل.س</div><div class="text-[10px] text-slate-600">إيرادات عامة من الزبائن</div></div>`;
+            const isUsd = data.mode === 'USD';
+            const isSyp = data.mode === 'SYP';
+            const isDual = data.mode === 'DUAL';
+            const profile = getEffectiveUserPrintProfile();
+            document.getElementById('categorySummaryMeta').textContent = `الورشة: ${data.ws.name} • العملة: ${isUsd ? 'دولار' : isSyp ? 'ليرة سورية' : 'دولار + ليرة سورية'} • الفترة: ${period} • ${data.transactions.length} حركة`;
+            document.getElementById('categorySummaryIdentity').textContent = `الشركة: ${profile.companyName || '—'}  |  المهندس: ${profile.personName || '—'}  |  الرقم: ${profile.phone || '—'}`;
+            const cards = [];
+            if (!isSyp) cards.push(`<div class="rounded-2xl border border-rose-200 bg-rose-50 p-3"><div class="text-[11px] font-black text-rose-800">إجمالي المدفوعات بالدولار</div><div class="text-lg font-black text-rose-900 mt-1" dir="ltr">${formatNum(t.usdExpense)} $</div><div class="text-[10px] text-slate-600">${t.expenseCount} دفعة مصروف</div></div>`);
+            if (!isUsd) cards.push(`<div class="rounded-2xl border border-amber-200 bg-amber-50 p-3"><div class="text-[11px] font-black text-amber-800">إجمالي المدفوعات بالليرة</div><div class="text-lg font-black text-amber-900 mt-1" dir="ltr">${formatNum(t.sypExpense, 0)} ل.س</div><div class="text-[10px] text-slate-600">${t.expenseCount} دفعة مصروف</div></div>`);
+            if (!isSyp) cards.push(`<div class="rounded-2xl border border-sky-200 bg-sky-50 p-3"><div class="text-[11px] font-black text-sky-800">المقبوضات بالدولار</div><div class="text-lg font-black text-sky-900 mt-1" dir="ltr">${formatNum(t.usdIncome)} $</div><div class="text-[10px] text-slate-600">إيرادات عامة</div></div>`);
+            if (!isUsd) cards.push(`<div class="rounded-2xl border border-cyan-200 bg-cyan-50 p-3"><div class="text-[11px] font-black text-cyan-800">المقبوضات بالليرة</div><div class="text-lg font-black text-cyan-900 mt-1" dir="ltr">${formatNum(t.sypIncome, 0)} ل.س</div><div class="text-[10px] text-slate-600">إيرادات عامة</div></div>`);
+            document.getElementById('categorySummaryTotals').className = `grid grid-cols-1 sm:grid-cols-2 ${isDual ? 'lg:grid-cols-4' : 'lg:grid-cols-2'} gap-2`;
+            document.getElementById('categorySummaryTotals').innerHTML = cards.join('');
 
-            const body = document.getElementById('categorySummaryBody');
-            body.innerHTML = data.rows.length ? data.rows.map((r, i) => `
-                <tr class="${i % 2 ? 'bg-slate-50' : 'bg-white'}"><td class="p-3 font-black">${escapeHtml(r.category)}</td><td class="p-3">${r.count}</td><td class="p-3 text-rose-800" dir="ltr">${formatNum(r.usd)} $</td><td class="p-3 text-rose-800" dir="ltr">${formatNum(r.syp, 0)} ل.س</td></tr>`).join('') : '<tr><td colspan="4" class="p-6 text-center text-slate-500">لا توجد مصروفات مطابقة للفلاتر الحالية.</td></tr>';
-            document.getElementById('categorySummaryFoot').innerHTML = `<tr><td class="p-3">الإجمالي</td><td class="p-3">${t.expenseCount}</td><td class="p-3" dir="ltr">${formatNum(t.usdExpense)} $</td><td class="p-3" dir="ltr">${formatNum(t.sypExpense, 0)} ل.س</td></tr>`;
-            document.getElementById('categorySummaryIncome').textContent = `${formatNum(t.usdIncome)} $  |  ${formatNum(t.sypIncome, 0)} ل.س  — ${t.incomeCount} حركة قبض عامة، غير موزعة على تصنيفات المصروفات.`;
-            document.getElementById('categorySummaryExchange').textContent = t.exchangeCount
-                ? `حركات التصريف والتحويل: ${t.exchangeCount} عملية مستقلة. خرج من صندوق الدولار ${formatNum(t.usdMovedOut)} $ ودخل إلى صندوق الليرة ${formatNum(t.sypMovedIn, 0)} ل.س، وخرج من صندوق الليرة ${formatNum(t.sypMovedOut, 0)} ل.س ودخل إلى صندوق الدولار ${formatNum(t.usdMovedIn)} $. هذه الحركات لا تدخل ضمن مجموع المدفوعات أو المقبوضات.`
-                : 'لا توجد حركات تصريف أو تحويل ضمن الفلاتر الحالية.';
+            const table = document.querySelector('#categorySummaryModal #categorySummaryBody')?.closest('table');
+            if (table) {
+                const head = table.querySelector('thead tr');
+                head.innerHTML = `<th class="p-3">التصنيف</th><th class="p-3">عدد الدفعات</th>${!isSyp ? '<th class="p-3">المجموع بالدولار</th>' : ''}${!isUsd ? '<th class="p-3">المجموع بالليرة</th>' : ''}`;
+            }
+            const colCount = 2 + (isSyp ? 0 : 1) + (isUsd ? 0 : 1);
+            document.getElementById('categorySummaryBody').innerHTML = data.rows.length ? data.rows.map((r, i) => `<tr class="${i % 2 ? 'bg-slate-50' : 'bg-white'}"><td class="p-3 font-black">${escapeHtml(r.category)}</td><td class="p-3">${r.count}</td>${!isSyp ? `<td class="p-3 text-rose-800" dir="ltr">${formatNum(r.usd)} $</td>` : ''}${!isUsd ? `<td class="p-3 text-rose-800" dir="ltr">${formatNum(r.syp, 0)} ل.س</td>` : ''}</tr>`).join('') : `<tr><td colspan="${colCount}" class="p-6 text-center text-slate-500">لا توجد مصروفات مطابقة للفلاتر الحالية.</td></tr>`;
+            document.getElementById('categorySummaryFoot').innerHTML = `<tr><td class="p-3">الإجمالي</td><td class="p-3">${t.expenseCount}</td>${!isSyp ? `<td class="p-3" dir="ltr">${formatNum(t.usdExpense)} $</td>` : ''}${!isUsd ? `<td class="p-3" dir="ltr">${formatNum(t.sypExpense, 0)} ل.س</td>` : ''}</tr>`;
+            document.getElementById('categorySummaryIncome').textContent = `${!isSyp ? `${formatNum(t.usdIncome)} $` : ''}${isDual ? '  |  ' : ''}${!isUsd ? `${formatNum(t.sypIncome, 0)} ل.س` : ''} — ${t.incomeCount} حركة قبض عامة، غير موزعة على تصنيفات المصروفات.`;
+
+            const exchangeWrap = document.getElementById('categorySummaryExchangeTableWrap');
+            const exchangeNote = document.getElementById('categorySummaryExchange');
+            exchangeWrap.classList.toggle('hidden', !isDual || !data.exchangeRows.length);
+            exchangeNote.classList.toggle('hidden', !isDual);
+            exchangeNote.textContent = isDual ? `${t.exchangeCount} عملية تحويل. لا تدخل مبالغ التحويل ضمن المدفوعات أو المقبوضات.` : '';
+            if (isDual) {
+                document.getElementById('categorySummaryExchangeBody').innerHTML = data.exchangeRows.map((r, i) => `<tr class="${i % 2 ? 'bg-white' : 'bg-violet-50'}"><td class="p-2">${escapeHtml(r.date || '—')}</td><td class="p-2" dir="ltr">${formatNum(r.fromAmount, r.fromCurrency === 'SYP' ? 0 : 2)} ${r.fromCurrency === 'USD' ? '$' : 'ل.س'}</td><td class="p-2" dir="ltr">${formatNum(r.toAmount, r.toCurrency === 'SYP' ? 0 : 2)} ${r.toCurrency === 'USD' ? '$' : 'ل.س'}</td><td class="p-2" dir="ltr">${formatNum(r.rate, 2)}</td></tr>`).join('');
+                document.getElementById('categorySummaryExchangeFoot').innerHTML = `<tr><td class="p-2">المجموع</td><td class="p-2" colspan="3">خارج: ${formatNum(t.usdMovedOut)} $ + ${formatNum(t.sypMovedOut, 0)} ل.س  |  داخل: ${formatNum(t.usdMovedIn)} $ + ${formatNum(t.sypMovedIn, 0)} ل.س</td></tr>`;
+            }
             openModal('categorySummaryModal');
         }
 
@@ -4524,18 +4589,36 @@
             const t = data.totals;
             const profile = getEffectiveUserPrintProfile();
             const company = profile.companyName || 'تقرير الحسابات';
+            const engineer = profile.personName || '—';
+            const phone = profile.phone || '—';
+            const isUsd = data.mode === 'USD';
+            const isSyp = data.mode === 'SYP';
+            const isDual = data.mode === 'DUAL';
             const from = document.getElementById('txFilterDateFrom')?.value || '';
             const to = document.getElementById('txFilterDateTo')?.value || '';
             const period = from || to ? `${from || 'بداية السجلات'} — ${to || 'حتى اليوم'}` : 'كامل الفترة';
-            const rowsHtml = data.rows.map(r => `<tr><td>${escapeHtml(r.category)}</td><td>${r.count}</td><td dir="ltr">${formatNum(r.usd)} $</td><td dir="ltr">${formatNum(r.syp, 0)} ل.س</td></tr>`).join('');
+            const rowsHtml = data.rows.map(r => `<tr><td style="padding:10px">${escapeHtml(r.category)}</td><td style="padding:10px">${r.count}</td>${!isSyp ? `<td dir="ltr" style="padding:10px">${formatNum(r.usd)} $</td>` : ''}${!isUsd ? `<td dir="ltr" style="padding:10px">${formatNum(r.syp, 0)} ل.س</td>` : ''}</tr>`).join('');
+            const colCount = 2 + (isSyp ? 0 : 1) + (isUsd ? 0 : 1);
+            const summaryHeads = `${!isSyp ? '<th style="background:#0f172a;color:white;padding:10px;border:1px solid #cbd5e1">المجموع بالدولار</th>' : ''}${!isUsd ? '<th style="background:#0f172a;color:white;padding:10px;border:1px solid #cbd5e1">المجموع بالليرة</th>' : ''}`;
+            const expenseTotalCells = `${!isSyp ? `<td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.usdExpense)} $</td>` : ''}${!isUsd ? `<td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.sypExpense,0)} ل.س</td>` : ''}`;
+            const incomeTotalCells = `${!isSyp ? `<td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.usdIncome)} $</td>` : ''}${!isUsd ? `<td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.sypIncome,0)} ل.س</td>` : ''}`;
+            const exchangeRowsHtml = data.exchangeRows.map(r => {
+                const outText = `− ${formatNum(r.fromAmount, r.fromCurrency === 'SYP' ? 0 : 2)} ${r.fromCurrency === 'USD' ? '$' : 'ل.س'}`;
+                const inText = `+ ${formatNum(r.toAmount, r.toCurrency === 'SYP' ? 0 : 2)} ${r.toCurrency === 'USD' ? '$' : 'ل.س'}`;
+                return `<tr><td>${escapeHtml(r.date || '—')}</td><td dir="ltr" style="color:#b91c1c;font-weight:800">${outText}</td><td dir="ltr" style="color:#047857;font-weight:800">${inText}</td><td dir="ltr">${formatNum(r.rate, 2)}</td></tr>`;
+            }).join('');
+            const usdNet = t.usdMovedIn - t.usdMovedOut;
+            const sypNet = t.sypMovedIn - t.sypMovedOut;
+            const exchangeTableHtml = isDual ? `<h3 style="font-size:15px;font-weight:900;margin:18px 0 8px;color:#5b21b6">جدول عمليات التحويل</h3><table class="corp-table" style="font-size:13px"><thead><tr><th>التاريخ</th><th>المبلغ الخارج من الصندوق (−)</th><th>المبلغ الداخل إلى الصندوق (+)</th><th>سعر التحويل</th></tr></thead><tbody>${exchangeRowsHtml || '<tr><td colspan="4" style="padding:10px;text-align:center">لا توجد عمليات تحويل ضمن الفترة المحددة</td></tr>'}</tbody><tfoot><tr style="font-weight:900;background:#ede9fe"><td colspan="2">صافي حركة الدولار: ${usdNet < 0 ? '−' : '+'} ${formatNum(Math.abs(usdNet))} $</td><td colspan="2">صافي حركة الليرة: ${sypNet < 0 ? '−' : '+'} ${formatNum(Math.abs(sypNet),0)} ل.س</td></tr><tr style="font-weight:700;background:#f5f3ff"><td colspan="2">الدولار: − ${formatNum(t.usdMovedOut)} $ / + ${formatNum(t.usdMovedIn)} $</td><td colspan="2">الليرة: − ${formatNum(t.sypMovedOut,0)} ل.س / + ${formatNum(t.sypMovedIn,0)} ل.س</td></tr></tfoot></table>` : '';
             const sheet = document.getElementById('officialPrintSheet');
             const app = document.getElementById('appContainer');
             const previousTitle = document.title;
             sheet.innerHTML = `
-                <div style="border:2px solid #0f172a;border-radius:10px;overflow:hidden;margin-bottom:12px"><div style="background:#0f172a;color:white;padding:14px 16px"><div style="font-size:17px;font-weight:900">${escapeHtml(company)}</div><div style="font-size:13px;font-weight:800;margin-top:5px">التقرير التلخيصي للمقبوضات والمدفوعات</div></div><div style="padding:9px 14px;background:#f8fafc;font-size:10px;font-weight:700;display:flex;justify-content:space-between"><span>الورشة: ${escapeHtml(data.ws.name)}</span><span>الفترة: ${escapeHtml(period)}</span><span>التاريخ: ${todayISO()}</span></div></div>
-                <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px"><thead><tr><th colspan="2" style="background:#e2e8f0;padding:8px;border:1px solid #cbd5e1">إجمالي المدفوعات</th><th colspan="2" style="background:#e2e8f0;padding:8px;border:1px solid #cbd5e1">إجمالي المقبوضات العامة</th></tr></thead><tbody><tr><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.usdExpense)} $</td><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.sypExpense,0)} ل.س</td><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.usdIncome)} $</td><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.sypIncome,0)} ل.س</td></tr></tbody></table>
-                <h3 style="font-size:12px;font-weight:900;margin:10px 0">تفصيل المدفوعات حسب التصنيف</h3><table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr><th style="background:#0f172a;color:white;padding:8px;border:1px solid #cbd5e1">التصنيف</th><th style="background:#0f172a;color:white;padding:8px;border:1px solid #cbd5e1">عدد الدفعات</th><th style="background:#0f172a;color:white;padding:8px;border:1px solid #cbd5e1">المجموع بالدولار</th><th style="background:#0f172a;color:white;padding:8px;border:1px solid #cbd5e1">المجموع بالليرة</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="4" style="padding:10px;text-align:center">لا توجد مصروفات</td></tr>'}</tbody><tfoot><tr style="font-weight:900;background:#f1f5f9"><td style="padding:8px;border:1px solid #cbd5e1">الإجمالي</td><td style="padding:8px;border:1px solid #cbd5e1">${t.expenseCount}</td><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.usdExpense)} $</td><td style="padding:8px;border:1px solid #cbd5e1">${formatNum(t.sypExpense,0)} ل.س</td></tr></tfoot></table>
-                <p style="font-size:9px;line-height:1.6;color:#475569;margin-top:12px">المقبوضات إيرادات عامة ولا تُوزّع على تصنيفات المصروفات. التحويل بين الصناديق حركة مستقلة ولا يدخل ضمن المدفوعات أو المقبوضات. لا يتم جمع الدولار والليرة في إجمالي نقدي واحد.</p>`;
+                <div style="border:2px solid #243b70;border-radius:10px;overflow:hidden;margin-bottom:12px"><div style="background:linear-gradient(110deg,#172554,#1d4ed8);color:white;padding:14px 16px"><div style="font-size:19px;font-weight:900">${escapeHtml(company)}</div><div style="font-size:14px;font-weight:800;margin-top:5px">التقرير التلخيصي للمقبوضات والمدفوعات</div></div><div style="padding:9px 14px;background:#eff6ff;font-size:11px;font-weight:700;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>المهندس: ${escapeHtml(engineer)}</span><span>الرقم: ${escapeHtml(phone)}</span><span>الورشة: ${escapeHtml(data.ws.name)}</span><span>العملة: ${isUsd ? 'دولار فقط' : isSyp ? 'ليرة سورية فقط' : 'دولار + ليرة سورية'}</span><span>الفترة: ${escapeHtml(period)}</span><span>التاريخ: ${todayISO()}</span></div></div>
+                <table class="corp-table" style="margin-bottom:18px;font-size:13px;table-layout:fixed"><colgroup>${!isSyp ? `<col style="width:${isDual ? '25%' : '50%'}">` : ''}${!isUsd ? `<col style="width:${isDual ? '25%' : '50%'}">` : ''}${!isSyp ? `<col style="width:${isDual ? '25%' : '50%'}">` : ''}${!isUsd ? `<col style="width:${isDual ? '25%' : '50%'}">` : ''}</colgroup><thead><tr><th colspan="${isDual ? 2 : 1}" style="background:#1e3a8a;color:white;text-align:center">إجمالي المدفوعات</th><th colspan="${isDual ? 2 : 1}" style="background:#047857;color:white;text-align:center">إجمالي المقبوضات العامة</th></tr><tr>${!isSyp ? '<th style="background:#dbeafe;color:#1e3a8a;text-align:center">دولار</th>' : ''}${!isUsd ? '<th style="background:#dbeafe;color:#1e3a8a;text-align:center">ليرة سورية</th>' : ''}${!isSyp ? '<th style="background:#dcfce7;color:#14532d;text-align:center">دولار</th>' : ''}${!isUsd ? '<th style="background:#dcfce7;color:#14532d;text-align:center">ليرة سورية</th>' : ''}</tr></thead><tbody><tr>${expenseTotalCells.replaceAll('padding:8px','padding:12px;font-size:14px;font-weight:900;text-align:center')}${incomeTotalCells.replaceAll('padding:8px','padding:12px;font-size:14px;font-weight:900;text-align:center')}</tr></tbody></table>
+                <h3 style="font-size:15px;font-weight:900;margin:14px 0 9px;color:#1e3a8a">تفصيل المدفوعات حسب التصنيف</h3><table class="corp-table" style="font-size:13px"><thead><tr><th style="background:#1e3a8a;color:white;padding:10px;border:1px solid #cbd5e1">التصنيف</th><th style="background:#1e3a8a;color:white;padding:10px;border:1px solid #cbd5e1">عدد الدفعات</th>${summaryHeads}</tr></thead><tbody>${rowsHtml || `<tr><td colspan="${colCount}" style="padding:10px;text-align:center">لا توجد مصروفات</td></tr>`}</tbody><tfoot><tr style="font-weight:900;background:#dbeafe"><td style="padding:8px;border:1px solid #cbd5e1">الإجمالي</td><td style="padding:8px;border:1px solid #cbd5e1">${t.expenseCount}</td>${expenseTotalCells}</tr></tfoot></table>
+                ${exchangeTableHtml}
+                <p style="font-size:10px;line-height:1.7;color:#475569;margin-top:14px">المقبوضات إيرادات عامة ولا تُوزّع على تصنيفات المصروفات. التحويل بين الصناديق حركة مستقلة ولا يدخل ضمن المدفوعات أو المقبوضات. مجموع كل عملة محسوب بشكل مستقل دون خلط العملات.</p>`;
             document.title = `التقرير_التلخيصي_${(data.ws.name || 'ورشة').replace(/[\\/:*?"<>|]/g, '_')}_${todayISO()}`;
             closeModal('categorySummaryModal');
             app.classList.add('hidden');
